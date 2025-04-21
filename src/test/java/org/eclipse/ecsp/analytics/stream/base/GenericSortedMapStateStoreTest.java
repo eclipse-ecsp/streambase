@@ -51,35 +51,52 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
 /**
  *  class {@link GenericSortedMapStateStoreTest}.
  */
 public class GenericSortedMapStateStoreTest {
 
+    /** The map store. */
     private GenericSortedMapStateStoreImpl mapStore = new GenericSortedMapStateStoreImpl();
 
+    /**
+     * Test name.
+     */
     @Test
     public void testName() {
         String storeName = "GenericSortedMapStateStoreName";
         Assert.assertEquals(storeName, mapStore.name());
     }
 
+    /**
+     * Test persistent.
+     */
     @Test
     public void testPersistent() {
         Assert.assertFalse(mapStore.persistent());
     }
 
+    /**
+     * Test is open.
+     */
     @Test
     public void testIsOpen() {
         Assert.assertTrue(mapStore.isOpen());
     }
 
+    /**
+     * Test get.
+     */
     @Test
     public void testGet() {
         mapStore.put(TestConstants.THREAD_SLEEP_TIME_123, "abc");
         Assert.assertEquals("abc", mapStore.get(TestConstants.THREAD_SLEEP_TIME_123));
     }
 
+    /**
+     * Test range.
+     */
     @Test
     public void testRange() {
         mapStore.put(TestConstants.THREAD_SLEEP_TIME_123, "abc");
@@ -104,6 +121,9 @@ public class GenericSortedMapStateStoreTest {
         Assert.assertTrue(actualKeys.containsAll(keys));
     }
 
+    /**
+     * Test all.
+     */
     @Test
     public void testAll() {
         mapStore.put(TestConstants.THREAD_SLEEP_TIME_123, "abc");
@@ -128,6 +148,9 @@ public class GenericSortedMapStateStoreTest {
         Assert.assertTrue(actualKeys.containsAll(keys));
     }
 
+    /**
+     * Test approximate num entries.
+     */
     @Test
     public void testApproximateNumEntries() {
         mapStore.put(TestConstants.THREAD_SLEEP_TIME_123, "abc");
@@ -137,6 +160,9 @@ public class GenericSortedMapStateStoreTest {
         Assert.assertEquals(TestConstants.FOUR, mapStore.approximateNumEntries());
     }
 
+    /**
+     * Test put if absent.
+     */
     @Test
     public void testPutIfAbsent() {
         mapStore.put(TestConstants.THREAD_SLEEP_TIME_123, "abc");
@@ -144,6 +170,9 @@ public class GenericSortedMapStateStoreTest {
         Assert.assertEquals("abc", mapStore.get(TestConstants.THREAD_SLEEP_TIME_123));
     }
 
+    /**
+     * Test put all.
+     */
     @Test
     public void testPutAll() {
         KeyValue<Long, String> keyVal1 = new KeyValue<Long, String>(TestConstants.THREAD_SLEEP_TIME_123, "abc");
@@ -161,6 +190,9 @@ public class GenericSortedMapStateStoreTest {
         Assert.assertEquals(TestConstants.TWO, actualKeys.size());
     }
 
+    /**
+     * Test delete.
+     */
     @Test
     public void testDelete() {
         mapStore.put(TestConstants.THREAD_SLEEP_TIME_123, "abc");
@@ -168,6 +200,9 @@ public class GenericSortedMapStateStoreTest {
         Assert.assertNull(mapStore.get(TestConstants.THREAD_SLEEP_TIME_123));
     }
 
+    /**
+     * Test get head.
+     */
     @Test
     public void testGetHead() {
         mapStore.put(TestConstants.THREAD_SLEEP_TIME_123, "abc");
@@ -189,6 +224,9 @@ public class GenericSortedMapStateStoreTest {
         Assert.assertTrue(actualKeys.containsAll(keys));
     }
 
+    /**
+     * Test get tail.
+     */
     @Test
     public void testGetTail() {
         mapStore.put(TestConstants.THREAD_SLEEP_TIME_123, "abc");
