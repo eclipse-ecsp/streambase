@@ -74,6 +74,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 
+
 /**
  * BackDoorKafkaConsumerIntegrationTest implements {@link KafkaStreamsApplicationTestBase}.
  */

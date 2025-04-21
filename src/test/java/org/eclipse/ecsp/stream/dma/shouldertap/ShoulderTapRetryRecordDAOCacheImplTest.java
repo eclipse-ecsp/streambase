@@ -51,6 +51,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 
 
+
 /**
  * {@link ShoulderTapRetryRecordDAOCacheImplTest} test class for {@link ShoulderTapRetryRecordDAOCacheImpl}.
  */

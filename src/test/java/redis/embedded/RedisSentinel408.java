@@ -40,6 +40,7 @@
 package redis.embedded;
 
 
+
 /**
  * class RedisSentinel408 extends AbstractRedisInstance.
  */

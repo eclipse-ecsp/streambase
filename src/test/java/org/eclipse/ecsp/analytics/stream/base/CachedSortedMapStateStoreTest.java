@@ -73,25 +73,35 @@ import java.util.Optional;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+
 /**
  * {@link CachedSortedMapStateStoreTest}.
  */
 public class CachedSortedMapStateStoreTest {
+    
+    /** The key. */
     private RetryBucketKey key;
+    
+    /** The ignite event. */
     private IgniteEventImpl igniteEvent;
 
+    /** The store. */
     @InjectMocks
     private CachedSortedMapStateStore<RetryBucketKey, IgniteEventImpl> store;
 
+    /** The cache. */
     @Mock
     private IgniteCache cache;
 
+    /** The bypass. */
     @Mock
     private CacheBypass bypass;
 
+    /** The cache guage. */
     @Mock
     private InternalCacheGuage cacheGuage;
 
+    /** The task id. */
     private String taskId = "test_id";
 
     /**
@@ -106,6 +116,9 @@ public class CachedSortedMapStateStoreTest {
         store.setTaskId(taskId);
     }
 
+    /**
+     * Test set task id.
+     */
     @Test
     public void testSetTaskId() {
         store.setTaskId(null);
@@ -114,6 +127,9 @@ public class CachedSortedMapStateStoreTest {
         Assert.assertEquals(this.taskId, taskId);
     }
 
+    /**
+     * Test sync with redis.
+     */
     @Test
     public void testSyncWithRedis() {
         String prefix = DMAConstants.RETRY_BUCKET + "servicename:taskId:";
@@ -128,12 +144,18 @@ public class CachedSortedMapStateStoreTest {
 
     }
 
+    /**
+     * Test put without mutation id.
+     */
     @Test
     public void testPutWithoutMutationId() {
         store.put(key, igniteEvent, "dummy_cache");
         Assert.assertEquals(igniteEvent, store.get(key));
     }
 
+    /**
+     * Test put with mutation id.
+     */
     @Test
     public void testPutWithMutationId() {
         OffsetMetadata meta = new OffsetMetadata(null, TestConstants.THREAD_SLEEP_TIME_1000);
@@ -142,6 +164,9 @@ public class CachedSortedMapStateStoreTest {
         Mockito.verify(bypass, Mockito.times(1)).processEvents(Mockito.any(CacheEntity.class));
     }
 
+    /**
+     * Test put if absent.
+     */
     @Test
     public void testPutIfAbsent() {
         Object oldValue = store.putIfAbsent(key, igniteEvent, Optional.empty(), "dummy_cache");
@@ -150,6 +175,9 @@ public class CachedSortedMapStateStoreTest {
         Assert.assertEquals(igniteEvent, store.get(key));
     }
 
+    /**
+     * Test delete without mutation id.
+     */
     @Test
     public void testDeleteWithoutMutationId() {
         store.put(key, igniteEvent);
@@ -158,6 +186,9 @@ public class CachedSortedMapStateStoreTest {
         Mockito.verify(bypass, Mockito.times(1)).processEvents(Mockito.any(CacheEntity.class));
     }
 
+    /**
+     * Test head map.
+     */
     @Test
     public void testHeadMap() {
         RetryBucketKey key1 = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_123);
@@ -187,6 +218,9 @@ public class CachedSortedMapStateStoreTest {
 
     }
 
+    /**
+     * Test get.
+     */
     @Test
     public void testGet() {
         RetryBucketKey key1 = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_123);
@@ -199,6 +233,9 @@ public class CachedSortedMapStateStoreTest {
 
     }
 
+    /**
+     * Test delete with mutation id.
+     */
     @Test
     public void testDeleteWithMutationId() {
         OffsetMetadata meta = new OffsetMetadata(null, TestConstants.THREAD_SLEEP_TIME_1000);
@@ -236,6 +273,9 @@ public class CachedSortedMapStateStoreTest {
         Assert.assertEquals(meta4, meta5);
     }
 
+    /**
+     * Test put to map.
+     */
     @Test
     public void testPutToMap() {
         RetryBucketKey key1 = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_123);
@@ -245,6 +285,9 @@ public class CachedSortedMapStateStoreTest {
         Mockito.verify(bypass, Mockito.times(1)).processEvents(Mockito.any(CacheEntity.class));
     }
 
+    /**
+     * Test put to map if absent.
+     */
     @Test
     public void testPutToMapIfAbsent() {
         RetryBucketKey key1 = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_123);
@@ -254,6 +297,9 @@ public class CachedSortedMapStateStoreTest {
         Mockito.verify(bypass, Mockito.times(1)).processEvents(Mockito.any(CacheEntity.class));
     }
 
+    /**
+     * Test delete from map.
+     */
     @Test
     public void testDeleteFromMap() {
         RetryBucketKey key1 = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_123);
@@ -262,6 +308,9 @@ public class CachedSortedMapStateStoreTest {
         Mockito.verify(bypass, Mockito.times(1)).processEvents(Mockito.any(CacheEntity.class));
     }
 
+    /**
+     * Test sync with map cache.
+     */
     @Test
     public void testSyncWithMapCache() {
         RetryBucketKey key1 = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_123);

@@ -54,6 +54,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 
+
 /**
  * class {@link TestStreamProcessor} implements {@link IgniteEventStreamProcessor}.
  */

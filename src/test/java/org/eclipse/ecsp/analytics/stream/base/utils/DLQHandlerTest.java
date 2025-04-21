@@ -81,6 +81,7 @@ import java.util.Properties;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 
+
 /**
  * IT test class for {@link DLQHandler}.
  */

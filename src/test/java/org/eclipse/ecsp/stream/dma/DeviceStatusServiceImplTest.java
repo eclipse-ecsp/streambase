@@ -58,6 +58,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
+
 /**
  * {@link DeviceStatusServiceImplTest} test class for {@link DeviceStatusServiceImpl}.
  */

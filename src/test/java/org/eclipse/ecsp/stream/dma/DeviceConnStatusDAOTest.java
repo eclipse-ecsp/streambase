@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
+
 /**
  * class DeviceConnStatusDAOTest UT {@link org.eclipse.ecsp.stream.dma.dao.DeviceConnStatusDAO}.
  */

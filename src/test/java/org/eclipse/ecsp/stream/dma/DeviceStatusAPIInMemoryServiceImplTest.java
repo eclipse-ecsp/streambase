@@ -56,6 +56,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
+
 /**
  * {@link DeviceStatusAPIInMemoryServiceImplTest} UT class for {@link DeviceStatusAPIInMemoryServiceImpl}.
  */

@@ -71,6 +71,7 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 
+
 /**
  * class OffsetManagerIntegrationTest extends KafkaStreamsApplicationTestBase.
  */

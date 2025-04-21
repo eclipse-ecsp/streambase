@@ -59,29 +59,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+
 /**
  * class {@link KafkaStreamsLauncherMockTest}.
  */
 public class KafkaStreamsLauncherMockTest {
 
+    /** The mockito rule. */
     @Rule
     public MockitoRule mockitoRule = MockitoJUnit.rule();
 
+    /** The launcher. */
     @InjectMocks
     private KafkaStreamsLauncher launcher;
 
+    /** The health service. */
     @Mock
     private HealthService healthService;
 
+    /** The kafka state listener health monitor. */
     @Mock
     private KafkaStateListener kafkaStateListenerHealthMonitor;
 
+    /** The streams. */
     @Mock
     private KafkaStreams streams;
 
+    /** The thread status printer. */
     @Mock
     private KafkaStreamsThreadStatusPrinter threadStatusPrinter;
 
+    /** The props. */
     @Mock
     private Properties props;
 
@@ -98,6 +106,9 @@ public class KafkaStreamsLauncherMockTest {
         launcher.setHealthService(healthService);
     }
 
+    /**
+     * Test health check.
+     */
     @Test
     public void testHealthCheck() {
         List<HealthMonitor> failedMonitors = new ArrayList<HealthMonitor>();
@@ -112,6 +123,9 @@ public class KafkaStreamsLauncherMockTest {
         Assert.assertTrue(launcher.bootstrapHealthCheck());
     }
 
+    /**
+     * Test terminate.
+     */
     @Test
     public void testTerminate() {
         ReflectionTestUtils.setField(launcher, "streams", streams);
@@ -120,6 +134,9 @@ public class KafkaStreamsLauncherMockTest {
         Mockito.verify(streams, Mockito.times(1)).close();
     }
 
+    /**
+     * Test check merge defaults if application ID null.
+     */
     @Test(expected = IllegalArgumentException.class)
     public void testCheckMergeDefaultsIfApplicationIDNull() {
         Mockito.when(props.getProperty(Mockito.anyString())).thenReturn(null);

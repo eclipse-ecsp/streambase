@@ -88,6 +88,7 @@ import java.util.concurrent.TimeoutException;
 import static org.junit.Assert.assertNull;
 
 
+
 /**
  * Integration test case for "Fetching connection status of a device using presence-manager through kafka topic"
  * use case in stream-base.

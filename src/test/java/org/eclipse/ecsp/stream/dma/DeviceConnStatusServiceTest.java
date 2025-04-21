@@ -64,6 +64,7 @@ import java.util.Map;
 import java.util.Optional;
 
 
+
 /**
  * class DeviceConnStatusServiceTest extends KafkaStreamsApplicationTestBase.
  */

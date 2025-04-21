@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 
+
 /**
  * class DeviceConnectionStatusRetrieverTest.
  */

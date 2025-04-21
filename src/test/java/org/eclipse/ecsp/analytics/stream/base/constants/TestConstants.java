@@ -39,7 +39,6 @@
 
 package org.eclipse.ecsp.analytics.stream.base.constants;
 
-
 /**
  * TestConstants class: constants class for tests.
  */

@@ -42,6 +42,7 @@ package redis.embedded;
 import java.io.IOException;
 
 
+
 /**
  * Supporting class for Redis version 4.0.8.
  *

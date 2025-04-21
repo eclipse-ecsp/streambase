@@ -73,6 +73,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+
 /**
  * class DataUsageMetricsTest extends KafkaStreamsApplicationTestBase.
  */
@@ -82,17 +83,31 @@ import java.util.Properties;
 @TestPropertySource("/stream-base-test2.properties")
 public class DataUsageMetricsTest extends KafkaStreamsApplicationTestBase {
 
+    /** The key ser. */
     private static IgniteKeyTransformerStringImpl keySer = new IgniteKeyTransformerStringImpl();
+    
+    /** The source topic name. */
     private static String sourceTopicName;
+    
+    /** The sink topic name. */
     private static String sinkTopicName;
+    
+    /** The i. */
     private static int i = 0;
 
+    /** The transformer. */
     @Autowired
     GenericIgniteEventTransformer transformer;
 
+    /** The data usage test topic name. */
     @Value("${" + PropertyNames.KAFKA_DATA_CONSUMPTION_METRICS_KAFKA_TOPIC + ":}")
     private String dataUsageTestTopicName;
 
+    /**
+     * Setup.
+     *
+     * @throws Exception the exception
+     */
     @Override
     @Before
     public void setup() throws Exception {
@@ -132,9 +147,7 @@ public class DataUsageMetricsTest extends KafkaStreamsApplicationTestBase {
     /**
      * Testing if the event size is pushed to data usage topic and it matches.
      *
-     * @throws ExecutionException ExecutionException
-     * @throws InterruptedException InterruptedException
-     * @throws TimeoutException TimeoutException
+     * @throws Exception the exception
      */
     @Test
     public void testDataUsageConsumptionMetricForNormalEvent() throws Exception {
@@ -161,6 +174,14 @@ public class DataUsageMetricsTest extends KafkaStreamsApplicationTestBase {
 
     }
 
+    /**
+     * Gets the dummy ignite blob event.
+     *
+     * @param deviceID the device ID
+     * @param requestId the request id
+     * @param vehicleId the vehicle id
+     * @return the dummy ignite blob event
+     */
     private IgniteEventImpl getDummyIgniteBlobEvent(String deviceID, String requestId, String vehicleId) {
 
         IgniteEventImpl igniteBlobEvent = new IgniteEventImpl();
@@ -181,50 +202,95 @@ public class DataUsageMetricsTest extends KafkaStreamsApplicationTestBase {
      * inner class StreamServiceProcessor implements StreamProcessor.
      */
     public static final class StreamServiceProcessor implements StreamProcessor<byte[], byte[], byte[], byte[]> {
+        
+        /** The spc. */
         private StreamProcessingContext<byte[], byte[]> spc;
 
+        /**
+         * Inits the.
+         *
+         * @param spc the spc
+         */
         @Override
         public void init(StreamProcessingContext<byte[], byte[]> spc) {
             this.spc = spc;
 
         }
 
+        /**
+         * Name.
+         *
+         * @return the string
+         */
         @Override
         public String name() {
             return "StreamServiceProcessor";
         }
 
+        /**
+         * Process.
+         *
+         * @param kafkaRecord the kafka record
+         */
         @Override
         public void process(Record<byte[], byte[]> kafkaRecord) {
             String fwdValue = new String(kafkaRecord.value()) + "_StreamServiceProcessor";
             spc.forward(new Record<byte[], byte[]>(kafkaRecord.key(), fwdValue.getBytes(), kafkaRecord.timestamp()));
         }
 
+        /**
+         * Punctuate.
+         *
+         * @param timestamp the timestamp
+         */
         @Override
         public void punctuate(long timestamp) {
 
         }
 
+        /**
+         * Close.
+         */
         @Override
         public void close() {
 
         }
 
+        /**
+         * Config changed.
+         *
+         * @param props the props
+         */
         @Override
         public void configChanged(Properties props) {
 
         }
 
+        /**
+         * Creates the state store.
+         *
+         * @return the harman persistent KV store
+         */
         @Override
         public HarmanPersistentKVStore createStateStore() {
             return null;
         }
 
+        /**
+         * Sources.
+         *
+         * @return the string[]
+         */
         @Override
         public String[] sources() {
             return new String[] { sourceTopicName };
         }
 
+        /**
+         * Sinks.
+         *
+         * @return the string[]
+         */
         @Override
         public String[] sinks() {
             return new String[] {};
@@ -235,54 +301,102 @@ public class DataUsageMetricsTest extends KafkaStreamsApplicationTestBase {
      * inner class StreamPostProcessor implements StreamProcessor.
      */
     public static final class StreamPostProcessor implements StreamProcessor<byte[], byte[], byte[], byte[]> {
+        
+        /** The spc. */
         private StreamProcessingContext<byte[], byte[]> spc;
 
+        /**
+         * Instantiates a new stream post processor.
+         */
         public StreamPostProcessor() {
 
         }
 
+        /**
+         * Inits the.
+         *
+         * @param spc the spc
+         */
         @Override
         public void init(StreamProcessingContext<byte[], byte[]> spc) {
             this.spc = spc;
 
         }
 
+        /**
+         * Name.
+         *
+         * @return the string
+         */
         @Override
         public String name() {
             return "StreamPostProcessor";
         }
 
+        /**
+         * Process.
+         *
+         * @param kafkaRecord the kafka record
+         */
         @Override
         public void process(Record<byte[], byte[]> kafkaRecord) {
             String fwdValue = new String(kafkaRecord.value()) + "StreamPostProcessor";
             spc.forward(new Record<byte[], byte[]>(kafkaRecord.key(), fwdValue.getBytes(), kafkaRecord.timestamp()));
         }
 
+        /**
+         * Punctuate.
+         *
+         * @param timestamp the timestamp
+         */
         @Override
         public void punctuate(long timestamp) {
 
         }
 
+        /**
+         * Close.
+         */
         @Override
         public void close() {
 
         }
 
+        /**
+         * Config changed.
+         *
+         * @param props the props
+         */
         @Override
         public void configChanged(Properties props) {
 
         }
 
+        /**
+         * Creates the state store.
+         *
+         * @return the harman persistent KV store
+         */
         @Override
         public HarmanPersistentKVStore createStateStore() {
             return null;
         }
 
+        /**
+         * Sources.
+         *
+         * @return the string[]
+         */
         @Override
         public String[] sources() {
             return new String[] { sourceTopicName };
         }
 
+        /**
+         * Sinks.
+         *
+         * @return the string[]
+         */
         @Override
         public String[] sinks() {
             return new String[] {};

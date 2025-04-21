@@ -61,6 +61,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
+
 /**
  * class GlobalMessageGeneratorIntegrationTest extends {@link KafkaStreamsApplicationTestBase}.
  */

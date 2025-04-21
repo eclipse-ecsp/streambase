@@ -47,6 +47,7 @@ import static org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler.St
 import static org.junit.Assert.assertEquals;
 
 
+
 /**
  * class MaxFailuresUncaughtExceptionHandlerTest.
  */

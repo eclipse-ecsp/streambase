@@ -66,6 +66,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 
+
 /**
  * test class {@link KafkaStreamsThreadStatusPrinterTest}.
  */

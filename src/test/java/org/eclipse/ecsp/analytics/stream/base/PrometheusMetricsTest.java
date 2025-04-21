@@ -92,6 +92,7 @@ import static org.junit.Assert.assertTrue;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 
+
 /**
  * {@link PrometheusMetricsTest} extends {@link KafkaStreamsApplicationTestBase}.
  */

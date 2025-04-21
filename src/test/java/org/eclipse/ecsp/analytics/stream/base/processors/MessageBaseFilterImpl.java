@@ -44,6 +44,7 @@ import org.eclipse.ecsp.key.IgniteKey;
 import org.springframework.stereotype.Component;
 
 
+
 /**
  * class MessageBaseFilterImpl implements MessageFilter.
  */

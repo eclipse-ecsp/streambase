@@ -69,6 +69,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 
+
 /**
  * BackDoorKafkaConsumerTest implements {@link KafkaStreamsApplicationTestBase}.
  */

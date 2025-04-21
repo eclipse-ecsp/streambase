@@ -92,6 +92,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+
 /**
  * class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase.
  */
@@ -101,15 +102,33 @@ import java.util.concurrent.TimeoutException;
 @TestPropertySource("/stream-base-test.properties")
 public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
 
+    /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaStreamsLauncherTest.class);
+    
+    /** The Constant TOPIC_NAMES. */
     private static final String[] TOPIC_NAMES = new String[] { null, null, null };
+    
+    /** The i. */
     private static int i = 0;
+    
+    /** The in topic name. */
     private String inTopicName;
+    
+    /** The out topic name. */
     private String outTopicName;
+    
+    /** The additional in topic name. */
     private String additionalInTopicName;
+    
+    /** The redisson client. */
     @Autowired
     private RedissonClient redissonClient;
 
+    /**
+     * Setup.
+     *
+     * @throws Exception the exception
+     */
     @Override
     @Before
     public void setup() throws Exception {
@@ -136,6 +155,13 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
         ksProps.put(PropertyNames.APPLICATION_ID, "pt");
     }
 
+    /**
+     * Test setup.
+     *
+     * @throws TimeoutException the timeout exception
+     * @throws ExecutionException the execution exception
+     * @throws InterruptedException the interrupted exception
+     */
     @Test
     public void testSetup() throws TimeoutException, ExecutionException, InterruptedException {
         KafkaTestUtils.sendMessages(inTopicName, producerProps, "key1", "value1");
@@ -145,6 +171,11 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
         Assert.assertEquals(1, messages.size());
     }
 
+    /**
+     * Test single processor.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testSingleProcessor() throws Exception {
         ksProps.put(PropertyNames.DISCOVERY_SERVICE_IMPL, SimpleTestServiceDiscoveryImpl.class.getName());
@@ -158,6 +189,11 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
         shutDown();
     }
 
+    /**
+     * Test single processor using ignite cache.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testSingleProcessorUsingIgniteCache() throws Exception {
         ksProps.put(PropertyNames.DISCOVERY_SERVICE_IMPL, IgniteCacheTestServiceDiscoveryImpl.class.getName());
@@ -177,6 +213,11 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
         shutDown();
     }
 
+    /**
+     * Test single processor with state.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testSingleProcessorWithState() throws Exception {
         ksProps.put(PropertyNames.DISCOVERY_SERVICE_IMPL, StateTestServiceDiscoveryImpl.class.getName());
@@ -197,8 +238,7 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
      * that in this case Streamprocessor is using hashmap as its
      * state store instead of rocksDB.
      *
-     * @throws TimeoutException TimeoutException
-     * @throws IOException IOException
+     * @throws Exception the exception
      * @throws InterruptedException InterruptedException
      * @throws ExecutionException ExecutionException
      */
@@ -217,6 +257,11 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
         shutDown();
     }
 
+    /**
+     * Test single processor multiple sources multiple sinks.
+     *
+     * @throws Exception the exception
+     */
     /*
      * 2 input topics. 2 output topics. Message from first topic goes to output
      * topic + '-1'. Message from second topic goes to output topic+'-2'
@@ -420,6 +465,11 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
         }
     }
 
+    /**
+     * Test metrics of kafka streams.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testMetricsOfKafkaStreams() throws Exception {
         ksProps.put(PropertyNames.DISCOVERY_SERVICE_IMPL, SimpleTestServiceDiscoveryImpl.class.getName());
@@ -443,6 +493,11 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
         shutDownApplication();
     }
 
+    /**
+     * Kill threads.
+     *
+     * @param threadCount the thread count
+     */
     private void killThreads(int threadCount) {
         ThreadGroup rootGroup = Thread.currentThread().getThreadGroup();
         ThreadGroup parentGroup;
@@ -472,6 +527,12 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
      * class CustomTestServiceDiscoveryImpl implements StreamProcessorDiscoveryService.
      */
     public static final class CustomTestServiceDiscoveryImpl implements StreamProcessorDiscoveryService {
+        
+        /**
+         * Discover processors.
+         *
+         * @return the list
+         */
         @Override
         public List<StreamProcessor<?, ?, ?, ?>> discoverProcessors() {
             return Arrays.asList(new CustomTestProcessor());
@@ -484,22 +545,44 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
     @Component
     public static final class CustomTestProcessor implements StreamProcessor<byte[], byte[], String, String> {
 
+        /** The object mapper. */
         ObjectMapper objectMapper = new ObjectMapper();
+        
+        /** The spc. */
         private StreamProcessingContext<String, String> spc;
+        
+        /** The dtc list. */
         private List<String> dtcList = null;
+        
+        /** The dao. */
         private GenericDAO dao = null;
 
+        /**
+         * Inits the.
+         *
+         * @param spc the spc
+         */
         @Override
         public void init(StreamProcessingContext<String, String> spc) {
             this.spc = spc;
             dtcList = dao.getRecords("", "v01", "DTC");
         }
 
+        /**
+         * Name.
+         *
+         * @return the string
+         */
         @Override
         public String name() {
             return "CustomTestProcessor";
         }
 
+        /**
+         * Process.
+         *
+         * @param kafkaRecord the kafka record
+         */
         @Override
         public void process(Record<byte[], byte[]> kafkaRecord) {
             StringBuilder dtcs = new StringBuilder();
@@ -513,28 +596,58 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
             spc.forward(new Record<>("DTC", dtcs.toString(), kafkaRecord.timestamp()));
         }
 
+        /**
+         * Punctuate.
+         *
+         * @param timestamp the timestamp
+         */
         @Override
         public void punctuate(long timestamp) {
         }
 
+        /**
+         * Close.
+         */
         @Override
         public void close() {
         }
 
+        /**
+         * Sinks.
+         *
+         * @return the string[]
+         */
         @Override
         public String[] sinks() {
             return new String[] { TOPIC_NAMES[1] };
         }
 
+        /**
+         * Config changed.
+         *
+         * @param props the props
+         */
         @Override
         public void configChanged(Properties props) {
         }
 
+        /**
+         * Creates the state store.
+         *
+         * @return the harman persistent KV store
+         */
         @Override
         public HarmanPersistentKVStore createStateStore() {
             return null;
         }
 
+        /**
+         * Update shared data.
+         *
+         * @param key the key
+         * @param value the value
+         * @param streamName the stream name
+         */
         @Override
         public void updateSharedData(Object key, Object value, String streamName) {
             try {
@@ -549,6 +662,11 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
             }
         }
 
+        /**
+         * Sets the external shared data source.
+         *
+         * @param dao the new external shared data source
+         */
         @Override
         public void setExternalSharedDataSource(GenericDAO dao) {
             this.dao = dao;
@@ -560,6 +678,12 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
      */
     @Component
     public static final class SimpleTestServiceDiscoveryImpl implements StreamProcessorDiscoveryService {
+        
+        /**
+         * Discover processors.
+         *
+         * @return the list
+         */
         @Override
         public List<StreamProcessor<?, ?, ?, ?>> discoverProcessors() {
             return Arrays.asList(new PassThroughTestProcessor());
@@ -571,6 +695,12 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
      */
     @Component
     public static final class IgniteCacheTestServiceDiscoveryImpl implements StreamProcessorDiscoveryService {
+        
+        /**
+         * Discover processors.
+         *
+         * @return the list
+         */
         @Override
         public List<StreamProcessor<?, ?, ?, ?>> discoverProcessors() {
             return Arrays.asList(new IgniteCacheTestProcessor());
@@ -582,6 +712,12 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
      */
     @Component
     public static final class StateTestServiceDiscoveryImpl implements StreamProcessorDiscoveryService {
+        
+        /**
+         * Discover processors.
+         *
+         * @return the list
+         */
         @Override
         public List<StreamProcessor<?, ?, ?, ?>> discoverProcessors() {
             return Arrays.asList(new StreamProcessorWithStateStore());
@@ -593,15 +729,29 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
      */
     @Component
     public static final class StreamProcessorWithStateStore implements StreamProcessor<byte[], byte[], String, Object> {
+        
+        /** The spc. */
         private StreamProcessingContext<String, Object> spc;
+        
+        /** The object store. */
         private KeyValueStore objectStore;
 
+        /**
+         * Inits the.
+         *
+         * @param spc the spc
+         */
         @Override
         public void init(StreamProcessingContext<String, Object> spc) {
             this.spc = spc;
             objectStore = spc.getStateStore("state");
         }
 
+        /**
+         * Name.
+         *
+         * @return the string
+         */
         @Override
         public String name() {
             return "state-proc";
@@ -620,6 +770,11 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
                     new String(kafkaRecord.value()), System.currentTimeMillis()));
         }
 
+        /**
+         * Punctuate.
+         *
+         * @param timestamp the timestamp
+         */
         @Override
         public void punctuate(long timestamp) {
             KeyValueIterator<String, Object> i = objectStore.all();
@@ -629,19 +784,37 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
             }
         }
 
+        /**
+         * Close.
+         */
         @Override
         public void close() {
         }
 
+        /**
+         * Config changed.
+         *
+         * @param props the props
+         */
         @Override
         public void configChanged(Properties props) {
         }
 
+        /**
+         * Creates the state store.
+         *
+         * @return the harman persistent KV store
+         */
         @Override
         public HarmanPersistentKVStore createStateStore() {
             return new ObjectStateStore("state", true);
         }
 
+        /**
+         * Sinks.
+         *
+         * @return the string[]
+         */
         @Override
         public String[] sinks() {
             return new String[] { TOPIC_NAMES[1] };
@@ -653,13 +826,27 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
      */
     @Component
     public static final class PassThroughTestProcessor implements StreamProcessor<byte[], byte[], String, String> {
+        
+        /** The spc. */
         private StreamProcessingContext<String, String> spc;
+        
+        /** The config. */
         private Properties config;
 
+        /**
+         * Gets the config.
+         *
+         * @return the config
+         */
         public Properties getConfig() {
             return config;
         }
 
+        /**
+         * Inits the.
+         *
+         * @param spc the spc
+         */
         @Override
         public void init(StreamProcessingContext<String, String> spc) {
             Assert.assertNotNull(config);
@@ -667,11 +854,21 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
             this.spc = spc;
         }
 
+        /**
+         * Name.
+         *
+         * @return the string
+         */
         @Override
         public String name() {
             return "simple";
         }
 
+        /**
+         * Process.
+         *
+         * @param kafkaRecord the kafka record
+         */
         @Override
         public void process(Record<byte[], byte[]> kafkaRecord) {
             String streamName = spc.streamName();
@@ -683,28 +880,56 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
                     new String(kafkaRecord.value()), kafkaRecord.timestamp()));
         }
 
+        /**
+         * Punctuate.
+         *
+         * @param timestamp the timestamp
+         */
         @Override
         public void punctuate(long timestamp) {
         }
 
+        /**
+         * Close.
+         */
         @Override
         public void close() {
         }
 
+        /**
+         * Config changed.
+         *
+         * @param props the props
+         */
         @Override
         public void configChanged(Properties props) {
         }
 
+        /**
+         * Inits the config.
+         *
+         * @param props the props
+         */
         @Override
         public void initConfig(Properties props) {
             this.config = props;
         }
 
+        /**
+         * Creates the state store.
+         *
+         * @return the harman persistent KV store
+         */
         @Override
         public HarmanPersistentKVStore createStateStore() {
             return null;
         }
 
+        /**
+         * Sinks.
+         *
+         * @return the string[]
+         */
         @Override
         public String[] sinks() {
             return new String[] { TOPIC_NAMES[1] };
@@ -717,15 +942,31 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
      */
     @Component
     public static final class IgniteCacheTestProcessor implements StreamProcessor<byte[], byte[], byte[], byte[]> {
+        
+        /** The spc. */
         private StreamProcessingContext<byte[], byte[]> spc;
+        
+        /** The config. */
         private Properties config;
+        
+        /** The ignite cache. */
         @Autowired
         private IgniteCache igniteCache;
 
+        /**
+         * Gets the config.
+         *
+         * @return the config
+         */
         public Properties getConfig() {
             return config;
         }
 
+        /**
+         * Inits the.
+         *
+         * @param spc the spc
+         */
         @Override
         public void init(StreamProcessingContext<byte[], byte[]> spc) {
             Assert.assertNotNull(config);
@@ -733,39 +974,77 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
             this.spc = spc;
         }
 
+        /**
+         * Name.
+         *
+         * @return the string
+         */
         @Override
         public String name() {
             return "simple";
         }
 
+        /**
+         * Process.
+         *
+         * @param kafkaRecord the kafka record
+         */
         @Override
         public void process(Record<byte[], byte[]> kafkaRecord) {
             igniteCache.putString(new PutStringRequest().withKey(new String(kafkaRecord.key()))
                     .withValue(new String(kafkaRecord.value())).withNamespaceEnabled(false));
         }
 
+        /**
+         * Punctuate.
+         *
+         * @param timestamp the timestamp
+         */
         @Override
         public void punctuate(long timestamp) {
         }
 
+        /**
+         * Close.
+         */
         @Override
         public void close() {
         }
 
+        /**
+         * Config changed.
+         *
+         * @param props the props
+         */
         @Override
         public void configChanged(Properties props) {
         }
 
+        /**
+         * Inits the config.
+         *
+         * @param props the props
+         */
         @Override
         public void initConfig(Properties props) {
             this.config = props;
         }
 
+        /**
+         * Creates the state store.
+         *
+         * @return the harman persistent KV store
+         */
         @Override
         public HarmanPersistentKVStore createStateStore() {
             return null;
         }
 
+        /**
+         * Sinks.
+         *
+         * @return the string[]
+         */
         @Override
         public String[] sinks() {
             return new String[] { TOPIC_NAMES[1] };
@@ -778,6 +1057,11 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
      */
     public static class MultipleSourcesServiceDiscoveryImpl implements StreamProcessorDiscoveryService {
 
+        /**
+         * Discover processors.
+         *
+         * @return the list
+         */
         @Override
         public List<StreamProcessor<?, ?, ?, ?>> discoverProcessors() {
             return Arrays.asList(new StreamProcessor[] { new StreamProcessoWithMultipleSourcesAndSinks()
@@ -792,18 +1076,35 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
     @Component
     public static class StreamProcessoWithMultipleSourcesAndSinks
             implements StreamProcessor<byte[], byte[], String, String> {
+        
+        /** The spc. */
         private StreamProcessingContext<String, String> spc = null;
 
+        /**
+         * Inits the.
+         *
+         * @param spc the spc
+         */
         @Override
         public void init(StreamProcessingContext<String, String> spc) {
             this.spc = spc;
         }
 
+        /**
+         * Name.
+         *
+         * @return the string
+         */
         @Override
         public String name() {
             return "multi-source-pass-through";
         }
 
+        /**
+         * Process.
+         *
+         * @param kafkaRecord the kafka record
+         */
         @Override
         public void process(Record<byte[], byte[]> kafkaRecord) {
             String sinkName = null;
@@ -817,28 +1118,56 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
                     new String(kafkaRecord.value()), kafkaRecord.timestamp()), sinkName);
         }
 
+        /**
+         * Punctuate.
+         *
+         * @param timestamp the timestamp
+         */
         @Override
         public void punctuate(long timestamp) {
         }
 
+        /**
+         * Close.
+         */
         @Override
         public void close() {
         }
 
+        /**
+         * Config changed.
+         *
+         * @param props the props
+         */
         @Override
         public void configChanged(Properties props) {
         }
 
+        /**
+         * Creates the state store.
+         *
+         * @return the harman persistent KV store
+         */
         @Override
         public HarmanPersistentKVStore createStateStore() {
             return null;
         }
 
+        /**
+         * Sources.
+         *
+         * @return the string[]
+         */
         @Override
         public String[] sources() {
             return new String[] { TOPIC_NAMES[0], TOPIC_NAMES[Constants.TWO] };
         }
 
+        /**
+         * Sinks.
+         *
+         * @return the string[]
+         */
         @Override
         public String[] sinks() {
             return new String[] { TOPIC_NAMES[1] + "-1", TOPIC_NAMES[1] + "-2" };
@@ -849,6 +1178,12 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
      * class HashMapStateTestServiceDiscoveryImpl implements StreamProcessorDiscoveryService.
      */
     public static final class HashMapStateTestServiceDiscoveryImpl implements StreamProcessorDiscoveryService {
+        
+        /**
+         * Discover processors.
+         *
+         * @return the list
+         */
         @Override
         public List<StreamProcessor<?, ?, ?, ?>> discoverProcessors() {
             return Arrays.asList(new StreamProcessorWithHashMapStateStore());
@@ -863,9 +1198,18 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
     @Component
     public static final class StreamProcessorWithHashMapStateStore
             implements StreamProcessor<byte[], byte[], String, Object> {
+        
+        /** The spc. */
         private StreamProcessingContext<String, Object> spc;
+        
+        /** The object store. */
         private KeyValueStore<String, Object> objectStore;
 
+        /**
+         * Inits the.
+         *
+         * @param spc the spc
+         */
         @Override
         public void init(StreamProcessingContext<String, Object> spc) {
             this.spc = spc;
@@ -884,16 +1228,31 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
             });
         }
 
+        /**
+         * Name.
+         *
+         * @return the string
+         */
         @Override
         public String name() {
             return "hashmap-state-proc";
         }
 
+        /**
+         * Process.
+         *
+         * @param kafkaRecord the kafka record
+         */
         @Override
         public void process(Record<byte[], byte[]> kafkaRecord) {
             objectStore.put(new String(kafkaRecord.key()), new String(kafkaRecord.value()));
         }
 
+        /**
+         * Punctuate.
+         *
+         * @param timestamp the timestamp
+         */
         @Override
         public void punctuate(long timestamp) {
             KeyValueIterator<String, Object> i = objectStore.all();
@@ -903,19 +1262,37 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
             }
         }
 
+        /**
+         * Close.
+         */
         @Override
         public void close() {
         }
 
+        /**
+         * Config changed.
+         *
+         * @param props the props
+         */
         @Override
         public void configChanged(Properties props) {
         }
 
+        /**
+         * Creates the state store.
+         *
+         * @return the harman persistent KV store
+         */
         @Override
         public HarmanPersistentKVStore createStateStore() {
             return null;
         }
 
+        /**
+         * Sinks.
+         *
+         * @return the string[]
+         */
         @Override
         public String[] sinks() {
             return new String[] { TOPIC_NAMES[1] };

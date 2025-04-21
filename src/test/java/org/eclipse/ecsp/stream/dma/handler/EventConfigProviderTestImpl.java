@@ -43,6 +43,7 @@ import org.eclipse.ecsp.stream.dma.config.EventConfigProvider;
 import org.springframework.stereotype.Component;
 
 
+
 /**
  * class EventConfigProviderTestImpl implements EventConfigProvider.
  */

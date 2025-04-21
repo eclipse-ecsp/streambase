@@ -86,6 +86,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertTrue;
 
 
+
 /**
  * {@link DeviceShoulderTapRetryHandler} UT class {@link DeviceShoulderTapRetryHandlerTest}.
  */

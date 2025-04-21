@@ -44,6 +44,7 @@ import org.eclipse.ecsp.analytics.stream.base.parser.DeviceConnectionStatusParse
 import java.util.Map;
 
 
+
 /**
  * {@link ConnectionStatusParserTestImpl} implements {@link DeviceConnectionStatusParser}.
  */

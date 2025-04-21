@@ -86,6 +86,7 @@ import java.util.function.Function;
 
 
 
+
 /**
  * A convenient base class for integration testing kafka streams service applications.
  * The key things to do when subclassing this are a) invoke super.setup()

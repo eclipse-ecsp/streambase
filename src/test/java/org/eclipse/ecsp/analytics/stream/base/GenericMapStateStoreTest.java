@@ -51,40 +51,60 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
 /**
  * UT class {@link GenericMapStateStoreTest}.
  */
 public class GenericMapStateStoreTest {
 
+    /** The map store. */
     private GenericMapStateStoreImpl mapStore = new GenericMapStateStoreImpl();
 
+    /**
+     * Test name.
+     */
     @Test
     public void testName() {
         String storeName = "GenericMapStateStoreName";
         Assert.assertEquals(storeName, mapStore.name());
     }
 
+    /**
+     * Test persistent.
+     */
     @Test
     public void testPersistent() {
         Assert.assertFalse(mapStore.persistent());
     }
 
+    /**
+     * Test is open.
+     */
     @Test
     public void testIsOpen() {
         Assert.assertTrue(mapStore.isOpen());
     }
 
+    /**
+     * Test get.
+     */
     @Test
     public void testGet() {
         mapStore.put("abc", "abc");
         Assert.assertEquals("abc", mapStore.get("abc"));
     }
 
+    /**
+     * Test range.
+     */
     @Test(expected = UnsupportedOperationException.class)
     public void testRange() {
         mapStore.range("abc", "bcd");
     }
 
+    /**
+     * Test all.
+     */
     @Test
     public void testAll() {
         mapStore.put("abc", "abc");
@@ -110,6 +130,9 @@ public class GenericMapStateStoreTest {
 
     }
 
+    /**
+     * Test approximate num entries.
+     */
     @Test
     public void testApproximateNumEntries() {
         mapStore.put("abc", "abc");
@@ -119,6 +142,9 @@ public class GenericMapStateStoreTest {
         Assert.assertEquals(Constants.FOUR, mapStore.approximateNumEntries());
     }
 
+    /**
+     * Test put if absent.
+     */
     @Test
     public void testPutIfAbsent() {
         mapStore.put("abc", "abc");
@@ -126,6 +152,9 @@ public class GenericMapStateStoreTest {
         Assert.assertEquals("abc", mapStore.get("abc"));
     }
 
+    /**
+     * Test put all.
+     */
     @Test
     public void testPutAll() {
         KeyValue<String, String> keyVal1 = new KeyValue<String, String>("abc", "abc");
@@ -143,6 +172,9 @@ public class GenericMapStateStoreTest {
         Assert.assertEquals(Constants.TWO, actualKeys.size());
     }
 
+    /**
+     * Test delete.
+     */
     @Test
     public void testDelete() {
         mapStore.put("abc", "abc");

@@ -58,38 +58,61 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+
 /**
  * test class {@link HarmanPersistentPrimitiveMapValueStoreTest}.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class HarmanPersistentPrimitiveMapValueStoreTest {
 
+    /** The Constant KAFKA_CLUSTER. */
     @ClassRule
     public static final SingleNodeKafkaCluster KAFKA_CLUSTER = new SingleNodeKafkaCluster();
+    
+    /** The ks props. */
     protected Properties ksProps;
+    
+    /** The consumer props. */
     protected Properties consumerProps;
+    
+    /** The producer props. */
     protected Properties producerProps;
     
+    /** The harman persistent primitive map value store. */
     @Mock
     private HarmanPersistentPrimitiveMapValueStore harmanPersistentPrimitiveMapValueStore;
 
+    /**
+     * Setup.
+     *
+     * @throws Exception the exception
+     */
     @Before
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
         harmanPersistentPrimitiveMapValueStore = Mockito.spy(new HarmanPersistentPrimitiveMapValueStore("test", true));
     }
 
+    /**
+     * Test name.
+     */
     @Test
     public void testName() {
         String storeName = "test";
         Assert.assertEquals(storeName, harmanPersistentPrimitiveMapValueStore.name());
     }
 
+    /**
+     * Test persistant.
+     */
     @Test
     public void testPersistant() {
         Assert.assertTrue(harmanPersistentPrimitiveMapValueStore.persistent());
     }
 
+    /**
+     * Test close.
+     */
     @Test
     public void testClose() {
         harmanPersistentPrimitiveMapValueStore = new HarmanPersistentPrimitiveMapValueStore("test", false);
@@ -97,6 +120,9 @@ public class HarmanPersistentPrimitiveMapValueStoreTest {
         Assert.assertFalse(harmanPersistentPrimitiveMapValueStore.isOpen());
     }
 
+    /**
+     * Test is open.
+     */
     @Test
     public void testIsOpen() {
         harmanPersistentPrimitiveMapValueStore = new HarmanPersistentPrimitiveMapValueStore("test", false);
@@ -104,6 +130,9 @@ public class HarmanPersistentPrimitiveMapValueStoreTest {
         Assert.assertFalse(harmanPersistentPrimitiveMapValueStore.isOpen());
     }
 
+    /**
+     * Test put all.
+     */
     @Test
     public void testPutAll() {
         Map myMap = new HashMap<String, Integer>();
@@ -118,6 +147,9 @@ public class HarmanPersistentPrimitiveMapValueStoreTest {
 
     }
 
+    /**
+     * Test approximate num entries.
+     */
     @Test()
     public void testApproximateNumEntries() {
         Map myMap = new HashMap<String, Integer>();

@@ -51,6 +51,7 @@ import java.util.function.Function;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 
+
 /**
  * Integration test case for {@link DeviceConnectionStatusHandler} in Device Messaging module.
  */

@@ -50,6 +50,7 @@ import org.mockito.MockitoAnnotations;
 import java.lang.reflect.Field;
 
 
+
 /**
  * class {@link GlobalMessageGeneratorTest}.
  */

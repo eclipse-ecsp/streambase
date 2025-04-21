@@ -74,6 +74,7 @@ import static org.mockito.Mockito.doThrow;
 
 
 
+
 /**
  * class {@link MqttDispatcherTest}: UT class for {@link MqttDispatcher}.
  */

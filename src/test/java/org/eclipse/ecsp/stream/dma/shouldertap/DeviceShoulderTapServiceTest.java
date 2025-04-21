@@ -57,6 +57,7 @@ import java.util.Optional;
 import static org.junit.Assert.assertEquals;
 
 
+
 /**
  * {@link DeviceShoulderTapServiceTest} UT class for {@link DeviceShoulderTapService}.
  */

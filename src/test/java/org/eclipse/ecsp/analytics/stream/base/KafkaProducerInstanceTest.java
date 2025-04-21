@@ -46,11 +46,15 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.Properties;
 
+
 /**
  * UT class {@link KafkaProducerInstanceTest}.
  */
 public class KafkaProducerInstanceTest {
 
+    /**
+     * Test producer instance with ssl enabled.
+     */
     @Test
     public void testProducerInstanceWithSslEnabled() {
 
@@ -96,6 +100,9 @@ public class KafkaProducerInstanceTest {
         Assertions.assertNotNull(kafkaProducer);
     }
     
+    /**
+     * Test producer instance with one way tls enabled.
+     */
     @Test
     public void testProducerInstanceWithOneWayTlsEnabled() {
 

@@ -71,6 +71,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
 /**
  * Integration test case.
  */
@@ -80,12 +81,26 @@ import java.util.concurrent.Executors;
 @TestPropertySource("/stream-base-test.properties")
 public class KafkaStreamsMaxUncaughtReplaceThreadTest extends KafkaStreamsApplicationTestBase {
 
+    /** The failure count. */
     public static int failureCount;
+    
+    /** The source topic name. */
     private static String sourceTopicName;
+    
+    /** The sink topic name. */
     private static String sinkTopicName;
+    
+    /** The i. */
     private static int i = 0;
+    
+    /** The streams. */
     private KafkaStreams streams;
 
+    /**
+     * Setup.
+     *
+     * @throws Exception the exception
+     */
     @Override
     @Before
     public void setup() throws Exception {
@@ -116,6 +131,11 @@ public class KafkaStreamsMaxUncaughtReplaceThreadTest extends KafkaStreamsApplic
 
     }
 
+    /**
+     * Max exception handler for replace thread.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void maxExceptionHandlerForReplaceThread() throws Exception {
         failureCount = TestConstants.TWO;
@@ -133,6 +153,9 @@ public class KafkaStreamsMaxUncaughtReplaceThreadTest extends KafkaStreamsApplic
         Assert.assertEquals("2.0", String.valueOf(MaxFailuresUncaughtExceptionHandler.getThreadRecoveryTotal().get()));
     }
 
+    /**
+     * Start kafka streams.
+     */
     private void startKafkaStreams() {
         ksProps.put(PropertyNames.NUM_STREAM_THREADS, TestConstants.FOUR);
         final Serializer<byte[]> keySerializer = Serdes.ByteArray().serializer();
@@ -155,6 +178,9 @@ public class KafkaStreamsMaxUncaughtReplaceThreadTest extends KafkaStreamsApplic
         service.execute(runnable);
     }
 
+    /**
+     * Destroy.
+     */
     @After
     public void destroy() {
         streams.close();
@@ -164,18 +190,34 @@ public class KafkaStreamsMaxUncaughtReplaceThreadTest extends KafkaStreamsApplic
      * Test service processor.
      */
     public static final class StreamServiceProcessor implements Processor<byte[], byte[]> {
+        
+        /** The spc. */
         private ProcessorContext spc;
 
+        /**
+         * Inits the.
+         *
+         * @param context the context
+         */
         @Override
         public void init(ProcessorContext context) {
             this.spc = context;
         }
 
+        /**
+         * Process.
+         *
+         * @param key the key
+         * @param value the value
+         */
         @Override
         public void process(byte[] key, byte[] value) {
             spc.forward(key, value);
         }
 
+        /**
+         * Close.
+         */
         @Override
         public void close() {
 
@@ -187,17 +229,35 @@ public class KafkaStreamsMaxUncaughtReplaceThreadTest extends KafkaStreamsApplic
      * Test pre processor.
      */
     public class StreamPreProcessor implements Processor<byte[], byte[]> {
+        
+        /** The spc. */
         private ProcessorContext spc;
 
+        /**
+         * Reset.
+         *
+         * @param value the value
+         */
         public void reset(int value) {
             failureCount = value;
         }
 
+        /**
+         * Inits the.
+         *
+         * @param context the context
+         */
         @Override
         public void init(ProcessorContext context) {
             this.spc = context;
         }
 
+        /**
+         * Process.
+         *
+         * @param key the key
+         * @param value the value
+         */
         @Override
         public void process(byte[] key, byte[] value) {
             if (failureCount > 0) {
@@ -207,6 +267,9 @@ public class KafkaStreamsMaxUncaughtReplaceThreadTest extends KafkaStreamsApplic
             spc.forward(key, value);
         }
 
+        /**
+         * Close.
+         */
         @Override
         public void close() {
 

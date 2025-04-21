@@ -66,26 +66,37 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+
 /**
  * Test Class for {@link CachedMapStateStore}.
  */
 public class CacheMapStateStoreTest {
 
+    /** The key. */
     private String key = "abc";
+    
+    /** The string key. */
     private StringKey stringKey;
+    
+    /** The ignite event. */
     private IgniteEventImpl igniteEvent;
 
+    /** The id. */
     private String id = "test_id";
 
+    /** The store. */
     @InjectMocks
     private CachedMapStateStore<StringKey, IgniteEventImpl> store;
 
+    /** The cache. */
     @Mock
     private IgniteCache cache;
 
+    /** The bypass. */
     @Mock
     private CacheBypass bypass;
 
+    /** The cache guage. */
     @Mock
     private InternalCacheGuage cacheGuage;
 
@@ -103,12 +114,18 @@ public class CacheMapStateStoreTest {
         store.setTaskId(id);
     }
 
+    /**
+     * Close.
+     */
     @After
     public void close() {
         store.close();
 
     }
 
+    /**
+     * Test set task id.
+     */
     @Test
     public void testSetTaskId() {
         store.setTaskId(null);
@@ -117,6 +134,9 @@ public class CacheMapStateStoreTest {
         Assert.assertEquals(id, taskId);
     }
 
+    /**
+     * Test put if persist in ignite cache.
+     */
     @Test
     public void testPutIfPersistInIgniteCache() {
         store.setPersistInIgniteCache(true);
@@ -126,6 +146,9 @@ public class CacheMapStateStoreTest {
         Mockito.verify(bypass, Mockito.times(1)).processEvents(Mockito.any(CacheEntity.class));
     }
 
+    /**
+     * Test delete if persist in ignite cache.
+     */
     @Test
     public void testDeleteIfPersistInIgniteCache() {
         store.setPersistInIgniteCache(true);
@@ -135,6 +158,9 @@ public class CacheMapStateStoreTest {
         Mockito.verify(bypass, Mockito.times(1)).processEvents(Mockito.any(CacheEntity.class));
     }
 
+    /**
+     * Test sync with redis.
+     */
     @Test
     public void testSyncWithRedis() {
         Map<String, IgniteEntity> map = new HashMap<String, IgniteEntity>();
@@ -146,12 +172,18 @@ public class CacheMapStateStoreTest {
 
     }
 
+    /**
+     * Test put without mutation id.
+     */
     @Test
     public void testPutWithoutMutationId() {
         store.put(stringKey, igniteEvent, "dummy_cache");
         Assert.assertEquals(igniteEvent, store.get(stringKey));
     }
 
+    /**
+     * Test put to cache.
+     */
     @Test
     public void testPutToCache() {
         store.setPersistInIgniteCache(false);
@@ -160,12 +192,18 @@ public class CacheMapStateStoreTest {
         Mockito.verify(cache, Mockito.atMost(0)).putEntity(Mockito.any(PutEntityRequest.class));
     }
 
+    /**
+     * Test put with mutation id.
+     */
     @Test
     public void testPutWithMutationId() {
         store.put(stringKey, igniteEvent, Optional.empty(), "dummy_cache");
         Assert.assertEquals(igniteEvent, store.get(stringKey));
     }
 
+    /**
+     * Test delete without mutation id.
+     */
     @Test
     public void testDeleteWithoutMutationId() {
         store.put(stringKey, igniteEvent);
@@ -173,6 +211,9 @@ public class CacheMapStateStoreTest {
         Assert.assertNull(store.get(stringKey));
     }
 
+    /**
+     * Test delete with mutation id.
+     */
     @Test
     public void testDeleteWithMutationId() {
         store.put(stringKey, igniteEvent, Optional.empty(), "dummy_cache");
@@ -180,6 +221,9 @@ public class CacheMapStateStoreTest {
         Assert.assertNull(store.get(stringKey));
     }
 
+    /**
+     * Test put to map.
+     */
     @Test
     public void testPutToMap() {
         store.setPersistInIgniteCache(true);
@@ -189,6 +233,9 @@ public class CacheMapStateStoreTest {
         Mockito.verify(bypass, Mockito.times(1)).processEvents(Mockito.any(CacheEntity.class));
     }
 
+    /**
+     * Test put to map if persistance false.
+     */
     @Test
     public void testPutToMapIfPersistanceFalse() {
         store.setPersistInIgniteCache(false);
@@ -197,6 +244,9 @@ public class CacheMapStateStoreTest {
         Assert.assertEquals(igniteEvent, store.get(stringKey));
     }
 
+    /**
+     * Test put to map if absent.
+     */
     @Test
     public void testPutToMapIfAbsent() {
         store.setPersistInIgniteCache(true);
@@ -205,6 +255,9 @@ public class CacheMapStateStoreTest {
         Assert.assertEquals(igniteEvent, store.get(stringKey));
     }
 
+    /**
+     * Test put to map if absent persistance false.
+     */
     @Test
     public void testPutToMapIfAbsentPersistanceFalse() {
         store.setPersistInIgniteCache(false);
@@ -213,6 +266,9 @@ public class CacheMapStateStoreTest {
         Assert.assertEquals(igniteEvent, store.get(stringKey));
     }
 
+    /**
+     * Test put to map if absent value present.
+     */
     @Test
     public void testPutToMapIfAbsentValuePresent() {
         CachedMapStateStore<StringKey, IgniteEventImpl> storeMock = Mockito.mock(CachedMapStateStore.class);
@@ -223,6 +279,9 @@ public class CacheMapStateStoreTest {
         Mockito.verify(bypass, Mockito.atMost(0)).processEvents(Mockito.any(CacheEntity.class));
     }
 
+    /**
+     * Test delete from map.
+     */
     @Test
     public void testDeleteFromMap() {
         store.setPersistInIgniteCache(true);
@@ -230,6 +289,9 @@ public class CacheMapStateStoreTest {
         Mockito.verify(bypass, Mockito.times(1)).processEvents(Mockito.any(CacheEntity.class));
     }
 
+    /**
+     * Test delete from map if persistence false.
+     */
     @Test
     public void testDeleteFromMapIfPersistenceFalse() {
         store.setPersistInIgniteCache(false);
@@ -237,6 +299,9 @@ public class CacheMapStateStoreTest {
         Mockito.verify(cache, Mockito.atMost(0)).deleteMapOfEntities(Mockito.any(DeleteMapOfEntitiesRequest.class));
     }
 
+    /**
+     * Test sync with map cache.
+     */
     @Test
     public void testSyncWithMapCache() {
         Map<String, IgniteEntity> pairs = new HashMap<String, IgniteEntity>();
@@ -254,6 +319,9 @@ public class CacheMapStateStoreTest {
         Assert.assertEquals(igniteEvent.getEventId(), actual.getEventId());
     }
 
+    /**
+     * Test sync with map cache in case of sub services.
+     */
     @Test
     public void testSyncWithMapCacheInCaseOfSubServices() {
         ReflectionTestUtils.setField(store, "subServices", "fleet");
@@ -274,6 +342,9 @@ public class CacheMapStateStoreTest {
         Assert.assertEquals(igniteEvent.getEventId(), actual.getEventId());
     }
 
+    /**
+     * Test sync with map cache without sub services.
+     */
     @Test
     public void testSyncWithMapCacheWithoutSubServices() {
         Map<String, IgniteEntity> pairs = new HashMap<String, IgniteEntity>();
@@ -292,6 +363,9 @@ public class CacheMapStateStoreTest {
         Assert.assertEquals(igniteEvent.getEventId(), actual.getEventId());
     }
 
+    /**
+     * Test force get.
+     */
     @Test
     public void testForceGet() {
         Mockito.when(cache.getEntity(Mockito.any(GetMapOfEntitiesRequest.class))).thenReturn(igniteEvent);
@@ -305,6 +379,9 @@ public class CacheMapStateStoreTest {
         Assert.assertTrue(req.getFields().contains(key));
     }
 
+    /**
+     * Testdelete from map.
+     */
     @Test
     public void testdeleteFromMap() {
         Map<String, IgniteEntity> pairs = new HashMap<String, IgniteEntity>();
@@ -316,6 +393,9 @@ public class CacheMapStateStoreTest {
         Assert.assertNull(actual);
     }
 
+    /**
+     * Testput if absent.
+     */
     @Test
     public void testputIfAbsent() {
         CachedMapStateStore<StringKey, IgniteEventImpl> storeMock = Mockito.mock(CachedMapStateStore.class);
@@ -326,6 +406,9 @@ public class CacheMapStateStoreTest {
         Mockito.verify(bypass, Mockito.atMost(0)).processEvents(Mockito.any(CacheEntity.class));
     }
 
+    /**
+     * Test put if absent if persistance enabled.
+     */
     @Test
     public void testPutIfAbsentIfPersistanceEnabled() {
         store.setPersistInIgniteCache(true);
@@ -345,33 +428,68 @@ public class CacheMapStateStoreTest {
      */
     public class StringKey implements CacheKeyConverter<StringKey> {
 
+        /** The key. */
         private String key;
 
+        /**
+         * Instantiates a new string key.
+         */
         public StringKey() {
         }
 
+        /**
+         * Instantiates a new string key.
+         *
+         * @param key the key
+         */
         public StringKey(String key) {
             this.key = key;
         }
 
+        /**
+         * Gets the key.
+         *
+         * @return the key
+         */
         public String getKey() {
             return key;
         }
 
+        /**
+         * Sets the key.
+         *
+         * @param key the new key
+         */
         public void setKey(String key) {
             this.key = key;
         }
 
+        /**
+         * Convert from.
+         *
+         * @param key the key
+         * @return the string key
+         */
         @Override
         public StringKey convertFrom(String key) {
             return new StringKey(key);
         }
 
+        /**
+         * Convert to string.
+         *
+         * @return the string
+         */
         @Override
         public String convertToString() {
             return key;
         }
 
+        /**
+         * Hash code.
+         *
+         * @return the int
+         */
         @Override
         public int hashCode() {
             final int prime = 31;
@@ -381,6 +499,12 @@ public class CacheMapStateStoreTest {
             return result;
         }
 
+        /**
+         * Equals.
+         *
+         * @param obj the obj
+         * @return true, if successful
+         */
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -406,6 +530,11 @@ public class CacheMapStateStoreTest {
             return true;
         }
 
+        /**
+         * Gets the outer type.
+         *
+         * @return the outer type
+         */
         private CacheMapStateStoreTest getOuterType() {
             return CacheMapStateStoreTest.this;
         }

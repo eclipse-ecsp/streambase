@@ -50,18 +50,35 @@ import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 
+
 /**
  * class EmbeddedMQTTServerTest extends KafkaStreamsApplicationTestBase.
  */
 public class EmbeddedMQTTServerTest extends KafkaStreamsApplicationTestBase {
+    
+    /** The Constant TOPIC. */
     private static final String TOPIC = "test";
+    
+    /** The Constant PAYLOAD. */
     private static final String PAYLOAD = "testPayload";
 
+    /**
+     * Subscribe to topic.
+     *
+     * @throws MqttException the mqtt exception
+     */
     @Before
     public void subscribeToTopic() throws MqttException {
         subscibeToMqttTopic(TOPIC);
     }
 
+    /**
+     * Test single message.
+     *
+     * @throws MqttException the mqtt exception
+     * @throws TimeoutException the timeout exception
+     * @throws InterruptedException the interrupted exception
+     */
     @Test
     public void testSingleMessage() throws MqttException, TimeoutException, InterruptedException {
         publishMessageToMqttTopic(TOPIC, PAYLOAD.getBytes());
@@ -69,6 +86,13 @@ public class EmbeddedMQTTServerTest extends KafkaStreamsApplicationTestBase {
         assertEquals("Expected payload is different", PAYLOAD, new String(messages.get(0)));
     }
 
+    /**
+     * Test multiple messages.
+     *
+     * @throws MqttException the mqtt exception
+     * @throws TimeoutException the timeout exception
+     * @throws InterruptedException the interrupted exception
+     */
     @Test
     public void testMultipleMessages() throws MqttException, TimeoutException, InterruptedException {
         publishMessageToMqttTopic(TOPIC, PAYLOAD.getBytes());

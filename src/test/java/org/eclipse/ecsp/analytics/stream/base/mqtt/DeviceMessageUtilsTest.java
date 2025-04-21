@@ -55,6 +55,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import static org.mockito.ArgumentMatchers.any;
 
 
+
 /**
  * {@link DeviceMessageUtils} test class for {@link DeviceMessageUtilsTest}.
  */

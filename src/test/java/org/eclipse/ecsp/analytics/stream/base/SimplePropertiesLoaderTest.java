@@ -52,6 +52,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 
+
 /**
  * {@link SimplePropertiesLoaderTest} UT class for {@link SimplePropertiesLoader}.
  */

@@ -62,6 +62,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 
+
 /**
  * UT class  {@link MsgIdAndCorrIdUpdaterTest}.
  */

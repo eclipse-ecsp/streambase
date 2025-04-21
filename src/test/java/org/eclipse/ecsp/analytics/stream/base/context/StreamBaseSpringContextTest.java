@@ -55,6 +55,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 
+
 /**
  * class {@link StreamBaseSpringContextTest} extends {@link KafkaStreamsApplicationTestBase}.
  */

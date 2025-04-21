@@ -56,6 +56,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import static org.junit.Assert.assertEquals;
 
 
+
 /**
  * {@link SequenceBlockServiceImplIntegrationTest} test class for {@link SequenceBlockServiceImpl}.
  */

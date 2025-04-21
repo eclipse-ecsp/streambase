@@ -80,6 +80,7 @@ import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 
+
 /**
  * class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicationTestBase.
  */
@@ -90,12 +91,26 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicationTestBase {
 
+    /** The failure count. */
     public static int failureCount;
+    
+    /** The source topic name. */
     private static String sourceTopicName;
+    
+    /** The sink topic name. */
     private static String sinkTopicName;
+    
+    /** The i. */
     private static int i = 0;
+    
+    /** The streams. */
     private KafkaStreams streams;
 
+    /**
+     * Setup.
+     *
+     * @throws Exception the exception
+     */
     @Override
     @Before
     public void setup() throws Exception {
@@ -126,6 +141,11 @@ public class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicatio
 
     }
 
+    /**
+     * Max exception handler for replace thread.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void maxExceptionHandlerForReplaceThread() throws Exception {
         failureCount = Constants.TWO;
@@ -143,6 +163,11 @@ public class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicatio
         Assert.assertEquals("2.0", String.valueOf(MaxFailuresUncaughtExceptionHandler.getThreadRecoveryTotal().get()));
     }
 
+    /**
+     * Max exception handler for shut down.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void maxExceptionHandlerForShutDown() throws Exception {
 
@@ -163,6 +188,11 @@ public class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicatio
                 String.valueOf(MaxFailuresUncaughtExceptionHandler.getClientShutdownTotal().get()));
     }
 
+    /**
+     * Max exception handler for exceeding max time interval.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void maxExceptionHandlerForExceedingMaxTimeInterval() throws Exception {
 
@@ -181,6 +211,9 @@ public class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicatio
 
     }
 
+    /**
+     * Start kafka streams.
+     */
     private void startKafkaStreams() {
         ksProps.put(PropertyNames.NUM_STREAM_THREADS, Constants.FIVE);
         final Serializer<byte[]> keySerializer = Serdes.ByteArray().serializer();
@@ -203,6 +236,9 @@ public class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicatio
         service.execute(runnable);
     }
 
+    /**
+     * Destroy.
+     */
     @After
     public void destroy() {
         streams.close();
@@ -212,18 +248,34 @@ public class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicatio
      * inner class StreamServiceProcessor implements Processor.
      */
     public static final class StreamServiceProcessor implements Processor<byte[], byte[]> {
+        
+        /** The spc. */
         private ProcessorContext spc;
 
+        /**
+         * Inits the.
+         *
+         * @param context the context
+         */
         @Override
         public void init(ProcessorContext context) {
             this.spc = context;
         }
 
+        /**
+         * Process.
+         *
+         * @param key the key
+         * @param value the value
+         */
         @Override
         public void process(byte[] key, byte[] value) {
             spc.forward(key, value);
         }
 
+        /**
+         * Close.
+         */
         @Override
         public void close() {
 
@@ -235,17 +287,35 @@ public class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicatio
      * inner class StreamPreProcessor implements Processor.
      */
     public class StreamPreProcessor implements Processor<byte[], byte[]> {
+        
+        /** The spc. */
         private ProcessorContext spc;
 
+        /**
+         * Reset.
+         *
+         * @param value the value
+         */
         public void reset(int value) {
             failureCount = value;
         }
 
+        /**
+         * Inits the.
+         *
+         * @param context the context
+         */
         @Override
         public void init(ProcessorContext context) {
             this.spc = context;
         }
 
+        /**
+         * Process.
+         *
+         * @param key the key
+         * @param value the value
+         */
         @Override
         public void process(byte[] key, byte[] value) {
             if (failureCount > 0) {
@@ -255,6 +325,9 @@ public class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicatio
             spc.forward(key, value);
         }
 
+        /**
+         * Close.
+         */
         @Override
         public void close() {
 

@@ -57,6 +57,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 
+
 /**
  * UT class {@link SequenceBlockServiceImplTest}.
  */

@@ -63,6 +63,7 @@ import org.mockito.junit.MockitoRule;
 import org.springframework.test.util.ReflectionTestUtils;
 
 
+
 /**
  * Unit test for {@link DeviceFetchConnectionStatusProducer}.
  *

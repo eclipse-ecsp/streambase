@@ -45,6 +45,7 @@ import org.eclipse.ecsp.stream.dma.config.DMAConfigResolver;
 import org.springframework.stereotype.Component;
 
 
+
 /**
  * {@link DMAConfigResolverTestImpl} implements {@link DMAConfigResolver}.
  */

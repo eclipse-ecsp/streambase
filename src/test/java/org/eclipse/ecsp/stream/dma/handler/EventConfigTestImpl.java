@@ -42,6 +42,7 @@ package org.eclipse.ecsp.stream.dma.handler;
 import org.eclipse.ecsp.stream.dma.config.EventConfig;
 
 
+
 /**
  * class EventConfigTestImpl implements EventConfig.
  */

@@ -63,30 +63,61 @@ import java.util.Random;
 
 import static java.util.Arrays.asList;
 
+
 /**
  * Helper functions for writing unit tests.
  */
 public class TestUtils {
 
+    /**
+     * Instantiates a new test utils.
+     */
     private TestUtils() {
         throw new UnsupportedOperationException("This utility class does not support the object creation");
     }
 
+    /** The Constant IO_TMP_DIR. */
     public static final File IO_TMP_DIR = new File(System.getProperty("java.io.tmpdir"));
 
+    /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(TestUtils.class);
+    
+    /** The Constant LETTERS. */
     public static final String LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    
+    /** The Constant DIGITS. */
     public static final String DIGITS = "0123456789";
+    
+    /** The Constant LETTERS_AND_DIGITS. */
     public static final String LETTERS_AND_DIGITS = LETTERS + DIGITS;
+    
+    /** The Constant SEEDED_RANDOM. */
     /* A consistent random number generator to make tests repeatable */
     public static final Random SEEDED_RANDOM = new Random(192348092834L);
+    
+    /** The Constant RANDOM. */
     public static final Random RANDOM = new Random();
+    
+    /** The embed mqtt server. */
     private static Server embedMqttServer;
 
+    /**
+     * Singleton cluster.
+     *
+     * @param topicPartitionCounts the topic partition counts
+     * @return the cluster
+     */
     public static Cluster singletonCluster(Map<String, Integer> topicPartitionCounts) {
         return clusterWith(1, topicPartitionCounts);
     }
 
+    /**
+     * Singleton cluster.
+     *
+     * @param topic the topic
+     * @param partitions the partitions
+     * @return the cluster
+     */
     public static Cluster singletonCluster(String topic, int partitions) {
         return clusterWith(1, topic, partitions);
     }
@@ -116,6 +147,14 @@ public class TestUtils {
 
     }
 
+    /**
+     * Cluster with.
+     *
+     * @param nodes the nodes
+     * @param topic the topic
+     * @param partitions the partitions
+     * @return the cluster
+     */
     public static Cluster clusterWith(int nodes, String topic, int partitions) {
         return clusterWith(nodes, Collections.singletonMap(topic, partitions));
     }
@@ -123,8 +162,8 @@ public class TestUtils {
     /**
      * Generate an array of random bytes.
      *
-     * @param size
-     *            The size of the array
+     * @param size            The size of the array
+     * @return the byte[]
      */
     public static byte[] randomBytes(int size) {
         byte[] bytes = new byte[size];
@@ -150,6 +189,9 @@ public class TestUtils {
     /**
      * Create an empty file in the default temporary-file directory, using
      * `kafka` as the prefix and `tmp` as the suffix to generate its name.
+     *
+     * @return the file
+     * @throws IOException Signals that an I/O exception has occurred.
      */
     public static File tempFile() throws IOException {
         File file = File.createTempFile("kafka", ".tmp");
@@ -162,9 +204,10 @@ public class TestUtils {
      * Create a temporary relative directory in the default temporary-file
      * directory with the given prefix.
      *
-     * @param prefix
-     *            The prefix of the temporary directory, if null using "kafka-"
+     * @param prefix            The prefix of the temporary directory, if null using "kafka-"
      *            as default prefix
+     * @return the file
+     * @throws IOException Signals that an I/O exception has occurred.
      */
     public static File tempDirectory(String prefix) throws IOException {
         return tempDirectory(null, prefix);
@@ -174,12 +217,12 @@ public class TestUtils {
      * Create a temporary relative directory in the specified parent directory
      * with the given prefix.
      *
-     * @param parent
-     *            The parent folder path name, if null using the default
+     * @param parent            The parent folder path name, if null using the default
      *            temporary-file directory
-     * @param prefix
-     *            The prefix of the temporary directory, if null using "kafka-"
+     * @param prefix            The prefix of the temporary directory, if null using "kafka-"
      *            as default prefix
+     * @return the file
+     * @throws IOException Signals that an I/O exception has occurred.
      */
     public static File tempDirectory(Path parent, String prefix) throws IOException {
         final File file = parent == null ? Files.createTempDirectory(prefix == null ? "kafka-" : prefix).toFile()

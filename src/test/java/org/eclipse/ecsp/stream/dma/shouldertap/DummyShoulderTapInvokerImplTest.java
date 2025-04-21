@@ -52,6 +52,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 
+
 /**
  * Test class for {@link DummyShoulderTapInvokerImpl}.
  */

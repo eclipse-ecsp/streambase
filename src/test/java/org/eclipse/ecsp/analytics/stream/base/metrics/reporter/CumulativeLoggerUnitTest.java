@@ -51,6 +51,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
 
+
 /**
  * test class for {@link CumulativeLogger}.
  */
