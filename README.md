@@ -241,8 +241,8 @@ To connect to the MongoDB instance, the following properties need to be specifie
 ```properties
 mongodb.hosts=localhost
 mongodb.port=27017
-mongodb.username=admin
-mongodb.password=password
+mongodb.username=dummyUser
+mongodb.username=dummyUser
 mongodb.auth.db=admin
 mongodb.name=admin
 mongodb.pool.max.size=200
@@ -271,7 +271,7 @@ mqtt.broker.url=tcp://127.0.0.1:1883
 mqtt.topic.separator=/
 mqtt.config.qos=1
 mqtt.user.name=*******************
-mqtt.user.password=simulator16
+mqtt.user.password=dummyPass
 mqtt.service.topic.name=test
 ```
 
