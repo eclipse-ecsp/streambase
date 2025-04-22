@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
       packages: write
@@ -45,7 +45,7 @@ jobs:
     # No need to run if we cannot use the sonar token
     if: >-
       needs.check_sonar_configured.outputs.sonar_configured == 'true'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
       packages: write
