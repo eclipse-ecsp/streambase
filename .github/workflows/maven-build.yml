@@ -70,5 +70,5 @@ jobs:
         run: |
           mvn --update-snapshots verify \
           org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=eclipse-ecsp_tranformers -Dsonar.organization=eclipse-ecsp \
+          -Dsonar.projectKey=eclipse-ecsp_streambase -Dsonar.organization=eclipse-ecsp \
           -Dcheckstyle.skip -Dpmd.skip=true
