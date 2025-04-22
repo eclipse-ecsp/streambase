@@ -92,13 +92,13 @@ public class CumulativeLoggerUnitTest {
         count += incrementBy;
     
         Map<String, AtomicLong> stateMap = (Map<String, AtomicLong>) ReflectionTestUtils.getField(cumulativeLogger, 
-                "state");
+                "STATE");
         Assert.assertNotNull(stateMap);
         Assert.assertEquals(count, stateMap.get(COUNTER_1).get());
 
         cumulativeLogger.incrementByOne(COUNTER_1);
         count += 1;
-        stateMap = (Map<String, AtomicLong>) ReflectionTestUtils.getField(cumulativeLogger, "state");
+        stateMap = (Map<String, AtomicLong>) ReflectionTestUtils.getField(cumulativeLogger, "STATE");
         Assert.assertNotNull(stateMap);
         Assert.assertEquals(count, stateMap.get(COUNTER_1).get());
     }

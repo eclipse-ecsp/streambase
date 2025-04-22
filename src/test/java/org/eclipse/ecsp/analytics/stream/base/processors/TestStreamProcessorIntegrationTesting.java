@@ -145,7 +145,7 @@ public class TestStreamProcessorIntegrationTesting extends KafkaStreamsApplicati
         launchApplication();
 
         // Using Message Generator send the data to the Kafka.
-        String[] args = new String[Constants.FOUR];
+        String[] args = new String[Constants.FIVE];
         args[0] = sourceTopicName;
         args[1] = key;
         String speedEvent = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":20.0}}";

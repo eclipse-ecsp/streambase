@@ -50,6 +50,7 @@ import org.apache.kafka.streams.processor.api.Record;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.eclipse.ecsp.analytics.stream.base.StreamProcessingContext;
+import org.eclipse.ecsp.analytics.stream.base.constants.TestConstants;
 import org.eclipse.ecsp.analytics.stream.base.stores.HarmanPersistentKVStore;
 import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
 import org.eclipse.ecsp.domain.EventID;
@@ -217,7 +218,9 @@ public class MsgSeqPreProcessorTest {
 
         IgniteStringKey igniteStringKey2 = new IgniteStringKey();
         igniteStringKey2.setKey("TestMsgSeq2");
-
+        
+        final IgniteEventImpl eventImpl1 = getIgniteEvent(currentTime);
+        
         IgniteEventImpl eventImpl2 = new IgniteEventImpl();
 
         // Set event time after 1.5 sec
@@ -256,12 +259,12 @@ public class MsgSeqPreProcessorTest {
         eventImpl5.setEventId(EventID.SPEED);
         eventImpl5.setRequestId("e5");
         eventImpl5.setSourceDeviceId("deviceId5");
+
         // Start bucketing of the events next 3 secs [Second bucket]
 
         // Send messaging randomly, but it should reach in sequence: first
         // bucket- [e1,e2,e3] second bucket- [e4,e5]
         msgSeqPreProcessor.process(new Record<>(igniteStringKey4, eventImpl4, System.currentTimeMillis()));
-        IgniteEventImpl eventImpl1 = getIgniteEvent(currentTime);
         msgSeqPreProcessor.process(new Record<>(igniteStringKey1, eventImpl1, System.currentTimeMillis()));
         msgSeqPreProcessor.process(new Record<>(igniteStringKey2, eventImpl2, System.currentTimeMillis()));
 

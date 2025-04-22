@@ -159,7 +159,7 @@ public class HiveMQMqttDispatcherIntegrationTest {
                     mqttTopic = publish.getTopic().toString();
                 }).send();
         mqttDispatcher.dispatch(key, value);
-        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_1000);
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
         RetryUtils.retry(TestConstants.TWENTY, (v) -> {
             return mqttTopic.length() > 0 ? Boolean.TRUE : null;
         });

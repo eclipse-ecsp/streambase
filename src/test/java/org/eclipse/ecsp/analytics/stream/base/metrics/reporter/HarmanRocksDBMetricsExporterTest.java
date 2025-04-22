@@ -104,17 +104,17 @@ public class HarmanRocksDBMetricsExporterTest {
     @Test
     public void testInit() {
         ReflectionTestUtils.setField(exporter, "prometheusEnabled", true);
-        ReflectionTestUtils.setField(exporter, "rocksDBMetricsEnabled", true);
+        ReflectionTestUtils.setField(exporter, "rocksDbMetricsEnabled", true);
         List<String> metricsList = new ArrayList<>();
         metricsList.add("compaction-pending");
         metricsList.add("background-errors");
         metricsList.add("size-all-mem-tables");
-        ReflectionTestUtils.setField(exporter, "rocksDBMetricsList", metricsList);
+        ReflectionTestUtils.setField(exporter, "rocksDbMetricsList", metricsList);
         ReflectionTestUtils.setField(exporter, "rocksdbGuage", rocksdbGuage);
         ReflectionTestUtils.invokeMethod(exporter, "init");
 
         Mockito.verify(rocksdbGuage, Mockito.times(1)).setup();
-        metricsList = (List<String>) ReflectionTestUtils.getField(exporter, "rocksDBMetricsList");
+        metricsList = (List<String>) ReflectionTestUtils.getField(exporter, "rocksDbMetricsList");
         metricsList.forEach(metricName -> Assert.assertTrue(metricName.startsWith("rocksdb.")));
     }
 
@@ -129,12 +129,12 @@ public class HarmanRocksDBMetricsExporterTest {
         metricsList.add("compaction-pending");
         metricsList.add("background-errors");
         metricsList.add("size-all-mem-tables");
-        ReflectionTestUtils.setField(exporter, "rocksDBMetricsList", metricsList);
+        ReflectionTestUtils.setField(exporter, "rocksDbMetricsList", metricsList);
         ReflectionTestUtils.invokeMethod(exporter, "prefix");
 
         db = Mockito.mock(RocksDB.class);
         ReflectionTestUtils.setField(exporter, "rocksdbGuage", rocksdbGuage);
-        ReflectionTestUtils.invokeMethod(exporter, "setRocksDB", db);
+        ReflectionTestUtils.invokeMethod(exporter, "setRocksDb", db);
         ReflectionTestUtils.setField(exporter, "isValidList", true);
         exporter.fetchMetrics();
 

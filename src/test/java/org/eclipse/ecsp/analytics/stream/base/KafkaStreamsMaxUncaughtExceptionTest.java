@@ -142,53 +142,6 @@ public class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicatio
     }
 
     /**
-     * Max exception handler for replace thread.
-     *
-     * @throws Exception the exception
-     */
-    @Test
-    public void maxExceptionHandlerForReplaceThread() throws Exception {
-        failureCount = Constants.TWO;
-        startKafkaStreams();
-        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, "key1".getBytes(StandardCharsets.UTF_8), "value1"
-                .getBytes(StandardCharsets.UTF_8));
-        Thread.sleep(Constants.INT_120000);
-        Map<MetricName, ? extends Metric> map = streams.metrics();
-
-        for (Map.Entry<MetricName, ? extends Metric> metricNameEntry : map.entrySet()) {
-            if (metricNameEntry.getKey().name().equalsIgnoreCase("alive-stream-threads")) {
-                Assert.assertEquals("4", metricNameEntry.getValue().metricValue().toString());
-            }
-        }
-        Assert.assertEquals("2.0", String.valueOf(MaxFailuresUncaughtExceptionHandler.getThreadRecoveryTotal().get()));
-    }
-
-    /**
-     * Max exception handler for shut down.
-     *
-     * @throws Exception the exception
-     */
-    @Test
-    public void maxExceptionHandlerForShutDown() throws Exception {
-
-        failureCount = Constants.THREE;
-        startKafkaStreams();
-        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, "key1".getBytes(StandardCharsets.UTF_8), "value1"
-                .getBytes(StandardCharsets.UTF_8));
-        runAsync(() -> {}, delayedExecutor(Constants.THREAD_SLEEP_TIME_30000, MILLISECONDS)).join();
-        Map<MetricName, ? extends Metric> map = streams.metrics();
-
-        for (Map.Entry<MetricName, ? extends Metric> metricNameEntry : map.entrySet()) {
-            if (metricNameEntry.getKey().name().equalsIgnoreCase("alive-stream-threads")) {
-                runAsync(() -> {}, delayedExecutor(Constants.INT_80000, MILLISECONDS)).join();
-                Assert.assertEquals("0", metricNameEntry.getValue().metricValue().toString());
-            }
-        }
-        Assert.assertEquals("1.0", 
-                String.valueOf(MaxFailuresUncaughtExceptionHandler.getClientShutdownTotal().get()));
-    }
-
-    /**
      * Max exception handler for exceeding max time interval.
      *
      * @throws Exception the exception

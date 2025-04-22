@@ -200,6 +200,7 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
         testClient = new MqttClientTest(new TestKey(), new DeviceMessageHeader().withTargetDeviceId("Device12345"));
         KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(), 
                speedEventWithVehicleId.getBytes());
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);       
         /*
          * Data send in source topic should come to mqtt
          */

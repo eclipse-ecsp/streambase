@@ -101,7 +101,7 @@ public class GenericSortedMapStateStoreTest {
     public void testRange() {
         mapStore.put(TestConstants.THREAD_SLEEP_TIME_123, "abc");
         mapStore.put(TestConstants.THREAD_SLEEP_TIME_223, "bcd");
-        mapStore.put(TestConstants.THREAD_SLEEP_TIME_223, "cde");
+        mapStore.put(TestConstants.THREAD_SLEEP_TIME_323, "cde");
         mapStore.put(TestConstants.THREAD_SLEEP_TIME_423, "def");
 
         Set<Long> keys = new HashSet<Long>();

@@ -173,7 +173,7 @@ public class OffsetManagerTest {
 
         // Case 2 : When currentmap and refmap not null
         KafkaStreamsTopicOffset topicOffset = new KafkaStreamsTopicOffset("topic",
-                1, TestConstants.THREAD_SLEEP_TIME_900);
+                1, TestConstants.THREAD_SLEEP_TIME_1000);
         Mockito.when(persistOffsetMap.get(key))
                 .thenReturn(topicOffset);
         Mockito.when(refrenceMap.get(key))

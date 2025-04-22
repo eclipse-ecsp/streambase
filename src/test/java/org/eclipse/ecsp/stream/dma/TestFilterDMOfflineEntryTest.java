@@ -1,42 +1,3 @@
-/*
- *
- *
- *   ******************************************************************************
- *
- *    Copyright (c) 2023-24 Harman International
- *
- *
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *
- *    you may not use this file except in compliance with the License.
- *
- *    You may obtain a copy of the License at
- *
- *
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- *
- *    Unless required by applicable law or agreed to in writing, software
- *
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
- *    See the License for the specific language governing permissions and
- *
- *    limitations under the License.
- *
- *
- *
- *    SPDX-License-Identifier: Apache-2.0
- *
- *    *******************************************************************************
- *
- *
- */
-
 package org.eclipse.ecsp.stream.dma;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -78,17 +39,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
-
-
 
 /**
- * TestFilterDMOfflineEntryTest is UT test class to test {@link TestFilterDMOfflineEntryTest}.
+ * The Class TestFilterDMOfflineEntryTest.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { Launcher.class })
@@ -120,9 +77,9 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
     @Autowired
     private DeviceStatusService deviceService;
 
-    /** The offline buffer dao. */
+    /** The offline buffer DAO. */
     @Autowired
-    private DMOfflineBufferEntryDAOMongoImpl offlineBufferDao;
+    private DMOfflineBufferEntryDAOMongoImpl offlineBufferDAO;
     
     /** The device status back door kafka consumer. */
     @Autowired
@@ -134,30 +91,32 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
 
     /** The device status topic name. */
     private String deviceStatusTopicName;
-    
-    /** The vehicle id. */
-    private String vehicleId = "Vehicle12345";
 
     /**
-     *  setUp().
+     * Sets the up.
      *
-     * @throws Exception Exception
-     * @throws MqttException MqttException
+     * @throws Exception the exception
+     * @throws MqttException the mqtt exception
      */
     @Before
     public void setUp() throws Exception, MqttException {
         super.setup();
         deviceStatusTopicName = DMAConstants.DEVICE_STATUS_TOPIC_PREFIX + serviceName.toLowerCase();
         createTopics(sourceTopic, deviceStatusTopicName);
+        
         Properties kafkaConsumerProps = deviceStatusBackDoorKafkaConsumer.getKafkaConsumerProps();
         kafkaConsumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.bootstrapServers());
         deviceStatusBackDoorKafkaConsumer.addCallback(deviceConnectionStatusHandler.new DeviceStatusCallBack(), 0);
         deviceStatusBackDoorKafkaConsumer.startBackDoorKafkaConsumer();
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
+        
         launchApplication();
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
         subscibeToMqttTopic(mqttPrefix + "12345" + toDevice + "/" + mqttTopic);
     }
+
+    /** The vehicle id. */
+    private String vehicleId = "Vehicle12345";
 
     /**
      * Test filter offline buffer.
@@ -173,56 +132,57 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
 
         producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.bootstrapServers());
-        String deviceInactive = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": "
-                + "{\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
+        final String speedEvent = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":20.0},"
+                + "\"MessageId\": \"1234\",\"CorrelationId\": \"1234\",\"BizTransactionId\": \"Biz1234\","
+                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
+        final String speedEvent1 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":30.0},"
+                + "\"MessageId\": \"1235\",\"CorrelationId\": \"1237\",\"BizTransactionId\": \"Biz1235\","
+                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
+        final String speedEvent2 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":40.0},"
+                + "\"MessageId\": \"1236\",\"CorrelationId\": \"1238\",\"BizTransactionId\": \"Biz1236\","
+                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
+        final String speedEvent3 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":50.0},"
+                + "\"MessageId\": \"1237\",\"CorrelationId\": \"1239\",\"BizTransactionId\": \"Biz1237\","
+                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
+        final String speedEvent4 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":60.0},"
+                + "\"MessageId\": \"1238\",\"CorrelationId\": \"2234\",\"BizTransactionId\": \"Biz1238\","
+                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
+
+        String deviceInactive = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
+                + "\"Data\": {\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
                 + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
         sendMessages(deviceStatusTopicName, producerProps,
                 Arrays.asList(vehicleId.getBytes(), deviceInactive.getBytes()));
-        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
         assertNull(deviceService.get(vehicleId, Optional.empty()));
 
-        String speedEvent = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": "
-                + "{\"value\":20.0},\"MessageId\": \"1234\",\"CorrelationId\": \"1234\",\"BizTransactionId\": "
-                + "\"Biz1234\",\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
         sendMessages(sourceTopic, producerProps,
                 Arrays.asList(vehicleId.getBytes(), speedEvent.getBytes()));
-        String speedEvent1 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": "
-                + "{\"value\":30.0},\"MessageId\": \"1235\",\"CorrelationId\": \"1237\",\"BizTransactionId\": "
-                + "\"Biz1235\",\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
-        await().atMost(Constants.THREAD_SLEEP_TIME_5000, TimeUnit.MILLISECONDS);
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
         sendMessages(sourceTopic, producerProps,
                 Arrays.asList(vehicleId.getBytes(), speedEvent1.getBytes()));
-        await().atMost(Constants.THREAD_SLEEP_TIME_3000, TimeUnit.MILLISECONDS);
-        String speedEvent2 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":40.0},"
-                + "\"MessageId\": \"1236\",\"CorrelationId\": \"1238\",\"BizTransactionId\": \"Biz1236\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_3000);
         sendMessages(sourceTopic, producerProps,
                 Arrays.asList(vehicleId.getBytes(), speedEvent2.getBytes()));
-        String speedEvent3 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":50.0},"
-                + "\"MessageId\": \"1237\",\"CorrelationId\": \"1239\",\"BizTransactionId\": \"Biz1237\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
-        await().atMost(Constants.THREAD_SLEEP_TIME_3000, TimeUnit.MILLISECONDS);
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_3000);
         sendMessages(sourceTopic, producerProps,
                 Arrays.asList(vehicleId.getBytes(), speedEvent3.getBytes()));
-        await().atMost(Constants.THREAD_SLEEP_TIME_3000, TimeUnit.MILLISECONDS);
-        String speedEvent4 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":60.0},"
-                + "\"MessageId\": \"1238\",\"CorrelationId\": \"2234\",\"BizTransactionId\": \"Biz1238\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_3000);
         sendMessages(sourceTopic, producerProps,
                 Arrays.asList(vehicleId.getBytes(), speedEvent4.getBytes()));
-        await().atMost(Constants.THREAD_SLEEP_TIME_3000, TimeUnit.MILLISECONDS);
-        List<DMOfflineBufferEntry> bufferEntries = offlineBufferDao.getOfflineBufferEntriesSortedByPriority(vehicleId, 
-                false, Optional.empty(), Optional.empty());
-        assertEquals("Expected 5 entry", Constants.FIVE, bufferEntries.size());
-        String deviceActive = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": "
-                + "{\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\",\"VehicleId\": "
-                + "\"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_3000);
+        List<DMOfflineBufferEntry> bufferEntries = offlineBufferDAO
+              .getOfflineBufferEntriesSortedByPriority(vehicleId, false, Optional.empty(), Optional.empty());
+        assertEquals("Expected 5 entry", TestConstants.FIVE, bufferEntries.size());
+        String deviceActive = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
+                + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
+                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
         sendMessages(deviceStatusTopicName, producerProps,
                 Arrays.asList(vehicleId.getBytes(), deviceActive.getBytes()));
-        await().atMost(Constants.THREAD_SLEEP_TIME_5000, TimeUnit.MILLISECONDS);
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
 
         String completeMqttTopic = mqttPrefix + "12345" + toDevice + "/" + mqttTopic;
-        List<byte[]> messages = getMessagesFromMqttTopic(completeMqttTopic, 1, Constants.THREAD_SLEEP_TIME_60000);
+        List<byte[]> messages = getMessagesFromMqttTopic(completeMqttTopic, 1, TestConstants.INT_60000);
         assertEquals("No of message expected", TestConstants.FOUR, messages.size());
     }
     
@@ -235,7 +195,7 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
     }
 
     /**
-     * inner class DMOfflineBufferTestStreamProcessor implements IgniteEventStreamProcessor.
+     * The Class DMOfflineBufferTestStreamProcessor.
      */
     public static class DMOfflineBufferTestStreamProcessor implements IgniteEventStreamProcessor {
         
@@ -284,7 +244,7 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // todo Auto-generated method stub
         }
 
         /**
@@ -292,6 +252,7 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
          */
         @Override
         public void close() {
+            // todo Auto-generated method stub
 
         }
 
@@ -302,6 +263,7 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
          */
         @Override
         public void configChanged(Properties props) {
+            // todo Auto-generated method stub
 
         }
 
@@ -312,6 +274,7 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
          */
         @Override
         public HarmanPersistentKVStore createStateStore() {
+            // todo Auto-generated method stub
             return null;
         }
 

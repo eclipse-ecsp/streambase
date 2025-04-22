@@ -616,12 +616,6 @@
 		</dependency>
         
         <dependency>
-            <groupId>com.harman.ignite.platform</groupId>
-            <artifactId>redis-jar</artifactId>
-            <version>${redis.jar.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.ecsp</groupId>
             <artifactId>transformers</artifactId>
             <version>${transformers.version}</version>

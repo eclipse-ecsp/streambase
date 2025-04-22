@@ -123,18 +123,18 @@ public class DeviceConnectionStatusRetrieverTest {
         String actualUrl = "";
         String urlWithForwardSlash = "http://test-url.com/api/devices/";
         ReflectionTestUtils.setField(statusRetriever, "apiUrl", urlWithForwardSlash);
-        actualUrl = (String) ReflectionTestUtils.invokeMethod(statusRetriever, "appendToURL", vehicleId);
+        actualUrl = (String) ReflectionTestUtils.invokeMethod(statusRetriever, "appendToUrl", vehicleId);
         Assert.assertEquals(expectedUrl, actualUrl);
 
         String vehicleId2 = "vin123";
         expectedUrl = "http://test-url.com/api/devices/" + vehicleId2;
-        actualUrl = (String) ReflectionTestUtils.invokeMethod(statusRetriever, "appendToURL", vehicleId2);
+        actualUrl = (String) ReflectionTestUtils.invokeMethod(statusRetriever, "appendToUrl", vehicleId2);
         Assert.assertEquals(expectedUrl, actualUrl);
 
         String urlWithoutForwardSlash = "http://test-url.com/api/devices";
         expectedUrl = "http://test-url.com/api/devices/" + vehicleId;
         ReflectionTestUtils.setField(statusRetriever, "apiUrl", urlWithoutForwardSlash);
-        actualUrl = (String) ReflectionTestUtils.invokeMethod(statusRetriever, "appendToURL", vehicleId);
+        actualUrl = (String) ReflectionTestUtils.invokeMethod(statusRetriever, "appendToUrl", vehicleId);
         Assert.assertEquals(expectedUrl, actualUrl);
     }
 

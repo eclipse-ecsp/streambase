@@ -118,7 +118,7 @@ public class VehicleProfileClientApiUtilTest {
         String urlWithoutForwardSlash = "http://vehicle-profile-api-int-svc:8080/v1.0/vehicles?clientId=";
         expectedUrl = "http://vehicle-profile-api-int-svc:8080/v1.0/vehicles?clientId=" + vehicleId;
         ReflectionTestUtils.setField(vehicleProfile, "apiUrl", urlWithoutForwardSlash);
-        actualUrl = (String) ReflectionTestUtils.invokeMethod(vehicleProfile, "appendToURL", vehicleId);
+        actualUrl = (String) ReflectionTestUtils.invokeMethod(vehicleProfile, "appendToUrl", vehicleId);
         Assert.assertEquals(expectedUrl, actualUrl);
     }
 }
