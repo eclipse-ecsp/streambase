@@ -126,8 +126,8 @@ public class EmbeddedMQTTServer extends ExternalResource {
         }
         mqttConnection = new MqttConnectOptions();
         mqttConnection.setCleanSession(true);
-        mqttConnection.setPassword("simulator16".toCharArray());
-        mqttConnection.setUserName("8146ccc47e84ac1e43de623403133d55");
+        mqttConnection.setPassword("dummyPass".toCharArray());
+        mqttConnection.setUserName("dummyUser");
     }
 
     /**
