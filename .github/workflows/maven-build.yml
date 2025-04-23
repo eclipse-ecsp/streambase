@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
       packages: write
@@ -45,7 +45,7 @@ jobs:
     # No need to run if we cannot use the sonar token
     if: >-
       needs.check_sonar_configured.outputs.sonar_configured == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
       packages: write
@@ -70,5 +70,5 @@ jobs:
         run: |
           mvn --update-snapshots verify \
           org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey=eclipse-ecsp_tranformers -Dsonar.organization=eclipse-ecsp \
+          -Dsonar.projectKey=eclipse-ecsp_streambase -Dsonar.organization=eclipse-ecsp \
           -Dcheckstyle.skip -Dpmd.skip=true
