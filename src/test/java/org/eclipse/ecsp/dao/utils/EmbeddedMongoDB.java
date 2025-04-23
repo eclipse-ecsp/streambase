@@ -43,21 +43,14 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodProcess;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfig;
-import de.flapdoodle.embed.mongo.config.Net;
-import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.runtime.Network;
 import org.eclipse.ecsp.nosqldao.spring.config.AbstractIgniteDAOMongoConfig;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
 
 import java.util.Map;
-
-
 
 /**
  * class EmbeddedMongoDB extends ExternalResource.
@@ -67,18 +60,9 @@ public class EmbeddedMongoDB extends ExternalResource {
     /** The Constant LOGGER. */
     private static final IgniteLogger LOGGER = IgniteLoggerFactory.getLogger(EmbeddedMongoDB.class);
     
-    /** The mongod starter. */
-    private MongodStarter mongodStarter = MongodStarter.getDefaultInstance();
+    @Container
+    MongoDBContainer mongoDbContainer = new MongoDBContainer("mongo:6.0.13");
     
-    /** The mongod executable. */
-    private MongodExecutable mongodExecutable;
-    
-    /** The mongod process. */
-    private MongodProcess mongodProcess;
-
-    /** The port. */
-    private int port = 0;
-
     /**
      * Before.
      *
@@ -86,24 +70,19 @@ public class EmbeddedMongoDB extends ExternalResource {
      */
     @Override
     protected void before() throws Throwable {
-        port = Network.getFreeServerPort();
-        MongodConfig mongodConfig = MongodConfig.builder().version(Version.Main.V4_4)
-            .net(new Net("localhost", port, Network.localhostIsIPv6()))
-            .build();
-        mongodExecutable = mongodStarter.prepare(mongodConfig);
-        mongodProcess = mongodExecutable.start();
-        LOGGER.info("Embedded mongo DB started on port {} ", port);
-        AbstractIgniteDAOMongoConfig.overridingPort = port;
+        mongoDbContainer.start();
+        LOGGER.info("Embedded mongo DB started on address {} ", mongoDbContainer.getHost());
+        AbstractIgniteDAOMongoConfig.overridingPort = mongoDbContainer.getFirstMappedPort();
 
         LOGGER.info("MongoClient connecting for pre-work DB configuration...");
-        try (MongoClient mongoClient = MongoClients.create("mongodb://localhost:" + port)) {
+        try (MongoClient mongoClient = MongoClients.create(mongoDbContainer.getConnectionString())) {
             Map<String, Object> commandArguments = new BasicDBObject();
             commandArguments.put("createUser", "admin");
-            commandArguments.put("pwd", "password");
+            commandArguments.put("pwd", "dummyPass");
             String[] roles = { "readWrite" };
             commandArguments.put("roles", roles);
-            BasicDBObject command = new BasicDBObject(commandArguments);
             MongoDatabase adminDatabase = mongoClient.getDatabase("admin");
+            BasicDBObject command = new BasicDBObject(commandArguments);
             adminDatabase.runCommand(command);
         }
     }
@@ -113,11 +92,8 @@ public class EmbeddedMongoDB extends ExternalResource {
      */
     @Override
     protected void after() {
-        if (null != mongodProcess) {
-            mongodProcess.stop();
-        }
-        if (null != mongodExecutable) {
-            mongodExecutable.stop();
+        if (mongoDbContainer.isCreated()) {
+            mongoDbContainer.stop();
         }
     }
 }

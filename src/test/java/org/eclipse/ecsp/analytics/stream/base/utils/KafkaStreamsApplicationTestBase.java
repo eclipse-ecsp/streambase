@@ -68,6 +68,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.junit.ClassRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,9 +85,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
-
-
-
 /**
  * A convenient base class for integration testing kafka streams service applications.
  * The key things to do when subclassing this are a) invoke super.setup()
@@ -96,6 +94,7 @@ import java.util.function.Function;
  *
  * @author ssasidharan
  */
+@Testcontainers
 public class KafkaStreamsApplicationTestBase {
     
     /** The Constant MONGO_SERVER. */
