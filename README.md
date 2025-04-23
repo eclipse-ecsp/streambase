@@ -241,8 +241,8 @@ To connect to the MongoDB instance, the following properties need to be specifie
 ```properties
 mongodb.hosts=localhost
 mongodb.port=27017
-mongodb.username=dummyUser
-mongodb.username=dummyUser
+mongodb.username=admin
+mongodb.username=admin
 mongodb.auth.db=admin
 mongodb.name=admin
 mongodb.pool.max.size=200
