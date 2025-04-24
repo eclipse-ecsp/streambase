@@ -829,7 +829,7 @@
                         <groupId>org.eclipse.dash</groupId>
                         <artifactId>license-tool-plugin</artifactId>
                         <configuration>
-                            <skip>true</skip>
+                            <skip>false</skip>
                             <failWhenReviewNeeded>true</failWhenReviewNeeded>
                         </configuration>
                     </plugin>
