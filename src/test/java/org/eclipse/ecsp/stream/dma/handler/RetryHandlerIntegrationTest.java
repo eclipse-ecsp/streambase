@@ -83,15 +83,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-
-
 
 /**
  * class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase.
@@ -680,16 +677,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
      * @throws Exception the exception
      */
     private String setKafkaUtils() throws Exception {
-        launchApplication();
-        Thread.sleep(Constants.THREAD_SLEEP_TIME_10000);
         String deviceConnStatusEvent = "{\"EventID\": \"DeviceConnStatus\","
                 + "\"Version\": \"1.0\",\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\""
                 + ":\"eCall\"},\"MessageId\": \"1234\",\"VehicleId\": \"Vehicle12345\","
                 + "\"SourceDeviceId\": \"Device12345\"}";
-
         KafkaTestUtils.sendMessages(connStatusTopic, producerProps,
                 vehicleId.getBytes(), deviceConnStatusEvent.getBytes());
-
         Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
         return deviceConnStatusEvent;
     }
