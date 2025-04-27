@@ -83,7 +83,7 @@
 		<java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kafka.version>3.6.2</kafka.version>
-        <zookeeper.version>3.9.2</zookeeper.version>
+        <zookeeper.version>3.8.4</zookeeper.version>
         <junit.version>5.5.2</junit.version>
         <jackson.version>2.9.8</jackson.version>
         <slf4j.version>2.0.13</slf4j.version>
@@ -1242,9 +1242,9 @@
                         <phase>validate</phase>
                         <configuration>
                             <consoleOutput>true</consoleOutput>
-                            <failsOnError>false</failsOnError>
+                            <failsOnError>true</failsOnError>
                             <outputFileFormat>xml</outputFileFormat>
-                            <failOnViolation>false</failOnViolation>
+                            <failOnViolation>true</failOnViolation>
                             <violationSeverity>warning</violationSeverity>
                             <includeTestSourceDirectory>true</includeTestSourceDirectory>
                             <includeResources>true</includeResources>

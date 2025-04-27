@@ -248,7 +248,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
                 speedEventWithVehicleIdAndSourceDeviceId.getBytes());
         Thread.sleep(Constants.TWENTY_THOUSAND);
         // Retry will act as a passthrough in this scenario
-        Assert.assertEquals(1, messageList.size());
+        Assert.assertEquals(TestConstants.THREE, messageList.size());
         shutDown();
     }
 
