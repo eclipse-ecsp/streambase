@@ -131,7 +131,7 @@ public class HiveMQMqttDispatcherHealthMontiorIntegrationTest {
         DeviceMessageHeader header = new DeviceMessageHeader();
         header.withTargetDeviceId(Constants.FORCED_HEALTH_CHECK_DEVICE_ID);
         forcedCheckValue.setDeviceMessageHeader(header);
-        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/harman/dev/");
+        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/custom/dev/");
         subscribeMqttClient = MqttClient.builder().identifier(UUID.randomUUID().toString())
                 .serverHost("localhost").serverPort(Constants.INT_1883)
                 .useMqttVersion3().automaticReconnect(MqttClientAutoReconnectImpl.DEFAULT)
@@ -170,7 +170,7 @@ public class HiveMQMqttDispatcherHealthMontiorIntegrationTest {
         });
 
         Assert.assertEquals(true, mqttDispatcher.isHealthy(false));
-        Assert.assertEquals("haa/harman/dev/testDevice123/2d/test", mqttTopic);
+        Assert.assertEquals("haa/custom/dev/testDevice123/2d/test", mqttTopic);
         Assert.assertEquals(true, msgReceived);
         mqttDispatcher.close();
         subscribeMqttClient = null;

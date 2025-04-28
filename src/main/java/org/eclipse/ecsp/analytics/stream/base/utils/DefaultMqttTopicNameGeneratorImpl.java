@@ -166,7 +166,7 @@ public class DefaultMqttTopicNameGeneratorImpl implements MqttTopicNameGenerator
             }
 
             // topicNamePrefix will already have forward slash at the
-            // end.mqtt.service.topic.name.prefix=haa/harman/dev/
+            // end.mqtt.service.topic.name.prefix=haa/custom/dev/
             // IN case topicNamePrefix is empty then the topic name will be
             // vehicleId/serviceName/eventId (Note the absense of forward slash
             // at the begining

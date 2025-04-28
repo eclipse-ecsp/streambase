@@ -171,7 +171,7 @@ public class MqttDispatcherIntegrationTest {
      */
     @Test
     public void testClientConnection() throws InterruptedException, MqttException {
-        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/harman/dev/");
+        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/custom/dev/");
         TestKey key = new TestKey();
 
         /*
@@ -207,7 +207,7 @@ public class MqttDispatcherIntegrationTest {
         RetryUtils.retry(Constants.TWENTY, (v) -> {
             return mqttTopic.length() > 0 ? Boolean.TRUE : null;
         });
-        Assert.assertEquals("haa/harman/dev/test/2d/test", mqttTopic);
+        Assert.assertEquals("haa/custom/dev/test/2d/test", mqttTopic);
         Assert.assertEquals(true, msgReceived);
 
     }
