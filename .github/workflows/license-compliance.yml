@@ -1,0 +1,44 @@
+name: License Compliance
+
+on:
+  push:
+    branches: [ "*" ]
+    paths-ignore:
+      - '**/NOTICE'
+      - '**/NOTICE.md'
+      - '**/CODE_OF_CONDUCT.md'
+      - '**/CONTRIBUTING.md'
+      - '**/SECURITY.md'
+  pull_request:
+    branches: [ "*" ]
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read
+  contents: write
+
+jobs:
+  check-licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+          cache: maven
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - name: Allow dash.sh to be executed
+        run: chmod +x ./eclipse-dash/dash.sh
+      - name: Generate List of dependencies
+        run: ./eclipse-dash/dash.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+      - name: Archive DEPENDENCIES file
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: LICENSE_INFO
+          path: DEPENDENCIES
