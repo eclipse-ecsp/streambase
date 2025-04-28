@@ -191,7 +191,7 @@
 		</repository>
     </distributionManagement>
  
-    <!-- <pluginRepositories>
+    <pluginRepositories>
         <pluginRepository>
             <id>dash-licenses-releases</id>
             <url>https://repo.eclipse.org/content/repositories/dash-licenses-releases/</url>
@@ -199,7 +199,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
-    </pluginRepositories> -->
+    </pluginRepositories>
     
     <dependencies>	
 		<dependency>
@@ -1264,7 +1264,7 @@
                 </dependencies>
             </plugin>
             
-            <!-- <plugin>
+            <plugin>
                 <groupId>org.eclipse.dash</groupId>
                 <artifactId>license-tool-plugin</artifactId>
                 <version>${license-tool-plugin.version}</version>
@@ -1279,7 +1279,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin> -->
+            </plugin>
             
         </plugins>
     </build>
