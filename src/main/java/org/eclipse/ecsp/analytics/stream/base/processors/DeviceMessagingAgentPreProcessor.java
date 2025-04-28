@@ -159,7 +159,7 @@ public class DeviceMessagingAgentPreProcessor implements IgniteEventStreamProces
         RetryRecordKey retryEventKey = constructKey(retryRecordKey);
         retryEventDao.deleteFromMap(mapKey, retryEventKey, Optional.empty(),
                 InternalCacheConstants.CACHE_TYPE_RETRY_RECORD);
-        logger.debug("Deleted retry event with key {} from in-memory map", retryEventKey.convertToString());
+        logger.info("Deleted retry event with key {} from in-memory map", retryEventKey.convertToString());
     }
 
     /**
