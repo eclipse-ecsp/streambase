@@ -163,7 +163,7 @@ public class HiveMQMqttDispatcherIntegrationTest {
         RetryUtils.retry(TestConstants.TWENTY, (v) -> {
             return mqttTopic.length() > 0 ? Boolean.TRUE : null;
         });
-
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
         Assert.assertEquals("test/2d/test", mqttTopic);
         Assert.assertEquals(true, msgReceived);
         subscribeMqttClient = null;

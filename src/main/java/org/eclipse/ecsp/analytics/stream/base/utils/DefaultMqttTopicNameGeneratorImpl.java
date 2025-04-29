@@ -142,8 +142,6 @@ public class DefaultMqttTopicNameGeneratorImpl implements MqttTopicNameGenerator
          * could be either TELEMATICS or HU. Both TELEMATICS and HU can be present in the
          * vehicle, and thats why we would like to know through targetDeviceID
          * who is the recipient of this event.
-         *
-         * s
          */
 
         String topicName = null;

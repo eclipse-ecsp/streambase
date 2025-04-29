@@ -168,8 +168,9 @@ public class HiveMQMqttDispatcherHealthMontiorIntegrationTest {
         RetryUtils.retry(Constants.TWENTY, (v) -> {
             return mqttTopic.length() > 0 ? Boolean.TRUE : null;
         });
-
         Assert.assertEquals(true, mqttDispatcher.isHealthy(false));
+        Assert.assertEquals("haa/custom/dev/testDevice123/2d/test", mqttTopic);
+        Assert.assertEquals(true, msgReceived);
         mqttDispatcher.close();
         subscribeMqttClient = null;
     }
