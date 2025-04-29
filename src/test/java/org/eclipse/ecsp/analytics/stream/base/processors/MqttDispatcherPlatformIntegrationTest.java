@@ -174,7 +174,7 @@ public class MqttDispatcherPlatformIntegrationTest {
      */
     @Test
     public void testClientConnectionWithMultiplePlatforms() throws InterruptedException, MqttException {
-        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/harman/dev/");
+        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/custom/dev/");
         TestKey key = new TestKey();
 
         Optional<MqttConfig> configForPlatformOpt = pahoMqttDispatcher.getMqttConfig(platformID);
@@ -221,7 +221,7 @@ public class MqttDispatcherPlatformIntegrationTest {
         MqttClient client2 = pahoMqttDispatcher.getMqttClient(PropertyNames.DEFAULT_PLATFORMID).get();
         Assert.assertNotNull("Client for platform is null", client);
         Assert.assertNotNull("Client for default platform is null", client2);
-        Assert.assertEquals("haa/harman/dev/test/2d/test", mqttTopic);
+        Assert.assertEquals("haa/custom/dev/test/2d/test", mqttTopic);
         Assert.assertEquals(true, msgReceived);
     }
     

@@ -155,7 +155,7 @@ public class HiveMQMqttDispatcherIntegrationTopicTest {
      */
     @Test
     public void testClientConnection() throws InterruptedException {
-        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/harman/dev/");
+        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/custom/dev/");
         TestKey key = new TestKey();
         String mqttTopicToSubscribe = defaultMqttTopicNameGeneratorImpl.getMqttTopicName(key, 
                 value.getDeviceMessageHeader(), null).get();
@@ -173,7 +173,7 @@ public class HiveMQMqttDispatcherIntegrationTopicTest {
         RetryUtils.retry(Constants.TWENTY, (v) -> {
             return mqttTopic.length() > 0 ? Boolean.TRUE : null;
         });
-        Assert.assertEquals("haa/harman/dev/test/2d/test", mqttTopic);
+        Assert.assertEquals("haa/custom/dev/test/2d/test", mqttTopic);
         Assert.assertEquals(true, msgReceived);
         hiveMqMqttDispatcher.close();
         subscribeMqttClient = null;

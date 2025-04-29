@@ -180,7 +180,7 @@ public class MqttDispatcherPlatformInvalidConfigIntegrationTest {
      */
     @Test
     public void testClientConnectionWithInvalidConfig() throws InterruptedException, MqttException {
-        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/harman/dev/");
+        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/custom/dev/");
         TestKey key = new TestKey();
         String mqttTopicToSubscribe = defaultMqttTopicNameGeneratorImpl.getMqttTopicName(key, 
                 value.getDeviceMessageHeader(), null).get();
@@ -218,7 +218,7 @@ public class MqttDispatcherPlatformInvalidConfigIntegrationTest {
         RetryUtils.retry(TestConstants.TWENTY, (v) -> {
             return mqttTopic.length() > 0 ? Boolean.TRUE : null;
         });
-        Assert.assertEquals("haa/harman/dev/test/2d/test", mqttTopic);
+        Assert.assertEquals("haa/custom/dev/test/2d/test", mqttTopic);
         Assert.assertEquals(true, msgReceived);
     }
     
@@ -227,7 +227,7 @@ public class MqttDispatcherPlatformInvalidConfigIntegrationTest {
      */
     @Test
     public void testDispatchWithNoClientForPlatform() {
-        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/harman/dev/");
+        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/custom/dev/");
         TestEvent event = new TestEvent();
         event.setPlatformId(platformID);
         value = new DeviceMessage();

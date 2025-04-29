@@ -155,7 +155,7 @@ public class MqttDispatcherHealthMontiorIntegrationTest {
         DeviceMessageHeader header = new DeviceMessageHeader();
         header.withTargetDeviceId(Constants.FORCED_HEALTH_CHECK_DEVICE_ID);
         forcedCheckValue.setDeviceMessageHeader(header);
-        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/harman/dev/");
+        defaultMqttTopicNameGeneratorImpl.setTopicNamePrefix("haa/custom/dev/");
 
     }
 
@@ -202,7 +202,7 @@ public class MqttDispatcherHealthMontiorIntegrationTest {
         });
 
         Assert.assertEquals(true, mqttDispatcher.isHealthy(false));
-        Assert.assertEquals("haa/harman/dev/testDevice123/2d/test", mqttTopic);
+        Assert.assertEquals("haa/custom/dev/testDevice123/2d/test", mqttTopic);
         Assert.assertEquals(true, msgReceived);
 
     }
