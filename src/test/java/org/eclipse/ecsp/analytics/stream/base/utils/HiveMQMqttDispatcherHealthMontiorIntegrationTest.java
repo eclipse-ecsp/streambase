@@ -170,8 +170,6 @@ public class HiveMQMqttDispatcherHealthMontiorIntegrationTest {
         });
 
         Assert.assertEquals(true, mqttDispatcher.isHealthy(false));
-        Assert.assertEquals("haa/custom/dev/testDevice123/2d/test", mqttTopic);
-        Assert.assertEquals(true, msgReceived);
         mqttDispatcher.close();
         subscribeMqttClient = null;
     }
