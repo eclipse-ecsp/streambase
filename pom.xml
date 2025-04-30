@@ -109,6 +109,7 @@
         <prometheus.client.version>0.6.0</prometheus.client.version>
         <!-- Prometheus Client -->
         <!-- Sonar plugin properties -->
+	<sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
         <sonar.java.source>17</sonar.java.source>
         <sonar.java.target>17</sonar.java.target>
