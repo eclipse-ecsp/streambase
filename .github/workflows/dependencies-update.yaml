@@ -2,7 +2,7 @@ name: "Update DEPENDENCIES file"
 
 on:
   push:
-    branches: [ "*" ]
+    branches: '**'
   workflow_dispatch:
 
 jobs:

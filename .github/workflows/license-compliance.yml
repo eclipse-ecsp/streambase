@@ -2,12 +2,12 @@ name: License Compliance
 
 on:
   push:
-    branches: [ "*" ]
+    branches: '**'
     paths-ignore:
       - '**/*.md'
       - '**/*.txt'
   pull_request:
-    branches: [ "*" ]
+    branches: '**'
     paths:
       - '**/pom.xml'
       - 'pom.xml'
