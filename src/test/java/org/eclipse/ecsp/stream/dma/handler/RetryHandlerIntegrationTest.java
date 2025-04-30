@@ -386,7 +386,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
         ksProps.put(PropertyNames.SERVICE_STREAM_PROCESSORS, DMARetryTestServiceProcessor.class.getName());
         ksProps.put(PropertyNames.APPLICATION_ID, "test-sp" + System.currentTimeMillis());
         launchApplication();
-        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
+        Thread.sleep(Constants.THREAD_SLEEP_TIME_10000);
         DeviceMessage entity = getEntity();
         MqttClient client = getMqttClient(entity);
         List<String> messageList = new ArrayList<String>();
@@ -416,7 +416,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
         KafkaTestUtils.sendMessages(sourceTopicName, producerProps,
                 vehicleId.getBytes(),
                 speedEventWithVehicleIdAndSourceDeviceId.getBytes());
-        Thread.sleep(Constants.INT_20000);
+        Thread.sleep(Constants.THREAD_SLEEP_TIME_3000);
         // message will be send once to device then retried Constants.THREE
         // (Constants.THREE is value of max retry set in property file) times.
         // So, totally each message will be sent 4 times to mqtt.
