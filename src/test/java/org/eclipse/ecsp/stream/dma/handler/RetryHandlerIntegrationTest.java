@@ -205,17 +205,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
         ksProps.put(PropertyNames.APPLICATION_ID, "test-sp" + System.currentTimeMillis());
         launchApplication();
         Thread.sleep(Constants.THREAD_SLEEP_TIME_10000);
-        String deviceConnStatusEvent = "{\"EventID\": \"DeviceConnStatus\","
-                + "\"Version\": \"1.0\",\"Data\": {\"connStatus\":\"ACTIVE\","
-                + "\"serviceName\":\"eCall\"},\"MessageId\": \"1234\",\"VehicleId\":"
-                + " \"Vehicle12345\",\"SourceDeviceId\": \"Device12345\"}";
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps,
-                vehicleId.getBytes(), deviceConnStatusEvent.getBytes());
-        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
-        IgniteEventImpl retryEvent = new RetryTestEvent();
-        DeviceMessage entity = new DeviceMessage(transformer.toBlob(retryEvent),
-                Version.V1_0, retryEvent, sourceTopicName, Constants.THREAD_SLEEP_TIME_60000);
-
+        DeviceMessage entity = getEntity();
         MqttClient client = getMqttClient(entity);
         List<String> messageList = new ArrayList<String>();
         client.setCallback(new MqttCallback() {
@@ -245,9 +235,9 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
         KafkaTestUtils.sendMessages(sourceTopicName, producerProps,
                 vehicleId.getBytes(),
                 speedEventWithVehicleIdAndSourceDeviceId.getBytes());
-        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
+        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
         // Retry will act as a passthrough in this scenario
-        Assert.assertEquals(TestConstants.THREE, messageList.size());
+        Assert.assertEquals(TestConstants.ONE, messageList.size());
         shutDown();
     }
 
@@ -396,19 +386,8 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
         ksProps.put(PropertyNames.SERVICE_STREAM_PROCESSORS, DMARetryTestServiceProcessor.class.getName());
         ksProps.put(PropertyNames.APPLICATION_ID, "test-sp" + System.currentTimeMillis());
         launchApplication();
-        Thread.sleep(Constants.THREAD_SLEEP_TIME_10000);
-        String deviceConnStatusEvent = "{\"EventID\": \"DeviceConnStatus\", \"Version\": "
-                + "\"1.0\",\"Data\": {\"connStatus\":\"ACTIVE\", \"serviceName\":\"eCall\"},"
-                + "\"MessageId\": \"1234\",\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12345\"}";
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps,
-                vehicleId.getBytes(), deviceConnStatusEvent.getBytes());
         Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
-        /*
-         * get a client to subscribe to the required topic topic
-         */
-        IgniteEventImpl retryEvent = new RetryTestEvent();
-        DeviceMessage entity = new DeviceMessage(transformer.toBlob(retryEvent),
-                Version.V1_0, retryEvent, sourceTopicName, Constants.THREAD_SLEEP_TIME_60000);
+        DeviceMessage entity = getEntity();
         MqttClient client = getMqttClient(entity);
         List<String> messageList = new ArrayList<String>();
         client.setCallback(new MqttCallback() {
@@ -434,11 +413,10 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
                 + "\"test_Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":20.0},"
                 + "\"MessageId\":\"1237\",\"BizTransactionId\": \"Biz1237\",\"VehicleId\":"
                 + " \"Vehicle12345\",\"SourceDeviceId\": \"Device12345\"}";
-        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
         KafkaTestUtils.sendMessages(sourceTopicName, producerProps,
                 vehicleId.getBytes(),
                 speedEventWithVehicleIdAndSourceDeviceId.getBytes());
-        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
+        Thread.sleep(Constants.INT_20000);
         // message will be send once to device then retried Constants.THREE
         // (Constants.THREE is value of max retry set in property file) times.
         // So, totally each message will be sent 4 times to mqtt.
