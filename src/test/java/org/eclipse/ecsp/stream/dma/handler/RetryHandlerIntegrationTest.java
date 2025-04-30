@@ -237,16 +237,15 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             }
         });
-
         String speedEventWithVehicleIdAndSourceDeviceId = "{\"EventID\": \"Speed\","
                 + "\"Version\": \"1.0\",\"Data\": {\"value\":20.0},\"MessageId\":\"1237\","
                 + "\"BizTransactionId\": \"Biz1237\",\"VehicleId\": \"Vehicle12345\","
                 + "\"SourceDeviceId\": \"Device12345\"}";
-        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
+        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
         KafkaTestUtils.sendMessages(sourceTopicName, producerProps,
                 vehicleId.getBytes(),
                 speedEventWithVehicleIdAndSourceDeviceId.getBytes());
-        Thread.sleep(Constants.TWENTY_THOUSAND);
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
         // Retry will act as a passthrough in this scenario
         Assert.assertEquals(TestConstants.THREE, messageList.size());
         shutDown();
@@ -431,15 +430,15 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             }
         });
-
         String speedEventWithVehicleIdAndSourceDeviceId = "{\"EventID\": "
                 + "\"test_Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":20.0},"
                 + "\"MessageId\":\"1237\",\"BizTransactionId\": \"Biz1237\",\"VehicleId\":"
                 + " \"Vehicle12345\",\"SourceDeviceId\": \"Device12345\"}";
+        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
         KafkaTestUtils.sendMessages(sourceTopicName, producerProps,
                 vehicleId.getBytes(),
                 speedEventWithVehicleIdAndSourceDeviceId.getBytes());
-        Thread.sleep(Constants.INT_20000);
+        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
         // message will be send once to device then retried Constants.THREE
         // (Constants.THREE is value of max retry set in property file) times.
         // So, totally each message will be sent 4 times to mqtt.
