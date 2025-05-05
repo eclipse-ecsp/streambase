@@ -409,7 +409,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             }
         });
-        String speedEventWithVehicleIdAndSourceDeviceId = "{\"EventID\": \"Speed\","
+        String speedEventWithVehicleIdAndSourceDeviceId = "{\"EventID\": \"test_Speed\","
                 + "\"Version\": \"1.0\",\"Data\": {\"value\":20.0},\"MessageId\":"
                 + "\"1237\",\"BizTransactionId\": \"Biz1237\",\"VehicleId\": "
                 + "\"Vehicle12345\",\"SourceDeviceId\": \"Device12345\"}";
