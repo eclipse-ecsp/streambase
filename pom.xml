@@ -603,6 +603,16 @@
             <groupId>org.eclipse.ecsp</groupId>
             <artifactId>nosql-dao</artifactId>
             <version>${nosql.dao.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.ecsp</groupId>
+                    <artifactId>utils</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.ecsp</groupId>
+                    <artifactId>entities</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.eclipse.ecsp</groupId>

@@ -387,7 +387,10 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
         ksProps.put(PropertyNames.APPLICATION_ID, "test-sp" + System.currentTimeMillis());
         launchApplication();
         Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
-        DeviceMessage entity = getEntity();
+        getEntity();
+        IgniteEventImpl retryFallbackEvent = new RetryFallbackTtlTestEvent();
+        DeviceMessage entity = new DeviceMessage(transformer.toBlob(retryFallbackEvent),
+                Version.V1_0, retryFallbackEvent, sourceTopicName, Constants.THREAD_SLEEP_TIME_60000);
         MqttClient client = getMqttClient(entity);
         List<String> messageList = new ArrayList<String>();
         client.setCallback(new MqttCallback() {
