@@ -103,8 +103,11 @@
         <spring.version>6.1.14</spring.version>
         <embedded.mongodb>3.4.3</embedded.mongodb>
         <junit4.version>4.13.2</junit4.version>
-        <nosql.dao.version>1.1.0</nosql.dao.version>
+        <nosql.dao.version>1.1.1</nosql.dao.version>
         <cache.enabler.version>1.0.0</cache.enabler.version>
+        <transformers.version>1.0.0</transformers.version>
+        <utils.version>1.1.1</utils.version>
+        <entities.version>1.1.1</entities.version>
         <scala.version>2.13.14</scala.version>
         <curator.version>5.3.0</curator.version>
         <redis.jar.version>2.6.0.5</redis.jar.version>
@@ -618,6 +621,55 @@
             <groupId>org.eclipse.ecsp</groupId>
             <artifactId>cache-enabler</artifactId>
             <version>${cache.enabler.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.ecsp</groupId>
+                    <artifactId>transformers</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.ecsp</groupId>
+                    <artifactId>utils</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.ecsp</groupId>
+                    <artifactId>entities</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.ecsp</groupId>
+            <artifactId>transformers</artifactId>
+            <version>${transformers.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.ecsp</groupId>
+                    <artifactId>utils</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.ecsp</groupId>
+                    <artifactId>entities</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.ecsp</groupId>
+            <artifactId>utils</artifactId>
+            <version>${utils.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.ecsp</groupId>
+                    <artifactId>entities</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.ecsp</groupId>
+            <artifactId>entities</artifactId>
+            <version>${entities.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
