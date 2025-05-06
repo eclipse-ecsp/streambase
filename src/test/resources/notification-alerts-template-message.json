@@ -1,0 +1,21 @@
+{
+  "LowFuel_push": "Low fuel detected. Current fuel level is ${Data.fuelLevel}%.",
+  "GeoFence_push_out": "Your vehicle is outside of the set boundary.",
+  "GeoFence_push_in": "Your vehicle is back inside the set boundary.",
+  "Collision_push": "Your vehicle got an accident at location http://maps.google.com/maps?q=loc:${Data.Latitude},${Data.Longitude} at speed ${Data.VehicleSpeed} ${Data.VehicleSpeedUnit} Time is ${Timestamp}.",
+  "Collision_sms": "Your vehicle got an accident at location http://maps.google.com/maps?q=loc:${Data.Latitude},${Data.Longitude} at speed ${Data.VehicleSpeed} ${Data.VehicleSpeedUnit} Time is ${Timestamp}.",
+  "DTCStored_push_set": "A problem has been detected with your vehicle. Identified as:${DTC_LIST}.",
+  "DTCStored_push_cleared": "One or more problems  (${DTC_LIST}) have been fixed.",
+  "OverSpeeding_push": "Your vehicle has gone over the speed limit, at ${Data.speed} km/hr.",
+  "GeoFence_valet_push_in": "Your vehicle is back inside the valet boundary.",
+  "GeoFence_valet_push_out": "Your vehicle has gone outside of the valet boundary.",
+  "GeoFence_generic_push_out": "Your vehicle is outside of the ${Data.name} boundary.",
+  "GeoFence_generic_push_in": "Your vehicle is back inside the ${Data.name} boundary.",
+  "CurfewViolation_push": "Your vehicle is being used past curfew.",
+  "Idling_push": "Your vehicle has been idling for ${Data.duration} minutes.",
+  "Tow_push": "Your vehicle is being towed from latitude={Data.latitude},longitude=${Data.longitude}.",
+  "GeoFence_privatelocation_push_out": "Your vehicle is back outside of the ${Data.name} boundary.",
+  "GeoFence_privatelocation_push_in": "Your vehicle has entered the ${Data.name} boundary.",
+  "DongleDetached_push": "The dongle has been disconnected from your vehicle.",
+  "DocumentExpiry_push": "Your ${Data.DocumentName} document will get expire in ${Data.ExpiryDate} day(s)."
+}
