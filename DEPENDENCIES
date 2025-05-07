@@ -6,7 +6,7 @@ maven/mavencentral/com.esotericsoftware/kryo/5.6.0, BSD-3-Clause, approved, clea
 maven/mavencentral/com.esotericsoftware/minlog/1.3.1, BSD-2-Clause, approved, CQ9247
 maven/mavencentral/com.esotericsoftware/reflectasm/1.11.9, BSD-3-Clause, approved, #6835
 maven/mavencentral/com.fasterxml.jackson.core/jackson-annotations/2.13.5, Apache-2.0, approved, clearlydefined
-maven/mavencentral/com.fasterxml.jackson.core/jackson-core/2.15.3, , approved, #15194
+maven/mavencentral/com.fasterxml.jackson.core/jackson-core/2.15.3, Apache-2.0 AND MIT AND BSD-2-Clause, approved, #15194
 maven/mavencentral/com.fasterxml.jackson.core/jackson-databind/2.13.5, Apache-2.0, approved, #2134
 maven/mavencentral/com.fasterxml.jackson.dataformat/jackson-dataformat-csv/2.13.5, Apache-2.0, approved, clearlydefined
 maven/mavencentral/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml/2.17.1, Apache-2.0, approved, #13669
