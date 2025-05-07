@@ -46,5 +46,12 @@ import org.apache.kafka.streams.KafkaStreams.State;
  * {@link org.apache.kafka.streams.KafkaStreams}.
  */
 public interface KafkaStateAgentListener {
+
+    /**
+     * Callback method to handle state changes in Kafka Streams.
+     *
+     * @param newState the new state of the Kafka Streams instance
+     * @param oldState the previous state of the Kafka Streams instance
+     */
     void onChange(final State newState, final State oldState);
 }

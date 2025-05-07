@@ -45,5 +45,11 @@ package org.eclipse.ecsp.analytics.stream.base;
  * @author ssasidharan
  */
 public interface TickListener {
+
+    /**
+     * Invoked when a tick event occurs.
+     *
+     * @param seconds the number of seconds since the last tick
+     */
     void tick(long seconds);
 }

@@ -47,6 +47,11 @@ import java.util.List;
  **/
 public interface CacheBackedInMemoryBatchCompleteCallBack {
 
+    /**
+     * Callback method invoked after the completion of processing a batch of records in the in-memory cache.
+     *
+     * @param processedRecords A list of objects representing the records that were processed in the batch.
+     */
     public void batchCompleted(List<Object> processedRecords);
 
 }
