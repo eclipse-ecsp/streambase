@@ -137,12 +137,9 @@ public class HarmanRocksDBMetricsExporter {
     }
 
     /**
-     * This method fetches each metric name one by one in
-     * {@link HarmanRocksDBMetricsExporter#rocksDBMetricsList} and gets its value from
+     * This method fetches each metric name one by one and gets its value from
      * the RocksDB's instance that's been initialized and opened in {@code HarmanRocksDBStore}
-     * The value fetched above is then set to the corresponding Prometheus guage by the same name as in
-     * {@link HarmanRocksDBMetricsExporter#rocksDBMetricsList}.
-     * 
+     * The value fetched above is then set to the corresponding Prometheus guage by the same name.
      */
     @Scheduled(fixedDelayString = "${" + PropertyNames.ROCKSDB_METRICS_THREAD_FREQUENCY_MS + "}",
             initialDelayString = "${" + PropertyNames.ROCKSDB_METRICS_THREAD_INITIAL_DELAY_MS + "}")

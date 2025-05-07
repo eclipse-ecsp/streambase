@@ -119,7 +119,7 @@ import static org.eclipse.ecsp.analytics.stream.base.KafkaStreamsProcessorContex
  *         The key type
  * @param <V>
  *         The value type
- * @see org.apache.kafka.streams.state.Stores#create(String)
+ * @see org.apache.kafka.streams.state.Stores
  */
 public class HarmanRocksDBStore<K, V> implements KeyValueStore<K, V>, BatchWritingStore {
 

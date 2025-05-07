@@ -343,7 +343,7 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
      *
      * 1. No data exists for this VIN in in-memory map.
      *
-     * 2. If multiple devices are associated with a VIN & data exists for
+     * 2. If multiple devices are associated with a VIN and data exists for
      * this VIN in in-memory but not for this targetDeviceId.
      *
      * Eg. Suppose vehicleId = vin123 and devices associated are d1 and d2.
@@ -356,7 +356,8 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
      *
      * vin123 = {d1=ACTIVE,d2=INACTIVE}
      *
-     * Check {@link DefaultDeviceConnectionStatusRetriever#getConnectionStatusData
+     * Check {@link
+     * org.eclipse.ecsp.analytics.stream.base.utils.DefaultDeviceConnectionStatusRetriever#getConnectionStatusData
      * (String, String, String)} for more on how it fetches data from
      * the third party API.
      * </P>

@@ -902,7 +902,7 @@ public class PropertyNames {
     public static final String KAFKA_HEADERS_ENABLED = "kafka.headers.enabled";
     
     /**
-     * RDNG 171775 & RTC 503148 Expose RocksDB metrics to Prometheus.
+     * RDNG 171775 and RTC 503148 Expose RocksDB metrics to Prometheus.
      */
     public static final String ROCKSDB_METRICS_ENABLED = "rocksdb.metrics.enabled";
     
@@ -916,7 +916,7 @@ public class PropertyNames {
     public static final String ROCKSDB_METRICS_THREAD_FREQUENCY_MS = "rocksdb.metrics.thread.frequency.ms";
     
     /**
-     * RDNG 171859 & RTC 525171 Report internal cache metrics to Prometheus .
+     * RDNG 171859 and RTC 525171 Report internal cache metrics to Prometheus .
      */
     public static final String INTERNAL_METRICS_ENABLED = "internal.metrics.enabled";
 

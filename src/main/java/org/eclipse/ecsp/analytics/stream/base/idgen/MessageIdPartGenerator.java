@@ -43,5 +43,12 @@ package org.eclipse.ecsp.analytics.stream.base.idgen;
  * interface {@link MessageIdPartGenerator}.
  */
 public interface MessageIdPartGenerator {
+
+    /**
+     * Generates a part of the message ID based on the provided service name.
+     *
+     * @param serviceName the name of the service for which the ID part is generated
+     * @return a string representing the generated ID part
+     */
     public String generateIdPart(String serviceName);
 }

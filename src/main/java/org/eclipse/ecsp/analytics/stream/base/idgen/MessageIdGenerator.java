@@ -43,5 +43,12 @@ package org.eclipse.ecsp.analytics.stream.base.idgen;
  * Interface for generating the IDs for the events coming into stream-base library.
  */
 public interface MessageIdGenerator {
+
+    /**
+     * Generates a unique message ID for the given service name.
+     *
+     * @param serviceName the name of the service for which the message ID is generated
+     * @return a unique message ID as a String
+     */
     public String generateUniqueMsgId(String serviceName);
 }
