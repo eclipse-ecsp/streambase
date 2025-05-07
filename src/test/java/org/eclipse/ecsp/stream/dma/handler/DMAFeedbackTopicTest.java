@@ -83,9 +83,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 @EnableRuleMigrationSupport
 @TestPropertySource("/dma-connectionstatus-handler-test.properties")
 public class DMAFeedbackTopicTest extends KafkaStreamsApplicationTestBase {
-
-    /** The Constant LOGGER. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(DMAFeedbackTopicTest.class);
     
     /** The source topic name. */
     private static String sourceTopicName;

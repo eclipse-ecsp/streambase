@@ -765,7 +765,6 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
         @Override
         public void process(Record<byte[], byte[]> kafkaRecord) {
             objectStore.put(new String(kafkaRecord.key()), new String(kafkaRecord.value()));
-            String value = String.valueOf(objectStore.get(new String(kafkaRecord.key())));
             spc.forward(new Record<>(new String(kafkaRecord.key()),
                     new String(kafkaRecord.value()), System.currentTimeMillis()));
         }
@@ -943,9 +942,6 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
     @Component
     public static final class IgniteCacheTestProcessor implements StreamProcessor<byte[], byte[], byte[], byte[]> {
         
-        /** The spc. */
-        private StreamProcessingContext<byte[], byte[]> spc;
-        
         /** The config. */
         private Properties config;
         
@@ -971,7 +967,6 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
         public void init(StreamProcessingContext<byte[], byte[]> spc) {
             Assert.assertNotNull(config);
             Assert.assertFalse(config.isEmpty());
-            this.spc = spc;
         }
 
         /**

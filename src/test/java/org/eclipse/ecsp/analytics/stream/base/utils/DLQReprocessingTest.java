@@ -46,7 +46,6 @@ import org.eclipse.ecsp.domain.IgniteExceptionDataV1_1;
 import org.eclipse.ecsp.domain.SpeedV1_0;
 import org.eclipse.ecsp.domain.Version;
 import org.eclipse.ecsp.entities.IgniteEventImpl;
-import org.eclipse.ecsp.transform.GenericIgniteEventTransformer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -102,9 +101,6 @@ public class DLQReprocessingTest<K, V> {
     /** The service context. */
     private Map<String, Object> serviceContext;
 
-    /** The transformer. */
-    private GenericIgniteEventTransformer transformer;
-
     /** The key. */
     private K key;
 
@@ -139,7 +135,6 @@ public class DLQReprocessingTest<K, V> {
         value = new IgniteEventImpl();
         igniteEventImpl = new IgniteEventImpl();
         igniteExceptionData = new IgniteExceptionDataV1_1();
-        transformer = new GenericIgniteEventTransformer();
         key = (K) new String("key");
         internalException = new RuntimeException(deatiledExceptionMessage);
         retryableIgniteBaseException = new IgniteBaseException(exceptionMessage, true, internalException, 

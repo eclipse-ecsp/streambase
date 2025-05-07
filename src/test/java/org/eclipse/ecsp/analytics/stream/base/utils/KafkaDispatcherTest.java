@@ -237,9 +237,9 @@ public class KafkaDispatcherTest {
     public void testSetNextHandler() {
         DeviceMessageHandler handler = new DefaultPostDispatchHandler();
         ReflectionTestUtils.setField(dispatcher, "dmaPostDispatchHandler", handler);
-        DeviceMessageHandler postDispatchHandler = (DeviceMessageHandler) ReflectionTestUtils.getField(dispatcher,
+        DeviceMessageHandler dmPostDispatchHandler = (DeviceMessageHandler) ReflectionTestUtils.getField(dispatcher,
                 "dmaPostDispatchHandler");
-        assertNotNull(postDispatchHandler);
+        assertNotNull(dmPostDispatchHandler);
     }
 
     /**

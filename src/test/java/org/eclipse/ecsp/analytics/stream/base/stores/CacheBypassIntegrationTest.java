@@ -49,12 +49,6 @@ public class CacheBypassIntegrationTest extends KafkaStreamsApplicationTestBase 
     /** The mutation id. */
     private Optional<MutationId> mutationId = Optional.empty();
     
-    /** The id. */
-    private String id = "test_id";
-    
-    /** The queue. */
-    private BlockingQueue<CacheEntity> queue;
-    
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(CacheBypassIntegrationTest.class);
 
@@ -91,7 +85,6 @@ public class CacheBypassIntegrationTest extends KafkaStreamsApplicationTestBase 
     @Before
     public void setup() throws Exception, MqttException {
         super.setup();
-        queue = new LinkedBlockingDeque<CacheEntity>();
     }
 
     /**
@@ -223,7 +216,6 @@ public class CacheBypassIntegrationTest extends KafkaStreamsApplicationTestBase 
     public void testCacheBypassIfRedisUnavailable() throws Exception {
         RedisServer408 redis = (RedisServer408) ReflectionTestUtils.getField(redisServer, "redis");
         redis.stop();
-        //bypass.setup(id);
         for (int i = 0; i < TestConstants.TWO; i++) {
             CacheEntity<StringKey, IgniteEventImpl> entityi = new CacheEntity<>();
             IgniteEventImpl eventi = new IgniteEventImpl();
@@ -274,7 +266,6 @@ public class CacheBypassIntegrationTest extends KafkaStreamsApplicationTestBase 
     public void testCacheBypassWithLoadIfRedisUnavailable() throws Exception {
         RedisServer408 redis = (RedisServer408) ReflectionTestUtils.getField(redisServer, "redis");
         redis.stop();
-        //bypass.setup(id);
         startWorkerThreads();
         Thread.sleep(TestConstants.LONG_11000);
         redis.start();

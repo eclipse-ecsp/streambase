@@ -260,9 +260,6 @@ public class DLQRetryHandlerTest extends KafkaStreamsApplicationTestBase {
      */
     public static final class DLQServiceProcessor implements
             StreamProcessor<IgniteKey<?>, IgniteEvent, IgniteKey<?>, IgniteEvent> {
-        
-        /** The spc. */
-        private StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc;
 
         /**
          * Inits the.
@@ -271,7 +268,6 @@ public class DLQRetryHandlerTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void init(StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc) {
-            this.spc = spc;
         }
 
         /**
@@ -471,9 +467,6 @@ public class DLQRetryHandlerTest extends KafkaStreamsApplicationTestBase {
      */
     public static final class DLQReprocessingMaxRetryServiceProcessor
             implements StreamProcessor<IgniteKey<?>, IgniteEvent, IgniteKey<?>, IgniteEvent> {
-        
-        /** The spc. */
-        private StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc;
 
         /**
          * Inits the.
@@ -482,7 +475,6 @@ public class DLQRetryHandlerTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void init(StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc) {
-            this.spc = spc;
 
         }
 
@@ -834,9 +826,6 @@ public class DLQRetryHandlerTest extends KafkaStreamsApplicationTestBase {
         /** The Constant LOGGER. */
         private static final Logger LOGGER = LoggerFactory.getLogger(DLQReprocessingPostProcessorTwo.class);
         
-        /** The spc. */
-        private StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc;
-        
         /** The count. */
         private static int count;
 
@@ -847,7 +836,6 @@ public class DLQRetryHandlerTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void init(StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc) {
-            this.spc = spc;
 
         }
 

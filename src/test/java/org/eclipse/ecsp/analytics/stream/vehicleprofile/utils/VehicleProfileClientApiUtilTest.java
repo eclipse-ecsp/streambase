@@ -112,7 +112,7 @@ public class VehicleProfileClientApiUtilTest {
     @Test
     public void testAppendToUrl() {
         String vehicleId = "vehicle1234";
-        String expectedUrl = "http://vehicle-profile-api-int-svc:8080/v1.0/vehicles?clientId=" + vehicleId;
+        String expectedUrl;
         String actualUrl = "";
 
         String urlWithoutForwardSlash = "http://vehicle-profile-api-int-svc:8080/v1.0/vehicles?clientId=";

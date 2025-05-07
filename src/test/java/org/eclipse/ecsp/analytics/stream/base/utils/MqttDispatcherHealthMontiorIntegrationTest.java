@@ -167,11 +167,11 @@ public class MqttDispatcherHealthMontiorIntegrationTest {
      */
     @Test
     public void testMqttHealthMonitorIntegration() throws MqttException, InterruptedException {
-        MqttClient client = pahoMqttDispatcher.getMqttClient(PropertyNames.DEFAULT_PLATFORMID).get();
+        MqttClient mqttClient = pahoMqttDispatcher.getMqttClient(PropertyNames.DEFAULT_PLATFORMID).get();
         String mqttTopicToSubscribe = defaultMqttTopicNameGeneratorImpl.getMqttTopicName(forcedCheckKey, 
                 forcedCheckValue.getDeviceMessageHeader(), null).get();
-        client.subscribe(mqttTopicToSubscribe);
-        client.setCallback(new MqttCallback() {
+        mqttClient.subscribe(mqttTopicToSubscribe);
+        mqttClient.setCallback(new MqttCallback() {
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
                 LOGGER.error("Msg received:{} on topic:{}", message, topic);
@@ -189,7 +189,6 @@ public class MqttDispatcherHealthMontiorIntegrationTest {
 
             }
         });
-
         Assert.assertEquals(true, mqttDispatcher.isHealthy(false));
         RetryUtils.retry(Constants.TWENTY, (v) -> {
             return mqttTopic.length() > 0 ? Boolean.TRUE : null;

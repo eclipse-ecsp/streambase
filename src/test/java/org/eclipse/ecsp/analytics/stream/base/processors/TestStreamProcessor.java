@@ -142,7 +142,7 @@ public class TestStreamProcessor implements IgniteEventStreamProcessor {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Key={},Value={}", key.toString(), value.toString());
+            LOGGER.debug("Key={},Value={}", key, value);
         }
 
         // do processing and then forward the event.

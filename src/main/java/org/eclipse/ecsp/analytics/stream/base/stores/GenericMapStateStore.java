@@ -66,9 +66,6 @@ public class GenericMapStateStore<K, V> extends GenericMapStateStoreBase<K, V, C
     
     /** The Constant STORE_NAME. */
     private static final String STORE_NAME = "GenericMapStateStoreName";
-    
-    /** The logger. */
-    private static IgniteLogger LOGGER = IgniteLoggerFactory.getLogger(GenericMapStateStore.class);
 
     /**
      * Name.

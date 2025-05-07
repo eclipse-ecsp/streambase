@@ -161,17 +161,15 @@ public class DataUsageMetricsTest extends KafkaStreamsApplicationTestBase {
                         .toBlob(new IgniteStringKey("dummyId")), transformer.toBlob(event));
 
         List<String[]> messages = KafkaTestUtils.readMessages(dataUsageTestTopicName, consumerProps, 1);
-        for (int i = 0; i < messages.size(); i++) {
-            IgniteEvent igniteEvent = transformer.fromBlob(messages.get(i)[1].getBytes(),
+        for (int k = 0; k < messages.size(); k++) {
+            IgniteEvent igniteEvent = transformer.fromBlob(messages.get(k)[1].getBytes(),
                     Optional.ofNullable(null));
             DataUsageEventDataV1_0 testDataUsageEventData
                     = (DataUsageEventDataV1_0) igniteEvent.getEventData();
             Assert.assertEquals((double) transformer.toBlob(event).length / Constants.BYTE_1024,
                     testDataUsageEventData.getPayLoadSize(), 0.0);
         }
-
         shutDownApplication();
-
     }
 
     /**

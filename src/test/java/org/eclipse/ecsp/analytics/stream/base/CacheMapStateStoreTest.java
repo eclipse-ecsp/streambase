@@ -106,8 +106,6 @@ public class CacheMapStateStoreTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        //cache = Mockito.mock(IgniteCacheRedisImpl.class);
-
         igniteEvent = new IgniteEventImpl();
         igniteEvent.setEventId("test");
         stringKey = new StringKey(key);
@@ -272,7 +270,6 @@ public class CacheMapStateStoreTest {
     @Test
     public void testPutToMapIfAbsentValuePresent() {
         CachedMapStateStore<StringKey, IgniteEventImpl> storeMock = Mockito.mock(CachedMapStateStore.class);
-        IgniteCache cacheMock = Mockito.mock(IgniteCache.class);
         storeMock.setPersistInIgniteCache(true);
         Mockito.when(storeMock.putIfAbsent(stringKey, igniteEvent)).thenReturn(igniteEvent);
         storeMock.putToMapIfAbsent("prefix", stringKey, igniteEvent, Optional.empty(), "dummy_cache");
@@ -388,7 +385,6 @@ public class CacheMapStateStoreTest {
         pairs.put(stringKey.convertToString(), igniteEvent);
         Mockito.when(cache.getMapOfEntities(Mockito.any(GetMapOfEntitiesRequest.class))).thenReturn(pairs);
         store.deleteFromMap("prefix", stringKey, Optional.empty(), "dummy_cache");
-        ArgumentCaptor<GetMapOfEntitiesRequest> argument = ArgumentCaptor.forClass(GetMapOfEntitiesRequest.class);
         IgniteEventImpl actual = store.get(stringKey);
         Assert.assertNull(actual);
     }
@@ -399,7 +395,6 @@ public class CacheMapStateStoreTest {
     @Test
     public void testputIfAbsent() {
         CachedMapStateStore<StringKey, IgniteEventImpl> storeMock = Mockito.mock(CachedMapStateStore.class);
-        IgniteCache cacheMock = Mockito.mock(IgniteCache.class);
         storeMock.putIfAbsent(null, null);
         Mockito.when(storeMock.putIfAbsent(stringKey, igniteEvent)).thenReturn(igniteEvent);
         storeMock.putToMapIfAbsent("prefix", stringKey, igniteEvent, Optional.empty(), "dummy_cache");

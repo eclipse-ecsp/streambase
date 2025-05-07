@@ -39,14 +39,12 @@
 
 package org.eclipse.ecsp.analytics.stream.base.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.processor.api.Record;
 import org.eclipse.ecsp.analytics.stream.base.Launcher;
 import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
-import org.eclipse.ecsp.analytics.stream.base.StreamBaseConstant;
 import org.eclipse.ecsp.analytics.stream.base.StreamProcessingContext;
 import org.eclipse.ecsp.analytics.stream.base.StreamProcessor;
 import org.eclipse.ecsp.analytics.stream.base.constants.TestConstants;
@@ -104,12 +102,6 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
     
     /** The vehicle id. */
     private static String vehicleId = "vehicle-1";
-    
-    /** The service name. */
-    private static String serviceName = "Ecall";
-    
-    /** The dql topic name. */
-    private static String dqlTopicName = "ecall" + StreamBaseConstant.DLQ_TOPIC_POSFIX;
 
     /** The value ser. */
     private static IngestionSerializerFstImpl valueSer = new IngestionSerializerFstImpl();
@@ -120,12 +112,6 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
     /** The Constant MONGO_SERVER. */
     @ClassRule
     public static final EmbeddedMongoDB MONGO_SERVER = new EmbeddedMongoDB();
-
-    /** The mapper. */
-    private ObjectMapper mapper = new ObjectMapper();
-
-    /** The toggle DLQ. */
-    private static boolean toggleDLQ = true;
 
     /**
      * Setup.
@@ -368,7 +354,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void process(Record<IgniteKey<?>, IgniteEvent> kafkaRecord) {
-            LOGGER.info("DLQReprocessingPreProcessorOne : Process {}");
+            LOGGER.info("DLQReprocessingPreProcessorOne : Process {}, {}", kafkaRecord.key(), kafkaRecord.value());
             count++;
             this.spc.forward(kafkaRecord);
 
@@ -453,7 +439,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void process(Record<IgniteKey<?>, IgniteEvent> kafkaRecord) {
-            LOGGER.info("DLQReprocessingPreProcessorTwo : Process{}");
+            LOGGER.info("DLQReprocessingPreProcessorTwo : Process {}, {}", kafkaRecord.key(), kafkaRecord.value());
             count++;
             this.spc.forward(kafkaRecord);
 
@@ -539,7 +525,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void process(Record<IgniteKey<?>, IgniteEvent> kafkaRecord) {
-            LOGGER.info("DLQReprocessingPostProcessorOne : Process{}");
+            LOGGER.info("DLQReprocessingPostProcessorOne : Process {}, {}", kafkaRecord.key(), kafkaRecord.value());
             count++;
             this.spc.forward(kafkaRecord);
 
@@ -591,9 +577,6 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
         /** The Constant LOGGER. */
         private static final Logger LOGGER = LoggerFactory.getLogger(DLQReprocessingPostProcessorTwo.class);
         
-        /** The spc. */
-        private StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc;
-        
         /** The count. */
         private static int count;
 
@@ -604,7 +587,6 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void init(StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc) {
-            this.spc = spc;
 
         }
 
@@ -625,7 +607,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void process(Record<IgniteKey<?>, IgniteEvent> kafkaRecord) {
-            LOGGER.info("DLQReprocessingPostProcessorTwo : Process{}");
+            LOGGER.info("DLQReprocessingPostProcessorTwo : Process {}, {}", kafkaRecord.key(), kafkaRecord.value());
             count++;
 
         }

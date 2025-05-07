@@ -423,10 +423,6 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
 
         KafkaTestUtils.sendMessages(inTopicName, producerProps,
                 KEY_SER.toBlob(new IgniteStringKey("dummy_id")), transformer.toBlob(event2));
-
-        List<String[]> messages = KafkaTestUtils.getMessages(outTopicName,
-                consumerProps, Constants.THREE, Constants.THREAD_SLEEP_TIME_5000);
-
         String metricsGet = sendGET("http://localhost:" + prometheusExportPort);
         String liveThreadMetric = metricsGet.substring(metricsGet.indexOf("service_data_consumption_count{svc="));
         liveThreadMetric = liveThreadMetric.substring(0, liveThreadMetric.indexOf("service_data_consumption_sum{svc="));

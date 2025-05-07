@@ -96,7 +96,6 @@ public class DeviceStatusAPIInMemoryServiceImplTest {
      */
     @Test
     public void testGetDeviceIdStatusWhenStatusNotPresentInMemory() {
-        VehicleIdDeviceIdStatus vehicleIdDeviceIdStatus = new VehicleIdDeviceIdStatus();
         Assert.assertNull(deviceStatusAPIInMemoryService.get(key));
     }
 

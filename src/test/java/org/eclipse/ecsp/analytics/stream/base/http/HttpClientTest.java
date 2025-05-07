@@ -189,8 +189,6 @@ public class HttpClientTest extends KafkaStreamsApplicationTestBase {
      */
     @Test
     public void testHttpClientGETWithRetries() {
-        MockResponse mockResponse = new MockResponse();
-
         Map<String, String> headers = new HashMap<>();
         headers.put("sessionId", "Session1234");
         headers.put("clientRequestId", "Request1234");

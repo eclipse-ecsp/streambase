@@ -70,10 +70,6 @@ public class TestKryo {
         Kryo k = new Kryo();
         k.setDefaultSerializer(CompatibleFieldSerializer.class);
         k.setCopyReferences(false);
-        // Output output = new Output(1024, -1);
-        // kryo.writeClassAndObject(output, data);
-        // return output.toBytes();
-
         Name n = null;
         ByteArrayOutputStream baos = new ByteArrayOutputStream(1 * Constants.BYTE_1024 * Constants.BYTE_1024);
         Output output = new Output(baos);

@@ -123,9 +123,6 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
     }
-
-    /** The interval. */
-    private long interval = 500L;
     
     /**
      * Sets up the environment for this test class before each test case run. 
@@ -257,7 +254,6 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
          */
         KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
                 deviceConnStatusEvent.getBytes());
-        actual = new ConcurrentHashSet<String>();
         actual = retryWithException(TestConstants.TWENTY, getStatus);
 
         Assert.assertEquals(expectedValue, actual);
@@ -294,8 +290,7 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_3000);
         KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(),
                 speedEventWithVehicleIdAndSourceDeviceId.getBytes());
-        String actualMsgRec = retryWithException(TestConstants.THIRTY, x -> testClient.getMsgReceived());
-        actualMsgRec = retryWithException(TestConstants.TWENTY, x -> testClient.getMsgReceived());
+        retryWithException(TestConstants.THIRTY, x -> testClient.getMsgReceived());
 
         msgRec = testClient.getMsgReceived();
         Assert.assertTrue(msgRec.contains("\"EventID\":\"Speed\""));
@@ -360,7 +355,7 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
                  + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12347\"}";
         KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(),
                 speedEventWithVehicleIdAndSourceDeviceIdDevice12347.getBytes());
-        actualMsgRec = retryWithException(TestConstants.TWENTY, x -> testClient.getMsgReceived());
+        retryWithException(TestConstants.TWENTY, x -> testClient.getMsgReceived());
         msgRec = testClient.getMsgReceived();
         Assert.assertTrue(msgRec.contains("\"EventID\":\"Speed\""));
         Assert.assertTrue(msgRec.contains("\"Version\":\"1.0\""));

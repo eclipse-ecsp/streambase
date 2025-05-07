@@ -51,6 +51,7 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.processor.StateStore;
 import org.apache.kafka.streams.processor.api.ProcessorSupplier;
+import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.eclipse.ecsp.analytics.stream.base.KafkaStreamsProcessorContext.StoreType;
 import org.eclipse.ecsp.analytics.stream.base.discovery.StreamProcessorDiscoveryService;

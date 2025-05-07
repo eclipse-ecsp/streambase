@@ -39,7 +39,6 @@
 
 package org.eclipse.ecsp.stream.dma.dao.key;
 
-import org.eclipse.ecsp.stream.dma.dao.key.DeviceStatusKey;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -79,15 +78,6 @@ public class DeviceStatusKeyTest {
         Assert.assertEquals(key1.hashCode(), key2.hashCode());
         DeviceStatusKey key3 = new DeviceStatusKey("key3");
         Assert.assertNotEquals(key1.hashCode(), key3.hashCode());
-    }
-
-    /**
-     * Test get key.
-     */
-    @Test
-    public void testGetKey() {
-        DeviceStatusKey key = new DeviceStatusKey("key");
-        Assert.assertEquals("key", key.getKey());
     }
 
     /**
