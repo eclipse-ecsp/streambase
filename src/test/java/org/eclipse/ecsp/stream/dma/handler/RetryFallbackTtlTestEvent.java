@@ -37,11 +37,46 @@
  *
  */
 
-package org.eclipse.ecsp.analytics.stream.base.idgen;
+package org.eclipse.ecsp.stream.dma.handler;
+
+import org.eclipse.ecsp.entities.IgniteEventImpl;
+
+import java.util.Optional;
+
 
 /**
- * Interface for generating the IDs for the events coming into stream-base library.
+ * class RetryTestEvent extends IgniteEventImpl.
  */
-public interface MessageIdGenerator {
-    public String generateUniqueMsgId(String serviceName);
+public class RetryFallbackTtlTestEvent extends IgniteEventImpl {
+
+    /** The Constant serialVersionUID. */
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * Instantiates a new retry test event.
+     */
+    public RetryFallbackTtlTestEvent() {
+        // Default Constructor
+    }
+
+    /**
+     * Gets the event id.
+     *
+     * @return the event id
+     */
+    @Override
+    public String getEventId() {
+        return "test_Speed";
+    }
+
+    /**
+     * Gets the target device id.
+     *
+     * @return the target device id
+     */
+    @Override
+    public Optional<String> getTargetDeviceId() {
+        return Optional.of("Device12345");
+    }
+
 }

@@ -1,10 +1,15 @@
 [<img src="./images/logo.png" width="400" height="200"/>](./images/logo.png)
 
-# Stream-base
-[![Build](https://github.com/eclipse-ecsp/streambase/actions/workflows/maven-publish.yml/badge.svg)](https://github.com/eclipse-ecsp/streambase/actions/workflows/maven-publish.yml)
+# StreamBase Library
+[![Build And Sonar scan](https://github.com/eclipse-ecsp/streambase/actions/workflows/maven-build.yml/badge.svg)](https://github.com/eclipse-ecsp/streambase/actions/workflows/maven-build.yml)
 [![License Compliance](https://github.com/eclipse-ecsp/streambase/actions/workflows/license-compliance.yml/badge.svg)](https://github.com/eclipse-ecsp/streambase/actions/workflows/license-compliance.yml)
+[![Deployment](https://github.com/eclipse-ecsp/streambase/actions/workflows/maven-deploy.yml/badge.svg)](https://github.com/eclipse-ecsp/streambase/actions/workflows/maven-deploy.yml)
 
-`streambase` library provides a layer of abstraction for kafka-streams to the similar stream processing systems and allows them to have some level of portability.
+`streambase` library is an enabler for event driven processing and provides a layer of abstraction for messaging brokers such as kafka-streams while providing portability.
+It allows to bootstrap a stream processing application using the Kafka Streams API.
+It provides device messaging capability to the services using MQTT protocol, including the ability to switch between Paho MQTT client and HiveMQ client. It also provides the capability to use TLS for secure communication with the MQTT broker.
+It has storage capability for events using MongoDB and retry capabilities using Redis.
+It has the capability to monitor the health of the topics and partitions in the kafka cluster, and is integrated with Prometheus for publishing metrics.
 
 It provides a `LauncherProvider` interface to the services to which in turn provides the service with the capabilities to create a stream processing application.
 The `Launcher` class in coordination with the `StreamProcessorDiscoveryService` creates a topology as a chain of `StreamProcessor` in the kafka streams application.
@@ -77,14 +82,14 @@ To run a method from within a test
 
 ### Deployment
 
-`stream-base` project serves as a library for the services. It is not meant to be deployed as a service in any cloud environment.
+`streambase` project serves as a library for the services. It is not meant to be deployed as a service in any cloud environment.
 
 ## Usage
 Add the following dependency in the target project
 ```
 <dependency>
-  <groupId>org.eclipse.ecsp.analytics</groupId>
-  <artifactId>stream-base</artifactId>
+  <groupId>org.eclipse.ecsp</groupId>
+  <artifactId>streambase</artifactId>
   <version>1.X.X</version>
 </dependency>
 ```
@@ -202,8 +207,6 @@ There are various in-memory caches maintained by streambase library for its inte
 - Shoulder Tap RetryRecord cache.
 - Shoulder Tap RetryBucket cache.
 
-More documentation regarding the low-level design for this can be found [here](https://confluence.harman.com/confluence/display/HCP/Stream-Base+Metrics)
-
 ### Kafka configuration
 
 To connect to kafka, the following properties need to be specified in the properties file along with the optional TLS properties:
@@ -306,8 +309,6 @@ scheduler.enabled=false
 |------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------|
 | [NoSQL DAO](https://github.com/eclipse-ecsp/nosql-dao)                                                                                                     | NoSQL DAO capabilities                                            |
 | [Cache Enabler](https://github.com/eclipse-ecsp/cache-enabler)                                                                                             | Redis caching capabilities                                        |
-| [Utils](https://github.com/eclipse-ecsp/utils)                                                                                                             | Utils library                                                     |
-| [Transformers](https://github.com/eclipse-ecsp/transformers)                                                                                               | Transformers and serialization capabilities                       |
 | [Paho Client](https://eclipse.dev/paho/)                                                                                                                   | MQTT Paho Client                                                  |
 | [Moquette Broker](https://github.com/moquette-io/moquette)                                                                                                 | Java MQTT Broker                                                  |
 | [HiveMQ Mqtt client](https://www.hivemq.com/mqtt/mqtt-client-library-encyclopedia/)                                                                        | HiveMQ client for MQTT                                            |
@@ -355,7 +356,7 @@ See also the list of [contributors](https://github.com/eclipse-ecsp/streambase/g
 Please read [SECURITY.md](./SECURITY.md) to raise any security related issues.
 
 ## Support
-Please write to us at csp@harman.com
+Please write to us at [csp@harman.com](mailto:csp@harman.com)
 
 ## Troubleshooting
 
@@ -369,6 +370,3 @@ This project is licensed under the Apache-2.0 License - see the [LICENSE.md](./L
 
 All updates to this library are documented in our [Release notes](./release_notes.txt) and [releases](https://github.com/eclipse-ecsp/streambase/releases)
 For the versions available, see the [tags on this repository](https://github.com/eclipse-ecsp/streambase/tags).
-
-
-

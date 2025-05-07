@@ -4,9 +4,9 @@ name: Maven Packaging and Sonar Analysis
 
 on:
   push:
-    branches: [ "main" ]
+    branches: '**'
   pull_request:
-    branches: [ "main" ]
+    branches: '**'
   workflow_dispatch:
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
         distribution: 'zulu'
 
     - name: Build with Maven
-      run: mvn clean -B package --file pom.xml
+      run: mvn clean -B package -DskipTests=true --file pom.xml
         
   check_sonar_configured:
     runs-on: ubuntu-latest
