@@ -164,7 +164,11 @@ public class DeviceConnectionStatusRetrieverTest {
     @Test
     public void testLoadConnectionStatusParser() {
         ctx = Mockito.mock(ApplicationContext.class);
+        ReflectionTestUtils.setField(statusRetriever, "apiUrl", "test/url");
         ReflectionTestUtils.setField(statusRetriever, "ctx", ctx);
+        ReflectionTestUtils.setField(statusRetriever, "connStatusParserImpl", 
+            "org.eclipse.ecsp.stream.dma.ConnectionStatusParserTestImpl");
         ReflectionTestUtils.invokeMethod(statusRetriever, "setup", new Object[0]);
+        Assert.assertNotNull(ReflectionTestUtils.getField(statusRetriever, "parser"));
     }
 }

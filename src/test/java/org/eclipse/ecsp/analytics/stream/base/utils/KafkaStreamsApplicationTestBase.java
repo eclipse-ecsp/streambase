@@ -350,16 +350,13 @@ public class KafkaStreamsApplicationTestBase {
     protected <K, V> void produceKeyValuesSynchronously(
             String topic, Collection<KeyValue<K, V>> records, Properties producerConfig)
             throws ExecutionException, InterruptedException {
-        Producer<K, V> producer = new KafkaProducer<>(producerConfig);
-        try {
+        try (Producer<K, V> producer = new KafkaProducer<>(producerConfig)) {
             for (KeyValue<K, V> kvRecord : records) {
                 Future<RecordMetadata> f = producer.send(
                         new ProducerRecord<>(topic, kvRecord.key, kvRecord.value));
                 f.get();
             }
             producer.flush();
-        } finally {
-            producer.close();
         }
     }
 

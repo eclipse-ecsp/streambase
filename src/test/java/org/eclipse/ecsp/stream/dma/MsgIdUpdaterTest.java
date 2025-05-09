@@ -187,7 +187,7 @@ public class MsgIdUpdaterTest {
          */
         @Override
         public void setNextHandler(DeviceMessageHandler handler) {
-
+            // Nothing to do.
         }
 
         /**
@@ -195,7 +195,7 @@ public class MsgIdUpdaterTest {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
     }
@@ -212,7 +212,7 @@ public class MsgIdUpdaterTest {
          * Instantiates a new test event.
          */
         public TestEvent() {
-
+            // Nothing to do.
         }
 
         /**

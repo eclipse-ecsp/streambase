@@ -219,12 +219,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
         String speedEventWithVehicleIdAndSourceDeviceId = "{\"EventID\": \"Speed\","
@@ -269,12 +269,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
 
@@ -356,12 +356,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
 
@@ -404,12 +404,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
         String speedEventWithVehicleIdAndSourceDeviceId = "{\"EventID\": \"test_Speed\","
@@ -485,12 +485,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
 
@@ -583,12 +583,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
 
@@ -740,12 +740,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
 
@@ -825,7 +825,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
 
         }
 
@@ -834,7 +834,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void close() {
-
+            // Nothing to do.
 
         }
 
@@ -845,7 +845,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
 
         }
 
@@ -934,7 +934,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
 
         }
 
@@ -943,7 +943,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void close() {
-
+            // Nothing to do.
 
         }
 
@@ -954,7 +954,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
 
         }
 

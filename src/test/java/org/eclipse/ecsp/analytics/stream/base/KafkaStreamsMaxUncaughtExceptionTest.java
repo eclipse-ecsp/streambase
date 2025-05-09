@@ -231,9 +231,8 @@ public class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicatio
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
-
     }
 
     /**
@@ -283,7 +282,7 @@ public class KafkaStreamsMaxUncaughtExceptionTest extends KafkaStreamsApplicatio
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
     }
 }

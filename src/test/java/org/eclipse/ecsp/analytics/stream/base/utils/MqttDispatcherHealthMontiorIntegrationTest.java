@@ -181,12 +181,12 @@ public class MqttDispatcherHealthMontiorIntegrationTest {
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
         Assert.assertEquals(true, mqttDispatcher.isHealthy(false));
@@ -218,7 +218,7 @@ public class MqttDispatcherHealthMontiorIntegrationTest {
          * Instantiates a new test event.
          */
         public TestEvent() {
-
+            // Nothing to do.
         }
 
         /**

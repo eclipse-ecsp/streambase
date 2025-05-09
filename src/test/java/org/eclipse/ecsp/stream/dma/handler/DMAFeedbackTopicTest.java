@@ -215,7 +215,7 @@ public class DMAFeedbackTopicTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
         }
 
         /**
@@ -223,7 +223,7 @@ public class DMAFeedbackTopicTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
         /**
@@ -233,7 +233,7 @@ public class DMAFeedbackTopicTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
         }
 
         /**

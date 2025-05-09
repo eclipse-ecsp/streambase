@@ -262,6 +262,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void punctuate(long timestamp) {
+            // Nothing to do.
         }
 
         /**
@@ -269,6 +270,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void close() {
+            // Nothing to do.
         }
 
         /**
@@ -278,6 +280,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void configChanged(Properties props) {
+            // Nothing to do.
         }
 
         /**
@@ -367,6 +370,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void punctuate(long timestamp) {
+            // Nothing to do.
         }
 
         /**
@@ -374,6 +378,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void close() {
+            // Nothing to do.
         }
 
         /**
@@ -383,6 +388,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void configChanged(Properties props) {
+            // Nothing to do.
         }
 
         /**
@@ -452,6 +458,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void punctuate(long timestamp) {
+            // Nothing to do.
         }
 
         /**
@@ -459,6 +466,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void close() {
+            // Nothing to do.
         }
 
         /**
@@ -468,6 +476,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void configChanged(Properties props) {
+            // Nothing to do.
         }
 
         /**
@@ -538,6 +547,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void punctuate(long timestamp) {
+            // Nothing to do.
         }
 
         /**
@@ -545,6 +555,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void close() {
+            // Nothing to do.
         }
 
         /**
@@ -554,6 +565,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void configChanged(Properties props) {
+            // Nothing to do.
         }
 
         /**
@@ -587,7 +599,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void init(StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc) {
-
+            // Nothing to do.
         }
 
         /**
@@ -619,6 +631,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void punctuate(long timestamp) {
+            // Nothing to do.
         }
 
         /**
@@ -626,6 +639,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void close() {
+            // Nothing to do.
         }
 
         /**
@@ -635,6 +649,7 @@ public class DLQRetryHandlerFailureTest extends KafkaStreamsApplicationTestBase 
          */
         @Override
         public void configChanged(Properties props) {
+            // Nothing to do.
         }
 
         /**

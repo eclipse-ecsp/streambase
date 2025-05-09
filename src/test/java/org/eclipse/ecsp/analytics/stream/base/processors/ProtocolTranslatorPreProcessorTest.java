@@ -453,6 +453,7 @@ public class ProtocolTranslatorPreProcessorTest {
          * Instantiates a new test event.
          */
         public TestEvent() {
+            // Nothing to do.
         }
 
         /**

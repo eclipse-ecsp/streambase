@@ -761,7 +761,7 @@ public class RetryHandlerTest {
          */
         @Override
         public void setNextHandler(DeviceMessageHandler handler) {
-
+            // Nothing to do.
         }
 
         /**
@@ -778,7 +778,7 @@ public class RetryHandlerTest {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
     }

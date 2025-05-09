@@ -210,7 +210,7 @@ public class OffsetManagerIntegrationTest extends KafkaStreamsApplicationTestBas
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
         }
 
         /**
@@ -218,6 +218,7 @@ public class OffsetManagerIntegrationTest extends KafkaStreamsApplicationTestBas
          */
         @Override
         public void close() {
+            // Nothing to do.
         }
 
         /**
@@ -227,6 +228,7 @@ public class OffsetManagerIntegrationTest extends KafkaStreamsApplicationTestBas
          */
         @Override
         public void configChanged(Properties props) {
+            // Nothing to do.
         }
 
         /**

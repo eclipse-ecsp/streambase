@@ -606,12 +606,12 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
 
                 @Override
                 public void deliveryComplete(IMqttDeliveryToken token) {
-
+                    // Nothing to do.
                 }
 
                 @Override
                 public void connectionLost(Throwable cause) {
-
+                    // Nothing to do.
                 }
             });
         }
