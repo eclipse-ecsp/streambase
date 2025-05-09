@@ -73,7 +73,7 @@ public final class CumulativeLogger {
     private static class CumulativeLoggerHolder {
         
         /** The Constant C_LOGGER. */
-        private static final CumulativeLogger C_LOGGER = new CumulativeLogger(logEveryXMinute);
+        private static final CumulativeLogger C_LOGGER = new CumulativeLogger();
 
         /**
          * Instantiates a new cumulative logger holder.
@@ -87,7 +87,7 @@ public final class CumulativeLogger {
      *
      * @param logEveryXminute the log every xminute
      */
-    private CumulativeLogger(int logEveryXminute) {
+    private CumulativeLogger() {
         ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor(
                 runnable -> {
                     Thread t = Executors.defaultThreadFactory().newThread(runnable);

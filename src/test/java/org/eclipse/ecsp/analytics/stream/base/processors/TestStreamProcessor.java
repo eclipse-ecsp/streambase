@@ -142,7 +142,7 @@ public class TestStreamProcessor implements IgniteEventStreamProcessor {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Key={},Value={}", key.toString(), value.toString());
+            LOGGER.debug("Key={},Value={}", key, value);
         }
 
         // do processing and then forward the event.
@@ -158,7 +158,7 @@ public class TestStreamProcessor implements IgniteEventStreamProcessor {
      */
     @Override
     public void punctuate(long timestamp) {
-
+        // Nothing to do.
     }
 
     /**
@@ -166,7 +166,7 @@ public class TestStreamProcessor implements IgniteEventStreamProcessor {
      */
     @Override
     public void close() {
-
+        // Nothing to do.
     }
 
     /**
@@ -176,7 +176,7 @@ public class TestStreamProcessor implements IgniteEventStreamProcessor {
      */
     @Override
     public void configChanged(Properties props) {
-
+        // Nothing to do.
     }
 
     /**

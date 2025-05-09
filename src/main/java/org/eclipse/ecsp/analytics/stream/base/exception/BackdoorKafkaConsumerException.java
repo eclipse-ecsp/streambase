@@ -39,9 +39,9 @@
 
 package org.eclipse.ecsp.analytics.stream.base.exception;
 
-
 /**
- * Custom runtime exception for errors in {@link BackdoorKafkaConsumer}.
+ * Custom runtime exception for errors in
+ * {@link org.eclipse.ecsp.analytics.stream.base.kafka.internal.BackdoorKafkaConsumer}.
  */
 public class BackdoorKafkaConsumerException extends RuntimeException {
 

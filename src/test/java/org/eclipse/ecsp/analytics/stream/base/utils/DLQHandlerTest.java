@@ -219,9 +219,6 @@ public class DLQHandlerTest extends KafkaStreamsApplicationTestBase {
      */
     public static final class DLQServiceProcessor implements
             StreamProcessor<IgniteKey<?>, IgniteEvent, IgniteKey<?>, IgniteEvent> {
-        
-        /** The spc. */
-        private StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc;
 
         /**
          * Inits the.
@@ -230,7 +227,6 @@ public class DLQHandlerTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void init(StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc) {
-            this.spc = spc;
         }
 
         /**
@@ -265,7 +261,7 @@ public class DLQHandlerTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
         }
 
         /**
@@ -273,7 +269,7 @@ public class DLQHandlerTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
         /**
@@ -283,7 +279,7 @@ public class DLQHandlerTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
         }
 
         /**

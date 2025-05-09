@@ -429,6 +429,7 @@ public class SchedulerAgentIntegrationTest extends KafkaStreamsApplicationTestBa
          */
         @Override
         public void punctuate(long timestamp) {
+            // Nothing to do.
         }
 
         /**
@@ -436,6 +437,7 @@ public class SchedulerAgentIntegrationTest extends KafkaStreamsApplicationTestBa
          */
         @Override
         public void close() {
+            // Nothing to do.
         }
 
         /**
@@ -445,6 +447,7 @@ public class SchedulerAgentIntegrationTest extends KafkaStreamsApplicationTestBa
          */
         @Override
         public void configChanged(Properties props) {
+            // Nothing to do.
         }
 
         /**

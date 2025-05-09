@@ -57,7 +57,7 @@ public class RetryTestEvent extends IgniteEventImpl {
      * Instantiates a new retry test event.
      */
     public RetryTestEvent() {
-
+        // Nothing to do.
     }
 
     /**

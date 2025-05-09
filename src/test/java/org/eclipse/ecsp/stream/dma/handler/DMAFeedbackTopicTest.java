@@ -83,9 +83,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 @EnableRuleMigrationSupport
 @TestPropertySource("/dma-connectionstatus-handler-test.properties")
 public class DMAFeedbackTopicTest extends KafkaStreamsApplicationTestBase {
-
-    /** The Constant LOGGER. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(DMAFeedbackTopicTest.class);
     
     /** The source topic name. */
     private static String sourceTopicName;
@@ -218,7 +215,7 @@ public class DMAFeedbackTopicTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
         }
 
         /**
@@ -226,7 +223,7 @@ public class DMAFeedbackTopicTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
         /**
@@ -236,7 +233,7 @@ public class DMAFeedbackTopicTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
         }
 
         /**

@@ -203,12 +203,12 @@ public class MqttDispatcherPlatformInvalidConfigIntegrationTest {
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
 
@@ -277,7 +277,7 @@ public class MqttDispatcherPlatformInvalidConfigIntegrationTest {
          * Instantiates a new test event.
          */
         public TestEvent() {
-
+            // Nothing to do.
         }
 
         /**

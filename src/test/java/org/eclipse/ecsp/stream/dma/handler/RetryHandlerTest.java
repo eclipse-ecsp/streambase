@@ -305,14 +305,14 @@ public class RetryHandlerTest {
         DeviceMessage entity = new DeviceMessage(transformer.toBlob(event), Version.V1_0,
                 event, sourceTopic, Constants.THREAD_SLEEP_TIME_60000);
         long currentTime = System.currentTimeMillis() - TestConstants.THREAD_SLEEP_TIME_10000;
-        RetryRecord record = new RetryRecord(retryTestKey, entity, currentTime);
-        record.addAttempt(currentTime + Constants.TEN);
-        DeviceMessage message = record.getDeviceMessage();
+        RetryRecord retryRecord = new RetryRecord(retryTestKey, entity, currentTime);
+        retryRecord.addAttempt(currentTime + Constants.TEN);
+        DeviceMessage message = retryRecord.getDeviceMessage();
         message.setDeviceMessageHeader(message.getDeviceMessageHeader().withPendingRetries(1));
-        record.setDeviceMessage(message);
+        retryRecord.setDeviceMessage(message);
         EventConfig config = new EventConfigTestImpl();
         Mockito.when(eventConfigMap.get(Mockito.any())).thenReturn(config);
-        Mockito.when(retryEventDAO.get(Mockito.any())).thenReturn(record);
+        Mockito.when(retryEventDAO.get(Mockito.any())).thenReturn(retryRecord);
         Mockito.doNothing().when(offlineBufferDAO).addOfflineBufferEntry(Mockito.anyString(),
                 Mockito.any(), Mockito.any(), Mockito.any());
         Mockito.when(connectionStatusHandler.getDeviceIdIfActive(retryTestKey, entity.getDeviceMessageHeader(), 
@@ -345,15 +345,14 @@ public class RetryHandlerTest {
         DeviceMessage entity = new DeviceMessage(transformer.toBlob(event), Version.V1_0,
                 event, sourceTopic, Constants.THREAD_SLEEP_TIME_60000);
         long currentTime = System.currentTimeMillis() - TestConstants.THREAD_SLEEP_TIME_10000;
-        RetryRecord record = new RetryRecord(retryTestKey, entity, currentTime);
-        record.addAttempt(currentTime + Constants.TEN);
-        DeviceMessage message = record.getDeviceMessage();
+        RetryRecord retryRecord = new RetryRecord(retryTestKey, entity, currentTime);
+        retryRecord.addAttempt(currentTime + Constants.TEN);
+        DeviceMessage message = retryRecord.getDeviceMessage();
         message.setDeviceMessageHeader(message.getDeviceMessageHeader().withPendingRetries(1));
-        record.setDeviceMessage(message);
-        String retryRecordKey = "vehicleId;msg123";
+        retryRecord.setDeviceMessage(message);
         EventConfig config = new EventConfigTestImpl();
         Mockito.when(eventConfigMap.get(Mockito.any())).thenReturn(config);
-        Mockito.when(retryEventDAO.get(Mockito.any())).thenReturn(record);
+        Mockito.when(retryEventDAO.get(Mockito.any())).thenReturn(retryRecord);
         Mockito.doNothing().when(offlineBufferDAO).addOfflineBufferEntry(Mockito.anyString(),
                 Mockito.any(), Mockito.any(), Mockito.any());
         Mockito.when(connectionStatusHandler.getDeviceIdIfActive(retryTestKey, entity.getDeviceMessageHeader(), 
@@ -423,8 +422,8 @@ public class RetryHandlerTest {
                 .thenReturn(Optional.of("vehicleId"));
         // We are creating a RetryRecord in which attempts is 1 less than
         // maxretry.
-        RetryRecord record = getRetryRecord(currentTime, entity);
-        Mockito.when(retryEventDAO.get(new RetryRecordKey(retryRecordKey, taskId))).thenReturn(record);
+        RetryRecord retryRecord = getRetryRecord(currentTime, entity);
+        Mockito.when(retryEventDAO.get(new RetryRecordKey(retryRecordKey, taskId))).thenReturn(retryRecord);
         // Max Retry is set to 2 here.
         getRetryHandler();
         TestHandler handler = new TestHandler();
@@ -482,12 +481,12 @@ public class RetryHandlerTest {
      */
     @NotNull
     private RetryRecord getRetryRecord(long currentTime, DeviceMessage entity) {
-        RetryRecord record = new RetryRecord(retryTestKey, entity, currentTime);
-        record.addAttempt(currentTime + Constants.TEN);
-        DeviceMessage message = record.getDeviceMessage();
+        RetryRecord retryRecord = new RetryRecord(retryTestKey, entity, currentTime);
+        retryRecord.addAttempt(currentTime + Constants.TEN);
+        DeviceMessage message = retryRecord.getDeviceMessage();
         message.setDeviceMessageHeader(message.getDeviceMessageHeader().withPendingRetries(1));
-        record.setDeviceMessage(message);
-        return record;
+        retryRecord.setDeviceMessage(message);
+        return retryRecord;
     }
 
     /**
@@ -554,11 +553,11 @@ public class RetryHandlerTest {
                 entity.getDeviceMessageHeader(), "vehicleId")).thenReturn(Optional.of("vehicleId"));
         // We are creating a RetryRecord in which attempts is 2 to match the
         // maxretry.
-        RetryRecord record = new RetryRecord(retryTestKey, entity, currentTime);
-        record.addAttempt(currentTime + Constants.TEN);
-        record.addAttempt(currentTime + Constants.TWENTY);
+        RetryRecord retryRecord = new RetryRecord(retryTestKey, entity, currentTime);
+        retryRecord.addAttempt(currentTime + Constants.TEN);
+        retryRecord.addAttempt(currentTime + Constants.TWENTY);
 
-        Mockito.when(retryEventDAO.get(new RetryRecordKey(retryRecordKey, taskId))).thenReturn(record);
+        Mockito.when(retryEventDAO.get(new RetryRecordKey(retryRecordKey, taskId))).thenReturn(retryRecord);
 
         // Max Retry is set to 2 here.
         retryHandler.setMaxRetry(Constants.TWO);
@@ -762,7 +761,7 @@ public class RetryHandlerTest {
          */
         @Override
         public void setNextHandler(DeviceMessageHandler handler) {
-
+            // Nothing to do.
         }
 
         /**
@@ -779,7 +778,7 @@ public class RetryHandlerTest {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
     }

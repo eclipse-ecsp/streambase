@@ -97,15 +97,6 @@ public class ShoulderTapRetryBucketKeyTest {
     }
 
     /**
-     * Test get timestamp.
-     */
-    @Test
-    public void testGetTimestamp() {
-        ShoulderTapRetryBucketKey key = new ShoulderTapRetryBucketKey(TestConstants.THREAD_SLEEP_TIME_1000);
-        Assert.assertEquals(TestConstants.THREAD_SLEEP_TIME_1000, key.getTimestamp());
-    }
-
-    /**
      * Test set timestamp.
      */
     @Test

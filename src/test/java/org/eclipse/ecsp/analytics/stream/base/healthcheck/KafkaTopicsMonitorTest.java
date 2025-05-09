@@ -64,7 +64,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,11 +71,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-
 
 /**
  * UT class {@link KafkaTopicsMonitorTest}.
@@ -136,9 +132,8 @@ public class KafkaTopicsMonitorTest {
         topics.add(topic);
         ReflectionTestUtils.setField(kafaTopicsMonitor, "topics", topics);
         
-        Map<String, String[]> topicConfig = new HashMap<>();
         KafkaTopicsHealthMonitor monitor = ctx.getBean(KafkaTopicsHealthMonitor.class);
-        topicConfig = ReflectionTestUtils.invokeMethod(monitor, "getTopicsConfig", new Object[0]);
+        Map<String, String[]> topicConfig = ReflectionTestUtils.invokeMethod(monitor, "getTopicsConfig", new Object[0]);
         ReflectionTestUtils.setField(kafaTopicsMonitor, "topicConfig", topicConfig);
     }
 

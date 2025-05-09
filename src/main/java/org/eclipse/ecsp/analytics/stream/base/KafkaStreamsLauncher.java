@@ -51,6 +51,7 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.processor.StateStore;
 import org.apache.kafka.streams.processor.api.ProcessorSupplier;
+import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.eclipse.ecsp.analytics.stream.base.KafkaStreamsProcessorContext.StoreType;
 import org.eclipse.ecsp.analytics.stream.base.discovery.StreamProcessorDiscoveryService;
@@ -506,18 +507,10 @@ public class KafkaStreamsLauncher<KIn, VIn, KOut, VOut> extends AbstractLauncher
         if (props.getProperty(PropertyNames.APPLICATION_ID) == null) {
             throw new IllegalArgumentException(PropertyNames.APPLICATION_ID + " is mandatory");
         }
-        // if (props.getProperty(PropertyNames.AUTO_OFFSET_RESET_CONFIG) ==
-        // null) {
-        // throw new
-        // IllegalArgumentException(PropertyNames.AUTO_OFFSET_RESET_CONFIG + "
-        // is mandatory");
-        // }
         if (props.getProperty(PropertyNames.BOOTSTRAP_SERVERS) == null) {
             props.put(PropertyNames.BOOTSTRAP_SERVERS, "localhost:9092");
         }
-        if (props.get(PropertyNames.ZOOKEEPER_CONNECT) == null) {
-            props.put(PropertyNames.ZOOKEEPER_CONNECT, "localhost:2181/haa");
-        }
+        props.computeIfAbsent(PropertyNames.ZOOKEEPER_CONNECT, k -> "localhost:2181/haa");
         String numThreads = null;
         if ((numThreads = props.getProperty(PropertyNames.NUM_STREAM_THREADS)) == null) {
             props.put(PropertyNames.NUM_STREAM_THREADS, Constants.FOUR);

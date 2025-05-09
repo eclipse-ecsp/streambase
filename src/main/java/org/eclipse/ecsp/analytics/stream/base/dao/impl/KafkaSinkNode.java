@@ -104,14 +104,13 @@ public class KafkaSinkNode implements SinkNode<byte[], byte[]> {
         try {
             logger.debug("Sending message to kafka. Topic: {}, Message: {}, key: {}", kafkaTopic, keyString);
             java.util.concurrent.Future<org.apache.kafka.clients.producer.RecordMetadata> f = producer
-                    .send(new ProducerRecord<byte[], byte[]>(kafkaTopic, key, messageInBytes), new Callback() {
-                        public void onCompletion(RecordMetadata metadata, Exception e) {
-                            if (e != null) {
-                                logger.error("Exception occurred in "
-                                        + "KafkaProducerByPartition callback for key : {}", keyString, e);
+                    .send(new ProducerRecord<byte[], byte[]>(kafkaTopic, key, messageInBytes),                        
+                        (metadata, exception) -> {
+                            if (exception != null) {
+                                logger.error("Exception occurred in KafkaProducerByPartition callback "
+                                    + "for key : {}", keyString, exception);
                             }
-                        }
-                    });
+                        });
             testIsSync(f, keyString);
         } catch (Exception e) {
             logger.error("Unable to send messages on Kafka for key : {} ", keyString, e);

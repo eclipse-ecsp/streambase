@@ -175,9 +175,9 @@ public class DeviceConnStatusServiceTest extends KafkaStreamsApplicationTestBase
      */
     @Test
     public void testDeleteKeyForSubService() {
-        ConcurrentHashSet<String> value = new ConcurrentHashSet<String>();
-        value.add(deviceId2);
-        deviceStatusServiceImpl.put(key, value, null, Optional.of("subService1"));
+        ConcurrentHashSet<String> set = new ConcurrentHashSet<String>();
+        set.add(deviceId2);
+        deviceStatusServiceImpl.put(key, set, null, Optional.of("subService1"));
 
         String deviceIdToDelete = deviceId2;
         deviceStatusServiceImpl.delete(key, deviceIdToDelete, null, Optional.of("subService1"));

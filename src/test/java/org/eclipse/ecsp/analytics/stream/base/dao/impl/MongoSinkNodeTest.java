@@ -51,9 +51,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Properties;
-import java.util.concurrent.TimeoutException;
-
-
 
 /**
  * Test class to verify the functionalities of KafkaSinkNodeTest class.
@@ -87,7 +84,6 @@ public class MongoSinkNodeTest extends KafkaStreamsApplicationTestBase {
         properties.setProperty(PropertyNames.MONGO_CLIENT_MAX_WAIT_TIME_MS, "30000");
         properties.setProperty(PropertyNames.MONGO_CLIENT_CONNECTION_TIMEOUT_MS, "20000");
         properties.setProperty(PropertyNames.MONGO_CLIENT_SOCKET_TIMEOUT_MS, "60000");
-        ConnectionException exp = new ConnectionException("Exception in connection");
     }
 
     /**

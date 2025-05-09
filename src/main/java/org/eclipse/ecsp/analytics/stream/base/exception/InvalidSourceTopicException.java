@@ -40,7 +40,7 @@
 package org.eclipse.ecsp.analytics.stream.base.exception;
 
 /**
- * Custom exception for invalid source topic name coming from the {@link StreamProcessingContext} instance.
+ * Custom exception for invalid source topic name.
  */
 public class InvalidSourceTopicException extends RuntimeException {
 

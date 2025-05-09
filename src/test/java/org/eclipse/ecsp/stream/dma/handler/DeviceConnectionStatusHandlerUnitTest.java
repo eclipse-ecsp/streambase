@@ -242,7 +242,6 @@ public class DeviceConnectionStatusHandlerUnitTest {
     @Test
     public void testGetConnectionStatusWithOneVehicleMultipleDevices() {
         String requestId = "req124";
-        String service = "ecall";
         IgniteEventImpl event = new IgniteEventImpl();
         SpeedV1_0 speed = new SpeedV1_0();
         speed.setValue(Constants.THREAD_SLEEP_TIME_100);
@@ -346,7 +345,6 @@ public class DeviceConnectionStatusHandlerUnitTest {
     @Test
     public void testGetConnectionStatusIfNotFoundInMemory() {
         String requestId = "req124";
-        String service = "ecall";
         IgniteEventImpl event = new IgniteEventImpl();
         SpeedV1_0 speed = new SpeedV1_0();
         speed.setValue(Constants.THREAD_SLEEP_TIME_100);
@@ -811,7 +809,7 @@ public class DeviceConnectionStatusHandlerUnitTest {
         bufferEntry2.setVehicleId(vehicleId);
         bufferedEntries.add(bufferEntry2);
 
-        getBufferedEntries("vehicle3", "eventId3", "reqId3", igniteKey, bufferedEntries);
+        getBufferedEntries("vehicle3", "eventId3", igniteKey, bufferedEntries);
 
         Mockito.when(offlineBufferDAO.getOfflineBufferEntriesSortedByPriority(vehicleId,
                 true, Optional.empty(), Optional.empty())).thenReturn(bufferedEntries);
@@ -837,7 +835,7 @@ public class DeviceConnectionStatusHandlerUnitTest {
      * @param bufferedEntries the buffered entries
      * @return the buffered entries
      */
-    private static void getBufferedEntries(String vehicle3, String eventId3, String reqId3, IgniteStringKey igniteKey,
+    private static void getBufferedEntries(String vehicle3, String eventId3, IgniteStringKey igniteKey,
             List<DMOfflineBufferEntry> bufferedEntries) {
         DMOfflineBufferEntry bufferEntry3 = new DMOfflineBufferEntry();
         bufferEntry3.setDeviceId(vehicle3);

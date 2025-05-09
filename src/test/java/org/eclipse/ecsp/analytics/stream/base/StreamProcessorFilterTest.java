@@ -43,11 +43,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.processor.api.Record;
-import org.eclipse.ecsp.analytics.stream.base.Launcher;
-import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
-import org.eclipse.ecsp.analytics.stream.base.StreamProcessingContext;
-import org.eclipse.ecsp.analytics.stream.base.StreamProcessor;
-import org.eclipse.ecsp.analytics.stream.base.StreamProcessorFilter;
 import org.eclipse.ecsp.analytics.stream.base.discovery.PropBasedDiscoveryServiceImpl;
 import org.eclipse.ecsp.analytics.stream.base.stores.HarmanPersistentKVStore;
 import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
@@ -66,8 +61,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -169,7 +162,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          * Instantiates a new stream pre processor enabled.
          */
         public StreamPreProcessorEnabled() {
-
+            // Nothing to do.
         }
 
         /**
@@ -211,7 +204,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
         }
 
         /**
@@ -219,7 +212,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
         /**
@@ -229,7 +222,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
         }
 
         /**
@@ -287,7 +280,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          * Instantiates a new stream post processor enabled.
          */
         public StreamPostProcessorEnabled() {
-
+            // Nothing to do.
         }
 
         /**
@@ -330,7 +323,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
         }
 
         /**
@@ -338,7 +331,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
         /**
@@ -348,7 +341,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
         }
 
         /**
@@ -396,7 +389,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          * Instantiates a new stream pre processor disabled.
          */
         public StreamPreProcessorDisabled() {
-
+            // Nothing to do.
         }
 
         /**
@@ -446,7 +439,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
         /**
@@ -456,7 +449,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
         }
 
         /**
@@ -557,7 +550,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
         }
 
         /**
@@ -565,7 +558,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
         /**
@@ -575,7 +568,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
         }
 
         /**

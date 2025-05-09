@@ -166,7 +166,7 @@ public class MqttDispatcherWithoutToDeviceForSubServicesTest {
          * Instantiates a new test event.
          */
         public TestEvent() {
-
+            // Nothing to do.
         }
 
         /**

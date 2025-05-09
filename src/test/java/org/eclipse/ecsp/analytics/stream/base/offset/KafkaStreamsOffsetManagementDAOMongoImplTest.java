@@ -41,8 +41,6 @@ package org.eclipse.ecsp.analytics.stream.base.offset;
 
 import org.eclipse.ecsp.analytics.stream.base.Launcher;
 import org.eclipse.ecsp.analytics.stream.base.constants.TestConstants;
-import org.eclipse.ecsp.analytics.stream.base.offset.KafkaStreamsOffsetManagementDAOMongoImpl;
-import org.eclipse.ecsp.analytics.stream.base.offset.KafkaStreamsTopicOffset;
 import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
 import org.eclipse.ecsp.analytics.stream.base.utils.KafkaStreamsApplicationTestBase;
 import org.junit.Assert;

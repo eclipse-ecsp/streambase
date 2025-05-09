@@ -67,18 +67,6 @@ public class SingleNodeKafkaCluster extends ExternalResource {
     /** The Constant LOG. */
     private static final Logger LOG = LoggerFactory.getLogger(SingleNodeKafkaCluster.class);
     
-    /** The Constant KAFKA_SCHEMAS_TOPIC. */
-    private static final String KAFKA_SCHEMAS_TOPIC = "_schemas";
-    
-    /** The Constant KAFKASTORE_OPERATION_TIMEOUT_MS. */
-    private static final String KAFKASTORE_OPERATION_TIMEOUT_MS = "60000";
-    
-    /** The Constant KAFKASTORE_DEBUG. */
-    private static final String KAFKASTORE_DEBUG = "true";
-    
-    /** The Constant KAFKASTORE_INIT_TIMEOUT. */
-    private static final String KAFKASTORE_INIT_TIMEOUT = "90000";
-    
     /** The kafka broker port. */
     private static int kafkaBrokerPort = 1234; // pick a random port
     
@@ -319,70 +307,5 @@ public class SingleNodeKafkaCluster extends ExternalResource {
      */
     public boolean isRunning() {
         return running;
-    }
-
-    /**
-     * The Class TopicsDeletedCondition.
-     */
-    private final class TopicsDeletedCondition implements TestCondition {
-        
-        /** The deleted topics. */
-        final Set<String> deletedTopics = new HashSet<>();
-
-        /**
-         * Instantiates a new topics deleted condition.
-         *
-         * @param topics the topics
-         */
-        private TopicsDeletedCondition(final String... topics) {
-            Collections.addAll(deletedTopics, topics);
-        }
-
-        /**
-         * Condition met.
-         *
-         * @return true, if successful
-         */
-        @Override
-        public boolean conditionMet() {
-            final Set<String> allTopicsFromZk = new HashSet<>(
-                    CollectionConverters.SetHasAsJava(broker.kafkaServer()
-                            .zkClient().getAllTopicsInCluster(false)).asJava());
-
-            final Set<String> allTopicsFromBrokerCache = new HashSet<>(
-                    CollectionConverters.SeqHasAsJava(broker.kafkaServer()
-                            .metadataCache().getAllTopics().toSeq()).asJava());
-
-            return !allTopicsFromZk.removeAll(deletedTopics) && !allTopicsFromBrokerCache.removeAll(deletedTopics);
-        }
-    }
-
-    /**
-     * The Class TopicCreatedCondition.
-     */
-    private final class TopicCreatedCondition implements TestCondition {
-        
-        /** The created topic. */
-        final String createdTopic;
-
-        /**
-         * Instantiates a new topic created condition.
-         *
-         * @param topic the topic
-         */
-        private TopicCreatedCondition(final String topic) {
-            createdTopic = topic;
-        }
-
-        /**
-         * Condition met.
-         *
-         * @return true, if successful
-         */
-        @Override
-        public boolean conditionMet() {
-            return broker.kafkaServer().zkClient().getAllTopicsInCluster(false).contains(createdTopic)
-                && broker.kafkaServer().metadataCache().contains(createdTopic);
-        }
     }
 }

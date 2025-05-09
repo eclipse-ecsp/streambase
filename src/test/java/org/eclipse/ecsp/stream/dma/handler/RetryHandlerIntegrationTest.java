@@ -219,12 +219,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
         String speedEventWithVehicleIdAndSourceDeviceId = "{\"EventID\": \"Speed\","
@@ -269,12 +269,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
 
@@ -356,12 +356,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
 
@@ -404,12 +404,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
         String speedEventWithVehicleIdAndSourceDeviceId = "{\"EventID\": \"test_Speed\","
@@ -485,12 +485,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
 
@@ -513,27 +513,23 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
         DeviceMessageFailureEventDataV1_0 data1 = (DeviceMessageFailureEventDataV1_0)
                 failureEventList.get(0).getEventData();
-        Assert.assertEquals(data1.getErrorCode(),
-                DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE);
+        Assert.assertEquals(DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE, data1.getErrorCode());
         Assert.assertEquals(data1.getRetryAttempts(), 1);
 
         DeviceMessageFailureEventDataV1_0 data2 = (DeviceMessageFailureEventDataV1_0)
                 failureEventList.get(1).getEventData();
-        Assert.assertEquals(data2.getErrorCode(),
-                DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE);
-        Assert.assertEquals(data2.getRetryAttempts(), Constants.TWO);
+        Assert.assertEquals(DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE, data2.getErrorCode());
+        Assert.assertEquals(Constants.TWO, data2.getRetryAttempts());
 
         DeviceMessageFailureEventDataV1_0 data3 = (DeviceMessageFailureEventDataV1_0)
                 failureEventList.get(Constants.TWO).getEventData();
-        Assert.assertEquals(data3.getErrorCode(),
-                DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE);
-        Assert.assertEquals(data3.getRetryAttempts(), Constants.THREE);
+        Assert.assertEquals(DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE, data3.getErrorCode());
+        Assert.assertEquals(Constants.THREE, data3.getRetryAttempts());
 
         DeviceMessageFailureEventDataV1_0 data4 = (DeviceMessageFailureEventDataV1_0)
                 failureEventList.get(Constants.THREE).getEventData();
-        Assert.assertEquals(data4.getErrorCode(),
-                DeviceMessageErrorCode.RETRY_ATTEMPTS_EXCEEDED);
-        Assert.assertEquals(data3.getRetryAttempts(), Constants.THREE);
+        Assert.assertEquals(DeviceMessageErrorCode.RETRY_ATTEMPTS_EXCEEDED, data4.getErrorCode());
+        Assert.assertEquals(Constants.THREE, data3.getRetryAttempts());
 
     }
 
@@ -587,12 +583,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
 
@@ -631,23 +627,23 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
         DeviceMessageFailureEventDataV1_0 data1 = (DeviceMessageFailureEventDataV1_0)
                 failureEventList.get(0).getEventData();
-        Assert.assertEquals(data1.getErrorCode(), DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE);
-        Assert.assertEquals(data1.getRetryAttempts(), 1);
+        Assert.assertEquals(DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE, data1.getErrorCode());
+        Assert.assertEquals(1, data1.getRetryAttempts());
 
         DeviceMessageFailureEventDataV1_0 data2 = (DeviceMessageFailureEventDataV1_0)
                 failureEventList.get(1).getEventData();
-        Assert.assertEquals(data2.getErrorCode(), DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE);
-        Assert.assertEquals(data2.getRetryAttempts(), Constants.TWO);
+        Assert.assertEquals(DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE, data2.getErrorCode());
+        Assert.assertEquals(Constants.TWO, data2.getRetryAttempts());
 
         DeviceMessageFailureEventDataV1_0 data3 = (DeviceMessageFailureEventDataV1_0)
                 failureEventList.get(Constants.TWO).getEventData();
-        Assert.assertEquals(data3.getErrorCode(), DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE);
-        Assert.assertEquals(data3.getRetryAttempts(), Constants.THREE);
+        Assert.assertEquals(DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE, data3.getErrorCode());
+        Assert.assertEquals(Constants.THREE, data3.getRetryAttempts());
 
         DeviceMessageFailureEventDataV1_0 data4 = (DeviceMessageFailureEventDataV1_0)
                 failureEventList.get(Constants.THREE).getEventData();
-        Assert.assertEquals(data4.getErrorCode(), DeviceMessageErrorCode.RETRY_ATTEMPTS_EXCEEDED);
-        Assert.assertEquals(data4.getRetryAttempts(), Constants.THREE);
+        Assert.assertEquals(DeviceMessageErrorCode.RETRY_ATTEMPTS_EXCEEDED, data4.getErrorCode());
+        Assert.assertEquals(Constants.THREE, data4.getRetryAttempts());
     }
 
     /**
@@ -744,12 +740,12 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
 
@@ -829,7 +825,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
 
         }
 
@@ -838,7 +834,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void close() {
-
+            // Nothing to do.
 
         }
 
@@ -849,7 +845,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
 
         }
 
@@ -938,7 +934,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
 
         }
 
@@ -947,7 +943,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void close() {
-
+            // Nothing to do.
 
         }
 
@@ -958,7 +954,7 @@ public class RetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
 
         }
 

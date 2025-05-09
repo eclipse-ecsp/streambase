@@ -185,7 +185,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          * Instantiates a new stream post processor.
          */
         public StreamPostProcessor() {
-
+            // Nothing to do.
         }
 
         /**
@@ -229,7 +229,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
 
         }
 
@@ -238,7 +238,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
 
         }
 
@@ -249,7 +249,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
 
         }
 
@@ -288,7 +288,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          * Instantiates a new stream pre processor.
          */
         public StreamPreProcessor() {
-
+            // Nothing to do.
         }
 
         /**
@@ -331,7 +331,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
 
         }
 
@@ -340,7 +340,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
 
         }
 
@@ -351,7 +351,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
 
         }
 
@@ -435,7 +435,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
 
         }
 
@@ -444,7 +444,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
 
         }
 
@@ -455,7 +455,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
 
         }
 
@@ -539,7 +539,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
 
         }
 
@@ -548,7 +548,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
 
         }
 
@@ -559,7 +559,7 @@ public class ProcessorChainingTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
 
         }
 

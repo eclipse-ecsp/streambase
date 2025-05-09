@@ -39,7 +39,6 @@
 
 package org.eclipse.ecsp.stream.dma.dao.key;
 
-import org.eclipse.ecsp.stream.dma.dao.key.RetryVehicleIdKey;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -93,13 +92,13 @@ public class RetryVehicleIdKeyTest {
         Assert.assertEquals(retryKey, retryKey);
         Assert.assertNotEquals(null, retryKey);
 
-        String key = "abc";
-        Assert.assertNotEquals(retryKey, key);
+        String testKey = "abc";
+        Assert.assertNotEquals(retryKey, testKey);
 
         RetryVehicleIdKey retryKey2 = new RetryVehicleIdKey();
         Assert.assertNotEquals(retryKey2, retryKey);
         
-        retryKey2.setKey(key);
+        retryKey2.setKey(testKey);
         Assert.assertNotEquals(retryKey2, retryKey);
 
         retryKey2.setKey(this.key);

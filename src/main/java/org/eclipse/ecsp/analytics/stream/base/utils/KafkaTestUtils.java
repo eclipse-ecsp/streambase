@@ -62,7 +62,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -319,7 +318,7 @@ public class KafkaTestUtils {
         Collection<KeyValue<Object, Object>> kvs = new ArrayList<>();
         for (int i = 1; i <= strings.length; i++) {
             if (i % Constants.TWO == 0) {
-                kvs.add(new KeyValue(strings[i - Constants.TWO], strings[i - 1]));
+                kvs.add(new KeyValue<Object, Object>(strings[i - Constants.TWO], strings[i - 1]));
             }
         }
         KafkaTestUtils.produceKeyValuesSynchronously(topic, kvs, producerProps);

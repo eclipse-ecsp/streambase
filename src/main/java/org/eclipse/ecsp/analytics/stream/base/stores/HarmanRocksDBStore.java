@@ -119,7 +119,7 @@ import static org.eclipse.ecsp.analytics.stream.base.KafkaStreamsProcessorContex
  *         The key type
  * @param <V>
  *         The value type
- * @see org.apache.kafka.streams.state.Stores#create(String)
+ * @see org.apache.kafka.streams.state.Stores
  */
 public class HarmanRocksDBStore<K, V> implements KeyValueStore<K, V>, BatchWritingStore {
 
@@ -175,7 +175,7 @@ public class HarmanRocksDBStore<K, V> implements KeyValueStore<K, V>, BatchWriti
     private final String parentDir;
     
     /** The open iterators. */
-    private final Set<KeyValueIterator> openIterators = new HashSet<>();
+    private final Set<KeyValueIterator<K, V>> openIterators = new HashSet<>();
     
     /** The key serde. */
     private final Serde<K> keySerde;
@@ -505,8 +505,6 @@ public class HarmanRocksDBStore<K, V> implements KeyValueStore<K, V>, BatchWriti
             try {
                 db.delete(writeOptions, rawKey);
             } catch (RocksDBException e) {
-                LOG.error("Error while removing key "
-                        + serdes.keyFrom(rawKey) + " from store " + this.name, e);
                 throw new ProcessorStateException("Error while removing key " + serdes.keyFrom(rawKey) 
                 + FROM_STORE + this.name, e);
             }
@@ -514,8 +512,6 @@ public class HarmanRocksDBStore<K, V> implements KeyValueStore<K, V>, BatchWriti
             try {
                 db.put(writeOptions, rawKey, rawValue);
             } catch (RocksDBException e) {
-                LOG.error("Error while executing put key " + serdes.keyFrom(rawKey)
-                        + " and value " + serdes.keyFrom(rawValue) + " from store " + this.name, e);
                 throw new ProcessorStateException("Error while executing put key " + serdes.keyFrom(rawKey) 
                 + " and value " + serdes.keyFrom(rawValue) + FROM_STORE + this.name, e);
             }
@@ -756,8 +752,8 @@ public class HarmanRocksDBStore<K, V> implements KeyValueStore<K, V>, BatchWriti
      */
     public void prepareBatchForRestore(final Collection<KeyValue<byte[], byte[]>> records,
             final WriteBatch batch) throws RocksDBException {
-        for (final KeyValue<byte[], byte[]> record : records) {
-            addToBatch(record.key, record.value, batch);
+        for (final KeyValue<byte[], byte[]> kvRecord : records) {
+            addToBatch(kvRecord.key, kvRecord.value, batch);
         }
     }
 
@@ -782,13 +778,13 @@ public class HarmanRocksDBStore<K, V> implements KeyValueStore<K, V>, BatchWriti
     /**
      * Adds the to batch.
      *
-     * @param record the record
+     * @param kvRecord the record
      * @param batch the batch
      * @throws RocksDBException the rocks DB exception
      */
     @Override
-    public void addToBatch(KeyValue<byte[], byte[]> record, WriteBatch batch) throws RocksDBException {
-        addToBatch(record.key, record.value, batch);
+    public void addToBatch(KeyValue<byte[], byte[]> kvRecord, WriteBatch batch) throws RocksDBException {
+        addToBatch(kvRecord.key, kvRecord.value, batch);
     }
     
     /**

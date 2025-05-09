@@ -235,7 +235,7 @@ public class TestUtils {
                 try {
                     Utils.delete(file);
                 } catch (IOException e) {
-                    LOGGER.error("Error while deleting the file - " + file.getAbsolutePath());
+                    LOGGER.error("Error while deleting the file {}", file.getAbsolutePath());
                 }
             }
         });

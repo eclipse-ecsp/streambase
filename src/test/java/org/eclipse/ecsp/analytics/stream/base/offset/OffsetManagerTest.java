@@ -40,9 +40,6 @@
 package org.eclipse.ecsp.analytics.stream.base.offset;
 
 import org.eclipse.ecsp.analytics.stream.base.constants.TestConstants;
-import org.eclipse.ecsp.analytics.stream.base.offset.KafkaStreamsOffsetManagementDAOMongoImpl;
-import org.eclipse.ecsp.analytics.stream.base.offset.KafkaStreamsTopicOffset;
-import org.eclipse.ecsp.analytics.stream.base.offset.OffsetManager;
 import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
 import org.junit.Assert;
 import org.junit.Before;
@@ -221,10 +218,10 @@ public class OffsetManagerTest {
      */
     @Test
     public void testGetKey() {
-        String topic = "topic";
-        int partition = Constants.THREAD_SLEEP_TIME_10;
-        String key = topic + ":" + partition;
-        Assert.assertEquals(key, offsetManager.getKey(topic, partition));
+        String topicName = "topic";
+        int partitionId = Constants.THREAD_SLEEP_TIME_10;
+        String key = topicName + ":" + partitionId;
+        Assert.assertEquals(key, offsetManager.getKey(topicName, partitionId));
     }
 
     /**

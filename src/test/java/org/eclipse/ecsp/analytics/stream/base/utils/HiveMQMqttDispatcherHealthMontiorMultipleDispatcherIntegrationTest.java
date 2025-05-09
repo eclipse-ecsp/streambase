@@ -40,9 +40,6 @@
 package org.eclipse.ecsp.analytics.stream.base.utils;
 
 import org.eclipse.ecsp.analytics.stream.base.Launcher;
-import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
-import org.eclipse.ecsp.analytics.stream.base.utils.MqttDispatcher;
-import org.eclipse.ecsp.analytics.stream.base.utils.MqttHealthMonitor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
