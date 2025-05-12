@@ -128,12 +128,15 @@ public class MessageGenerator {
      * usage().
      */
     public static void usage() {
-        System.out.println("Requires 5 arguements.\n"
-                + "1) Kafka topic name \n"
-                + "2) Key \n"
-                + "3) Value \n"
-                + "4) bootstrapserver \n"
-                + "5) sslEnabled");
+        String textBlock = """
+            Requires 5 arguements.
+                    1) Kafka topic name
+                    2) Key
+                    3) Value
+                    4) bootstrapserver
+                    5) sslEnabled
+               """;
+        System.out.println(textBlock);
     }
 
     /**

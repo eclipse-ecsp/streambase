@@ -278,7 +278,7 @@ public class DMOfflineBufferMultipleDevicesIntegrationTest extends KafkaStreamsA
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
         }
 
         /**
@@ -286,7 +286,7 @@ public class DMOfflineBufferMultipleDevicesIntegrationTest extends KafkaStreamsA
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
         /**
@@ -296,7 +296,7 @@ public class DMOfflineBufferMultipleDevicesIntegrationTest extends KafkaStreamsA
          */
         @Override
         public void configChanged(Properties props) {
-
+            // Nothing to do.
         }
 
         /**

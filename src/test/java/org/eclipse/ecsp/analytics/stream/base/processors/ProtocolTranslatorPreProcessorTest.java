@@ -139,7 +139,6 @@ public class ProtocolTranslatorPreProcessorTest {
     //Event transformer list cannot be
     @Test(expected = IllegalArgumentException.class)
     public void testInitConfigException1() {
-        IgniteKey<String> testKey = new ProtocolTranslatorPreProcessorTest.TestKey();
         ProtocolTranslatorPreProcessorTest.TestEvent event = new ProtocolTranslatorPreProcessorTest.TestEvent();
         event.setEventId(EventID.DELETE_SCHEDULE_EVENT);
         protocolTranslatorPreProcessor.initConfig(props);
@@ -151,7 +150,6 @@ public class ProtocolTranslatorPreProcessorTest {
     //Ignite event Serializer cannot be blank
     @Test(expected = IllegalArgumentException.class)
     public void testInitConfigException2() {
-        IgniteKey<String> testKey = new ProtocolTranslatorPreProcessorTest.TestKey();
         ProtocolTranslatorPreProcessorTest.TestEvent event = new ProtocolTranslatorPreProcessorTest.TestEvent();
         event.setEventId(EventID.DELETE_SCHEDULE_EVENT);
         props.setProperty(PropertyNames.EVENT_TRANSFORMER_CLASSES, "genericIgniteEventTransformer");
@@ -164,7 +162,6 @@ public class ProtocolTranslatorPreProcessorTest {
     //Ignite key transformer cannot be blank
     @Test(expected = IllegalArgumentException.class)
     public void testInitConfigException3() {
-        IgniteKey<String> testKey = new ProtocolTranslatorPreProcessorTest.TestKey();
         ProtocolTranslatorPreProcessorTest.TestEvent event = new ProtocolTranslatorPreProcessorTest.TestEvent();
         event.setEventId(EventID.DELETE_SCHEDULE_EVENT);
         props.setProperty(PropertyNames.EVENT_TRANSFORMER_CLASSES,
@@ -179,7 +176,6 @@ public class ProtocolTranslatorPreProcessorTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void testInitConfigException4() {
-        IgniteKey<String> testKey = new ProtocolTranslatorPreProcessorTest.TestKey();
         ProtocolTranslatorPreProcessorTest.TestEvent event =
                 new ProtocolTranslatorPreProcessorTest.TestEvent();
         event.setEventId(EventID.DELETE_SCHEDULE_EVENT);
@@ -457,6 +453,7 @@ public class ProtocolTranslatorPreProcessorTest {
          * Instantiates a new test event.
          */
         public TestEvent() {
+            // Nothing to do.
         }
 
         /**

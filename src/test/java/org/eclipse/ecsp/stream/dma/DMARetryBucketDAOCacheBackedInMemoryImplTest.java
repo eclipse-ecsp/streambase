@@ -145,7 +145,6 @@ public class DMARetryBucketDAOCacheBackedInMemoryImplTest {
     @Before
     public void setup() {
         mapKey = RetryBucketKey.getMapKey(serviceName, taskId);
-        // sortedDao.setBypass(bypass);
         key1 = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_3000);
         key2 = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_1000);
         key3 = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_5000);
@@ -250,12 +249,12 @@ public class DMARetryBucketDAOCacheBackedInMemoryImplTest {
      */
     @Test
     public void testDeleteLongString() {
-        String mapKey = RetryBucketKey.getMapKey(serviceName, taskId);
-        sortedDao.deleteMessageId(mapKey, key1, "message124");
+        String retryBucketMapKey = RetryBucketKey.getMapKey(serviceName, taskId);
+        sortedDao.deleteMessageId(retryBucketMapKey, key1, "message124");
         // Cannot delte elemt that is not present
         Assert.assertEquals(retryMsgIds1, sortedDao.get(key1));
 
-        sortedDao.deleteMessageId(mapKey, key1, "message123");
+        sortedDao.deleteMessageId(retryBucketMapKey, key1, "message123");
         Set<String> expected = new HashSet<String>();
         expected.add("message456");
         // Element Deleted
@@ -307,8 +306,6 @@ public class DMARetryBucketDAOCacheBackedInMemoryImplTest {
     @Test
     public void testGetTailMapLongBoolean() {
         Set<RetryBucketKey> expectedKeySet = new HashSet<RetryBucketKey>();
-
-        expectedKeySet = new HashSet<RetryBucketKey>();
         expectedKeySet.add(key1);
         expectedKeySet.add(key3);
         Set<RetryBucketKey> actualKeySet = new HashSet<RetryBucketKey>();

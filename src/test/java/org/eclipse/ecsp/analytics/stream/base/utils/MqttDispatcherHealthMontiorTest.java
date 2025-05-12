@@ -62,8 +62,6 @@ import java.util.Map;
 import java.util.Optional;
 
 
-
-
 /**
  * class {@link MqttDispatcherTestHealthMontior}.
  */
@@ -250,16 +248,16 @@ public class MqttDispatcherHealthMontiorTest {
         IgniteStringKey igniteStringKey = (IgniteStringKey) ReflectionTestUtils.getField(mqttDispatcherOne, 
                 "forcedCheckKey");
         Assert.assertEquals(Constants.FORCED_HEALTH_CHECK_DEVICE_ID, igniteStringKey.getKey());
-        DeviceMessage forcedCheckValue = (DeviceMessage) ReflectionTestUtils.getField(mqttDispatcherOne, 
+        DeviceMessage dmForcedCheckValue = (DeviceMessage) ReflectionTestUtils.getField(mqttDispatcherOne, 
                 "forcedCheckValue");
         Assert.assertEquals(Constants.FORCED_HEALTH_CHECK_DEVICE_ID,
-                forcedCheckValue.getDeviceMessageHeader().getTargetDeviceId());
+            dmForcedCheckValue.getDeviceMessageHeader().getTargetDeviceId());
         Assert.assertEquals(Constants.FORCED_HEALTH_DEFAULT_TEST_TOPIC_NAME, 
-                forcedCheckValue.getDeviceMessageHeader().getDevMsgTopicSuffix());
+            dmForcedCheckValue.getDeviceMessageHeader().getDevMsgTopicSuffix());
         Assert.assertEquals(Constants.FORCED_HEALTH_DEFAULT_TEST_TOPIC_NAME, 
-                forcedCheckValue.getEvent().getDevMsgTopicSuffix().get());
+            dmForcedCheckValue.getEvent().getDevMsgTopicSuffix().get());
         Assert.assertEquals(Constants.FORCED_HEALTH_CHECK_DEVICE_ID, 
-                forcedCheckValue.getEvent().getTargetDeviceId().get());
+            dmForcedCheckValue.getEvent().getTargetDeviceId().get());
     }
 
 }

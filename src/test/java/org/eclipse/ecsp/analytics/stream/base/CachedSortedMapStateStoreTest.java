@@ -123,8 +123,8 @@ public class CachedSortedMapStateStoreTest {
     public void testSetTaskId() {
         store.setTaskId(null);
         store.setTaskId(taskId);
-        String taskId = (String) ReflectionTestUtils.getField(store, "taskId");
-        Assert.assertEquals(this.taskId, taskId);
+        String testTaskId = (String) ReflectionTestUtils.getField(store, "taskId");
+        Assert.assertEquals(taskId, testTaskId);
     }
 
     /**
@@ -136,9 +136,9 @@ public class CachedSortedMapStateStoreTest {
         String regex = prefix + "*";
         Map<String, IgniteEntity> map = new HashMap<String, IgniteEntity>();
         map.put("123", igniteEvent);
-        IgniteCache cache = Mockito.mock(IgniteCacheRedisImpl.class);
-        Mockito.when(cache.getKeyValuePairsForRegex(regex, Optional.of(false))).thenReturn(map);
-        store.setCache(cache);
+        IgniteCache igniteCache = Mockito.mock(IgniteCacheRedisImpl.class);
+        Mockito.when(igniteCache.getKeyValuePairsForRegex(regex, Optional.of(false))).thenReturn(map);
+        store.setCache(igniteCache);
         store.syncWithcache(regex, new RetryBucketKey());
         Assert.assertEquals(igniteEvent, store.get(key));
 

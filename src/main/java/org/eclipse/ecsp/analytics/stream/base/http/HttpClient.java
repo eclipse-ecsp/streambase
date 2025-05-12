@@ -177,8 +177,8 @@ public class HttpClient {
      */
     public Map<String, Object> invokeJsonResource(HttpReqMethod method, String httpUrl, Map<String, String> headers,
             Map<String, Object> parameters, int retryCount, long retryInterval) {
-        if ((!(HttpReqMethod.GET.equals(method) | HttpReqMethod.PUT
-                .equals(method) | HttpReqMethod.POST.equals(method)))) {
+        if ((!(HttpReqMethod.GET.equals(method) || HttpReqMethod.PUT
+                .equals(method) || HttpReqMethod.POST.equals(method)))) {
             throw new IllegalArgumentException("Accepts only 'GET', 'PUT', 'POST' method.");
         }
 

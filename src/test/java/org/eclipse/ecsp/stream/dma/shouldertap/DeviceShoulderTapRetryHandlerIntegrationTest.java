@@ -383,7 +383,6 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
 
         DeviceMessageFailureEventDataV1_0 sixthFailEventData =
                 (DeviceMessageFailureEventDataV1_0) sixthDeviceMessageFailureEvent.getEventData();
-        sixthFailEventData = (DeviceMessageFailureEventDataV1_0) sixthDeviceMessageFailureEvent.getEventData();
         assertEquals(DeviceMessageErrorCode.SHOULDER_TAP_RETRY_ATTEMPTS_EXCEEDED, sixthFailEventData.getErrorCode());
         assertEquals(maxRetry, sixthFailEventData.getShoudlerTapRetryAttempts());
         assertEquals(true, sixthFailEventData.isDeviceStatusInactive());
@@ -441,7 +440,7 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
             IgniteEvent value = kafkaRecord.value();
             AbstractIgniteEvent event = (AbstractIgniteEvent) value;
             if (EventID.DEVICEMESSAGEFAILURE.equals(event.getEventId())) {
-                LOGGER.debug("Received feedBackEvent: " + value);
+                LOGGER.debug("Received feedBackEvent: {}", value);
             } else {
                 event.setDeviceRoutable(true);
                 event.setShoulderTapEnabled(true);
@@ -456,6 +455,7 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
          */
         @Override
         public void punctuate(long timestamp) {
+            // Nothing to do.
         }
 
         /**
@@ -463,6 +463,7 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
          */
         @Override
         public void close() {
+            // Nothing to do.
         }
 
         /**
@@ -472,6 +473,7 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
          */
         @Override
         public void configChanged(Properties props) {
+            // Nothing to do.
         }
 
         /**

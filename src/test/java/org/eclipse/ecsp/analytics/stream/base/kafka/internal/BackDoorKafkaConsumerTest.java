@@ -148,19 +148,19 @@ public class BackDoorKafkaConsumerTest extends KafkaStreamsApplicationTestBase {
      */
     @Test(expected = RuntimeException.class)
     public void testGroupIdMissing() {
-        DeviceStatusBackDoorKafkaConsumer consumer = new DeviceStatusBackDoorKafkaConsumer();
-        consumer.setIgniteKeyTransformerImpl("org.eclipse.ecsp.transform.IgniteKeyTransformerStringImpl");
-        consumer.setKafkaBootstrapServers("localhost:9092");
+        DeviceStatusBackDoorKafkaConsumer deviecStatusConsumer = new DeviceStatusBackDoorKafkaConsumer();
+        deviecStatusConsumer.setIgniteKeyTransformerImpl("org.eclipse.ecsp.transform.IgniteKeyTransformerStringImpl");
+        deviecStatusConsumer.setKafkaBootstrapServers("localhost:9092");
 
-        consumer.initializeProperties();
+        deviecStatusConsumer.initializeProperties();
         TestCallBack callBack = new TestCallBack();
 
-        consumer.addCallback(callBack, 0);
-        consumer.setDeviceStatusTopicName(deviceConnStatusTopic);
-        consumer.setDmaConsumerPoll(TestConstants.THREAD_SLEEP_TIME_10);
-        consumer.setDmaAutoOffsetReset("latest");
-        consumer.setServiceName("TestService");
-        consumer.startBackDoorKafkaConsumer();
+        deviecStatusConsumer.addCallback(callBack, 0);
+        deviecStatusConsumer.setDeviceStatusTopicName(deviceConnStatusTopic);
+        deviecStatusConsumer.setDmaConsumerPoll(TestConstants.THREAD_SLEEP_TIME_10);
+        deviecStatusConsumer.setDmaAutoOffsetReset("latest");
+        deviecStatusConsumer.setServiceName("TestService");
+        deviecStatusConsumer.startBackDoorKafkaConsumer();
     }
 
     /**
@@ -168,19 +168,19 @@ public class BackDoorKafkaConsumerTest extends KafkaStreamsApplicationTestBase {
      */
     @Test(expected = RuntimeException.class)
     public void testTopicMissing() {
-        DeviceStatusBackDoorKafkaConsumer consumer = new DeviceStatusBackDoorKafkaConsumer();
-        consumer.setIgniteKeyTransformerImpl("org.eclipse.ecsp.transform.IgniteKeyTransformerStringImpl");
-        consumer.setKafkaBootstrapServers("localhost:9092");
+        DeviceStatusBackDoorKafkaConsumer deviceStatusConsumer = new DeviceStatusBackDoorKafkaConsumer();
+        deviceStatusConsumer.setIgniteKeyTransformerImpl("org.eclipse.ecsp.transform.IgniteKeyTransformerStringImpl");
+        deviceStatusConsumer.setKafkaBootstrapServers("localhost:9092");
 
-        consumer.initializeProperties();
+        deviceStatusConsumer.initializeProperties();
         TestCallBack callBack = new TestCallBack();
 
-        consumer.addCallback(callBack, 0);
-        consumer.setDmaConsumerGroupId((i + "testBackDoorGroupId"));
-        consumer.setDmaConsumerPoll(TestConstants.THREAD_SLEEP_TIME_10);
-        consumer.setDmaAutoOffsetReset("latest");
-        consumer.setServiceName("TestService");
-        consumer.startBackDoorKafkaConsumer();
+        deviceStatusConsumer.addCallback(callBack, 0);
+        deviceStatusConsumer.setDmaConsumerGroupId((i + "testBackDoorGroupId"));
+        deviceStatusConsumer.setDmaConsumerPoll(TestConstants.THREAD_SLEEP_TIME_10);
+        deviceStatusConsumer.setDmaAutoOffsetReset("latest");
+        deviceStatusConsumer.setServiceName("TestService");
+        deviceStatusConsumer.startBackDoorKafkaConsumer();
     }
 
     /**

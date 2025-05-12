@@ -68,9 +68,6 @@ public class BackdoorKafkaTopicOffsetDAOMongoImplTest extends KafkaStreamsApplic
     /** The kafka topic. */
     private String kafkaTopic = "kafkaTopic";
     
-    /** The service. */
-    private String service = "service";
-    
     /** The partition. */
     private int partition = 1;
     

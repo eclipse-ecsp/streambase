@@ -188,12 +188,12 @@ public class MqttDispatcherWithoutTopicPrefixIntegrationTest {
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
 
@@ -238,7 +238,7 @@ public class MqttDispatcherWithoutTopicPrefixIntegrationTest {
          * Instantiates a new test event.
          */
         public TestEvent() {
-
+            // Nothing to do.
         }
 
         /**

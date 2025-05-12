@@ -205,12 +205,12 @@ public class MqttDispatcherPlatformIntegrationTest {
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                // Nothing to do.
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                // Nothing to do.
             }
         });
         mqttDispatcher.dispatch(key, value);
@@ -255,7 +255,7 @@ public class MqttDispatcherPlatformIntegrationTest {
          * Instantiates a new test event.
          */
         public TestEvent() {
-
+            // Nothing to do.
         }
 
         /**

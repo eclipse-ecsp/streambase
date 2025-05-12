@@ -74,7 +74,6 @@ import static org.junit.Assert.assertTrue;
 @ContextConfiguration(classes = Launcher.class)
 @EnableRuleMigrationSupport
 @TestPropertySource("/integration-test-application.properties")
-/*@org.junit.experimental.categories.Category(NightlyBuildTestCase.class)*/
 public class KafkaSinkNodeTest extends KafkaStreamsApplicationTestBase {
 
     /** The Constant SOURCE_TOPIC_NAME. */
@@ -141,12 +140,10 @@ public class KafkaSinkNodeTest extends KafkaStreamsApplicationTestBase {
         boolean flag = false;
 
         for (String[] keyMessage : allMessages) {
-            if (keyMessage.length == Constants.TWO) {
-                if (MESSAGE_KEY.equals(keyMessage[0])
+            if (keyMessage.length == Constants.TWO && MESSAGE_KEY.equals(keyMessage[0])
                         && PAYLOAD.equals(keyMessage[1])) {
-                    flag = true;
-                    break;
-                }
+                flag = true;
+                break;
             }
         }
         assertTrue("Dint get message which is sent", flag);
@@ -168,8 +165,8 @@ public class KafkaSinkNodeTest extends KafkaStreamsApplicationTestBase {
         properties.put(PropertyNames.KAFKA_SSL_CLIENT_AUTH, sslClientAuth);
         properties.put(PropertyNames.KAFKA_SSL_ENABLE, true);
         kafkaSinkNode.init(properties);
-        assertEquals("SSL", properties.getProperty(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG), 
-                "Expected protocol set to SSL");
+        assertEquals("Expected protocol set to SSL", "SSL", 
+            properties.getProperty(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG)); 
     }
     
 

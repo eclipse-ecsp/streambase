@@ -108,12 +108,6 @@ public class MsgIdUpdaterTest {
         DeviceMessage entity = new DeviceMessage(transformer.toBlob(value), Version.V1_0,
                 value, sourceTopic, Constants.THREAD_SLEEP_TIME_60000);
         DeviceMessage valueWithHeaders = deviceIdUpdater.addMessageIdIfNotPresent(entity);
-        ShortHashCodeIdPartGenerator shcApp = new ShortHashCodeIdPartGenerator();
-        String incVal = shcApp.generateIdPart(SERVICE_SP_NAME);
-
-        boolean containsHashCode = valueWithHeaders.getDeviceMessageHeader().getMessageId()
-                .startsWith(incVal);
-        // Assert.assertTrue(containsHashCode);
         Assert.assertNull(valueWithHeaders.getDeviceMessageHeader().getCorrelationId());
     }
 
@@ -193,7 +187,7 @@ public class MsgIdUpdaterTest {
          */
         @Override
         public void setNextHandler(DeviceMessageHandler handler) {
-
+            // Nothing to do.
         }
 
         /**
@@ -201,7 +195,7 @@ public class MsgIdUpdaterTest {
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
     }
@@ -218,7 +212,7 @@ public class MsgIdUpdaterTest {
          * Instantiates a new test event.
          */
         public TestEvent() {
-
+            // Nothing to do.
         }
 
         /**

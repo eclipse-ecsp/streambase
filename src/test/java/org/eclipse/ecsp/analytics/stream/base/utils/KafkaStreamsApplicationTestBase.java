@@ -141,9 +141,6 @@ public class KafkaStreamsApplicationTestBase {
     
     /** The launcher. */
     private Launcher launcher;
-    
-    /** The enable prometheus. */
-    private boolean enablePrometheus;
 
     /**
      * Returns up to `maxMessages` message-values from the topic.
@@ -199,8 +196,8 @@ public class KafkaStreamsApplicationTestBase {
             while (totalPollTimeMs < maxTotalPollTimeMs && continueConsuming(consumedValues.size(), maxMessages)) {
                 totalPollTimeMs += pollIntervalMs;
                 ConsumerRecords<K, V> records = consumer.poll(pollIntervalMs);
-                for (ConsumerRecord<K, V> record : records) {
-                    consumedValues.add(new KeyValue<>(record.key(), record.value()));
+                for (ConsumerRecord<K, V> consumerRecord : records) {
+                    consumedValues.add(new KeyValue<>(consumerRecord.key(), consumerRecord.value()));
                 }
             }
         } finally {
@@ -230,10 +227,6 @@ public class KafkaStreamsApplicationTestBase {
     protected void launchApplication() throws Exception {
         launcher = ctx.getBean(Launcher.class);
         launcher.setExecuteShutdownHook(false);
-        /*
-         * if (enablePrometheus) { prometheusExportServer = new HTTPServer(1234, true);
-         * }
-         */
         launcher.launch();
     }
 
@@ -357,16 +350,13 @@ public class KafkaStreamsApplicationTestBase {
     protected <K, V> void produceKeyValuesSynchronously(
             String topic, Collection<KeyValue<K, V>> records, Properties producerConfig)
             throws ExecutionException, InterruptedException {
-        Producer<K, V> producer = new KafkaProducer<>(producerConfig);
-        try {
-            for (KeyValue<K, V> record : records) {
+        try (Producer<K, V> producer = new KafkaProducer<>(producerConfig)) {
+            for (KeyValue<K, V> kvRecord : records) {
                 Future<RecordMetadata> f = producer.send(
-                        new ProducerRecord<>(topic, record.key, record.value));
+                        new ProducerRecord<>(topic, kvRecord.key, kvRecord.value));
                 f.get();
             }
             producer.flush();
-        } finally {
-            producer.close();
         }
     }
 
