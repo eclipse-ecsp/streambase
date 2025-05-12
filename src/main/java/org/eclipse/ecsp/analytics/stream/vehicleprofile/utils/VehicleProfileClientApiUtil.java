@@ -55,7 +55,11 @@ import java.util.Map;
 
 
 /**
- * Utility class for {@link org.eclipse.ecsp.vehicleprofile.domain.VehicleProfile} API.
+ * Utility class for interacting with the Vehicle Profile API.
+ * <p>
+ * This class provides methods to invoke the Vehicle Profile API to fetch vehicle information
+ * based on a given device ID. It also handles logging, response parsing, and error handling.
+ * </p>
  */
 @Component
 @Scope("prototype")

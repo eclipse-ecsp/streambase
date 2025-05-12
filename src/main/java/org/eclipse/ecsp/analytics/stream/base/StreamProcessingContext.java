@@ -79,6 +79,12 @@ public interface StreamProcessingContext<K, V> {
      */
     public void checkpoint();
 
+    /**
+     * Retrieves the state store by its name.
+     *
+     * @param name the name of the state store to retrieve
+     * @return the KeyValueStore associated with the given name
+     */
     @SuppressWarnings("rawtypes")
     public KeyValueStore getStateStore(String name);
 

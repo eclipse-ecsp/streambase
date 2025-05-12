@@ -64,10 +64,10 @@ import java.util.concurrent.TimeUnit;
  * wrapper over some other messaging broker. Hence, that launcher class can extend from this abstract class
  * and get the common functionality.
  *
- * @param <K1> the generic type for incoming key
- * @param <V1> the generic type for incoming value
- * @param <K2> the generic type for outgoing key
- * @param <V2> the generic type for outgoing value
+ * @param <KIn> the generic type for incoming key
+ * @param <VIn> the generic type for incoming value
+ * @param <KOut> the generic type for outgoing key
+ * @param <VOut>> the generic type for outgoing value
  */
 
 public abstract class AbstractLauncher<KIn, VIn, KOut, VOut> implements LauncherProvider {
@@ -125,7 +125,7 @@ public abstract class AbstractLauncher<KIn, VIn, KOut, VOut> implements Launcher
     }
 
     /**
-     * Method to define how would the streams, for eg. {@link KafkaStreams} be launched.
+     * Method to launch the application with streaming.
      *
      * @param props the props
      */

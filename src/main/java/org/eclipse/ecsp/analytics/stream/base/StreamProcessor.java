@@ -83,8 +83,10 @@ public interface StreamProcessor<KIn, VIn, KOut, VOut> {
 
     /**
      * Perform actions on a schedule dictated by wall clock time.
-     * One tick is roughly one second. Note that implementations of this method
-     * should use the StreamsProcessorContext.forwardDirectly() instead of the forward() methods.
+     * This method is called periodically, with one tick representing roughly one second.
+     * Implementations should use StreamsProcessorContext.forwardDirectly() instead of forward() methods.
+     *
+     * @param ticks The number of ticks since the processor started.
      */
     default void punctuateWc(long ticks) {
     }
@@ -110,6 +112,12 @@ public interface StreamProcessor<KIn, VIn, KOut, VOut> {
      */
     void configChanged(Properties props);
 
+    /**
+     * Creates a state store for the processor.
+     * The state store is used to persist key-value pairs for processing.
+     *
+     * @return A new instance of `HarmanPersistentKVStore`.
+     */
     @SuppressWarnings("rawtypes")
     HarmanPersistentKVStore createStateStore();
 
@@ -144,6 +152,9 @@ public interface StreamProcessor<KIn, VIn, KOut, VOut> {
      * property or master data needs to be read as and when
      * needed.
      *
+     * @param key        The key of the data to update.
+     * @param value      The value of the data to update.
+     * @param streamName The name of the stream associated with the update.
      */
     default void updateSharedData(Object key, Object value, String streamName) {
     }

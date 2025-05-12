@@ -56,17 +56,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * An implementation of {@link KafkaStateAgentListener} which takes the following actions on {@link KafkaStreams}
- * state change.
- * <li>
- *  Restart the {@link BackdoorKafkaConsumer}.
- * </li>
- * <li>
- *  If the streams have been in rebalancing state for over 10 mins then restart the KafkaStreams.
- * </li>
+ * An implementation of {@link KafkaStreams.StateListener} and {@link HealthMonitor} that monitors
+ * the state of {@link KafkaStreams} and takes appropriate actions based on state changes.
  *
+ * <p>Key functionalities include:
+ * <ul>
+ *   <li>Restarting {@link BackdoorKafkaConsumer} instances when the state changes to RUNNING.</li>
+ *   <li>Monitoring the REBALANCING state and restarting the application if it persists for too long.</li>
+ *   <li>Notifying {@link OffsetManager} to repopulate offsets from MongoDB.</li>
+ * </ul>
  */
-
 @Component
 public class KafkaStateListener implements KafkaStreams.StateListener, HealthMonitor {
     
@@ -147,18 +146,20 @@ public class KafkaStateListener implements KafkaStreams.StateListener, HealthMon
     }
 
     /**
-     * Following actions are taken when the state of KafkaStreams changes.
+     * Handles state changes in the {@link KafkaStreams} instance.
+     *
+     * <p>This method performs the following actions:
      * <ul>
-     * <li>Notify all the {@link BackdoorKafkaConsumer} that the KafkaStreams state has changed so that 
-     * necessary action could be taken by the Kafka consumers</li>.
-     * <li>Keep monitoring the state of KafkaStreams and if it remains in the REBALANCING state for
-     * more than 10 mins, then restart the streams application. </li>
-     * <li>Notify the {@link OffsetManager} so that offsets could be repopulated from MongoDB. This is 
-     * related to the manual offset management done in the stream-base library. See {@link OffsetManager} for more.
+     *   <li>Notifies all {@link BackdoorKafkaConsumer} instances about the state change.</li>
+     *   <li>Updates the health status based on the new state.</li>
+     *   <li>Monitors the REBALANCING state and starts a thread to validate if it persists too long.</li>
+     *   <li>Notifies {@link OffsetManager} to repopulate offsets when transitioning from REBALANCING to RUNNING.</li>
+     *   <li>Invokes any registered {@link KafkaStateAgentListener} instances when
+     *   transitioning from REBALANCING to RUNNING.</li>
      * </ul>
      *
-     * @param newState the new state
-     * @param oldState the old state
+     * @param newState the new state of the {@link KafkaStreams}.
+     * @param oldState the previous state of the {@link KafkaStreams}.
      */
     @Override
     public void onChange(State newState, State oldState) {

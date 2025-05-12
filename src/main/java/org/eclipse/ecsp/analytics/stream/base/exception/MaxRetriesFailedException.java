@@ -41,7 +41,6 @@ package org.eclipse.ecsp.analytics.stream.base.exception;
 
 /**
  * Custom exception for retries exhausted if a function doesn't return successfully.
- * Check usage in {@link RetryUtils}
  */
 public class MaxRetriesFailedException extends RuntimeException {
 

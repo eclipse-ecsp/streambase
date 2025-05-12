@@ -54,9 +54,12 @@ public class StreamBaseSpringContext implements ApplicationContextAware {
     private static ApplicationContext context;
 
     /**
-     * Returns the Spring managed bean instance of the given class type if it exists. Returns null otherwise.
+     * Retrieves a Spring-managed bean of the specified class type.
      *
-     * @param beanClass beanClass
+     * @param <T>       the type of the bean to retrieve
+     * @param beanClass the class type of the bean to retrieve
+     * @return the Spring-managed bean instance of the specified type
+     * @throws BeansException if the bean could not be created or retrieved
      */
     public static <T extends Object> T getBean(Class<T> beanClass) {
         return context.getBean(beanClass);

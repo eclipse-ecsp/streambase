@@ -49,9 +49,10 @@ import java.util.Properties;
 public interface StreamProcessorFilter {
 
     /**
-     * returns if current stream processor is enabled or not.
+     * Determines whether the current stream processor should be included in the processor chain.
      *
-     * @return boolean
+     * @param props the properties to evaluate for inclusion
+     * @return {@code true} if the processor should be included, {@code false} otherwise
      */
     boolean includeInProcessorChain(Properties props);
 

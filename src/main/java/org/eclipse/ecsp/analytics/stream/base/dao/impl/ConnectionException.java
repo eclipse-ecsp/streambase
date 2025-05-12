@@ -44,8 +44,13 @@ package org.eclipse.ecsp.analytics.stream.base.dao.impl;
  */
 public class ConnectionException extends RuntimeException {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 943434134L;
 
+    /**
+     * Constructs a new ConnectionException with the specified detail message.
+     *
+     * @param msg the detail message explaining the reason for the exception
+     */
     public ConnectionException(String msg) {
         super(msg);
     }

@@ -176,13 +176,12 @@ public class Launcher {
     }
 
     /**
-     * Extract all the properties supplied via ".properties" file & config-map and, launch the 
+     * Extract all the properties supplied via properties file and config-map and, launch the
      * streams application.
      *
      * @throws IllegalArgumentException if {@link LauncherProvider} implementation isn't available on the
      *                                  classpath.
      */
-
     public void launch() throws IllegalArgumentException {
         Thread.setDefaultUncaughtExceptionHandler((Thread t, Throwable e) ->
             LOGGER.error("Uncaught exception for thread " + t.getName(), e));

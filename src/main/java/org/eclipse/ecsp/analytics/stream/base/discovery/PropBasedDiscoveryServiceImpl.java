@@ -52,7 +52,7 @@ import java.util.Properties;
 /**
  * The purpose of this class is to chain the mandatory pre and post processors along with the service processors.
  * The pre and post processor classes are pluggable via the following configs exposed by the stream-base
- * library: {@link PropertyNames#PRE_PROCESSORS} & {@link PropertyNames#POST_PROCESSORS}.
+ * library: {@link PropertyNames#PRE_PROCESSORS} and {@link PropertyNames#POST_PROCESSORS}.
  * 
  * <p>
  * In between pre and post processors, service integrating the stream-base library can provide its own 

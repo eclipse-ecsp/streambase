@@ -47,6 +47,11 @@ import java.util.Properties;
  */
 public interface SinkNode<K, V> {
 
+    /**
+     * Initialize the sink node with the given properties.
+     *
+     * @param prop the properties to initialize the sink node
+     */
     public void init(Properties prop);
 
     /**

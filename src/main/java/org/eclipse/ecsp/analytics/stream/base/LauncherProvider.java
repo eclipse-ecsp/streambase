@@ -48,10 +48,21 @@ import java.util.Properties;
  * @author ssasidharan
  */
 public interface LauncherProvider {
+
+    /**
+     * Launches the stream processing system with the provided properties.
+     *
+     * @param props the properties to configure the stream processing system
+     */
     void launch(Properties props);
 
+    /**
+     * Terminates the stream processing system and releases resources.
+     */
     void terminate();
 
-    //WI-365808 For unit test cases
+    /**
+     * Terminates the streams with a timeout for unit test cases.
+     */
     void terminateStreamsWithTimeout();
 }
