@@ -873,6 +873,33 @@
                         </gpgArguments>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.2</version>
+                    <executions>
+                        <execution>
+                            <id>default-test</id>
+                            <configuration>
+                                <includes>
+                                    <include>**/ignite/cache/redis/*</include>
+                                    <include>**/ignite/dao/utils/*</include>
+                                    <include>**/redis/embedded/*</include>
+                                    <include>**/analytics/stream/base/utils/EmbeddedMQTTServer.class</include>
+                                    <include>**/analytics/stream/base/kafka/EmbeddedKafka.class</include>
+                                    <include>**/analytics/stream/base/kafka/EmbeddedZookeeper.class</include>
+                                    <include>**/analytics/stream/base/kafka/SingleNodeKafkaCluster.class</include>
+                                    <include>**/analytics/stream/base/utils/KafkaStreamsApplicationTestBase.class</include>
+                                    <include>**/analytics/stream/base/utils/KafkaStreamsApplicationTestBase$*.class
+                                    </include>
+                                </includes>
+                            </configuration>
+                            <goals>
+                                <goal>test-jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -1071,29 +1098,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.2</version>
-                <executions>
-                    <execution>
-                        <id>default-test</id>
-                        <configuration>
-                            <includes>
-                                <include>**/ignite/cache/redis/*</include>
-                                <include>**/ignite/dao/utils/*</include>
-                                <include>**/redis/embedded/*</include>
-                                <include>**/analytics/stream/base/utils/EmbeddedMQTTServer.class</include>
-                                <include>**/analytics/stream/base/kafka/EmbeddedKafka.class</include>
-                                <include>**/analytics/stream/base/kafka/EmbeddedZookeeper.class</include>
-                                <include>**/analytics/stream/base/kafka/SingleNodeKafkaCluster.class</include>
-                                <include>**/analytics/stream/base/utils/KafkaStreamsApplicationTestBase.class</include>
-                                <include>**/analytics/stream/base/utils/KafkaStreamsApplicationTestBase$*.class
-                                </include>
-                            </includes>
-                        </configuration>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -1125,7 +1129,7 @@
         <profile>
             <id>release</id>
 			<properties>
-                <maven.test.skip>true</maven.test.skip>
+                <maven.test.skip>false</maven.test.skip>
             </properties>
 			<distributionManagement>
                 <snapshotRepository>
@@ -1163,6 +1167,10 @@
 							</execution>
 						</executions>
 					</plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                    </plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-source-plugin</artifactId>
