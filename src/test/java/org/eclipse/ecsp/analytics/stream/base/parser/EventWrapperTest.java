@@ -39,18 +39,12 @@
 
 package org.eclipse.ecsp.analytics.stream.base.parser;
 
-import org.eclipse.ecsp.analytics.stream.base.parser.EventParser;
-import org.eclipse.ecsp.analytics.stream.base.parser.EventWrapperBase;
-import org.eclipse.ecsp.analytics.stream.base.parser.EventWrapperForSequence;
-import org.eclipse.ecsp.analytics.stream.base.parser.GenericValue;
 import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
-
-
 
 /**
  * {@link EventWrapperTest}.
@@ -200,7 +194,7 @@ public class EventWrapperTest {
         Object v = w.getPropertyByExpr("data[EventID=EngineRPM]");
         Assert.assertNotNull(v);
         Map m = (Map) v;
-        Assert.assertEquals(new Long(Constants.LONG_1475151880125),
+        Assert.assertEquals(Long.valueOf(Constants.LONG_1475151880125),
                 w.getProperty(m, "Timestamp"));
         Assert.assertEquals(new String("111"), w.getProperty(m, "Data.value"));
     }
@@ -265,7 +259,7 @@ public class EventWrapperTest {
         Object v = w.getPropertyByExpr("[EventID=Location]");
         Assert.assertNotNull(v);
         Map m = (Map) v;
-        Assert.assertEquals(new Long(Constants.LONG_1443717903851),
+        Assert.assertEquals(Long.valueOf(Constants.LONG_1443717903851),
                 w.getProperty(m, "TimeStamp"));
         Assert.assertEquals(new String("N"), w.getProperty(m, "Data.heading"));
     }
@@ -284,7 +278,7 @@ public class EventWrapperTest {
         System.out.println(v);
         List l = (List) v;
         Map m = (Map) l.get(0);
-        Assert.assertEquals(new Long(Constants.LONG_1443717903851),
+        Assert.assertEquals(Long.valueOf(Constants.LONG_1443717903851),
                 w.getProperty(m, "TimeStamp"));
         Assert.assertTrue(w.getProperty(m, "Data.value").equals("100")
                 || w.getProperty(m, "Data.value").equals("150"));

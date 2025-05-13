@@ -303,8 +303,6 @@ public class DMAShoulderTapRetryBucketDAOCacheBackedInMemoryImplTest {
     @Test
     public void testGetTailMapLongBoolean() {
         Set<ShoulderTapRetryBucketKey> expectedKeySet = new HashSet<ShoulderTapRetryBucketKey>();
-
-        expectedKeySet = new HashSet<ShoulderTapRetryBucketKey>();
         expectedKeySet.add(key1);
         expectedKeySet.add(key3);
         Set<ShoulderTapRetryBucketKey> actualKeySet = new HashSet<ShoulderTapRetryBucketKey>();

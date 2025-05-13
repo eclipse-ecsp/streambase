@@ -82,9 +82,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
 import static org.junit.Assert.assertNotNull;
@@ -423,10 +421,6 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
 
         KafkaTestUtils.sendMessages(inTopicName, producerProps,
                 KEY_SER.toBlob(new IgniteStringKey("dummy_id")), transformer.toBlob(event2));
-
-        List<String[]> messages = KafkaTestUtils.getMessages(outTopicName,
-                consumerProps, Constants.THREE, Constants.THREAD_SLEEP_TIME_5000);
-
         String metricsGet = sendGET("http://localhost:" + prometheusExportPort);
         String liveThreadMetric = metricsGet.substring(metricsGet.indexOf("service_data_consumption_count{svc="));
         liveThreadMetric = liveThreadMetric.substring(0, liveThreadMetric.indexOf("service_data_consumption_sum{svc="));
@@ -477,7 +471,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          * Instantiates a new stream post processor.
          */
         public StreamPostProcessor() {
-
+            // Nothing to do.
         }
 
         /**
@@ -522,8 +516,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -531,8 +524,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -542,8 +534,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -581,7 +572,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          * Instantiates a new stream pre processor.
          */
         public StreamPreProcessor() {
-
+            // Nothing to do.
         }
 
         /**
@@ -624,8 +615,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -633,8 +623,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -644,8 +633,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -728,8 +716,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -737,8 +724,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -748,8 +734,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -832,8 +817,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -841,8 +825,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void close() {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -852,8 +835,7 @@ public class PrometheusMetricsTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void configChanged(Properties props) {
-
-
+            // Nothing to do.
         }
 
         /**

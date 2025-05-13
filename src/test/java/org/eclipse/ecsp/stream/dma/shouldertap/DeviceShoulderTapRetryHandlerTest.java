@@ -158,11 +158,6 @@ public class DeviceShoulderTapRetryHandlerTest {
         event.setRequestId("Req123");
         event.setMessageId("Msg123");
         event.setBizTransactionId("Biz123");
-        // Class classObject =
-        // getClass().getClassLoader()
-        // .loadClass("org.eclipse.ecsp.stream.dma.shouldertap.DummyShoulderTapInvokerImpl");
-        // Mockito.when(ctx.getBean(classObject)).thenReturn((DeviceShoulderTapInvoker)
-        // deviceShoulderTapInvoker);
         Mockito.when(deviceShoulderTapInvoker.sendWakeUpMessage("Req123", vehicleId, extraParameters, spc))
                 .thenReturn(true);
     }
@@ -279,11 +274,11 @@ public class DeviceShoulderTapRetryHandlerTest {
         DeviceMessage entity = new DeviceMessage(transformer.toBlob(event),
                 Version.V1_0, event, sourceTopic, Constants.THREAD_SLEEP_TIME_60000);
 
-        RetryRecord record = new RetryRecord(retryTestKey, entity, currentTime);
-        record.addAttempt(currentTime + Constants.TEN);
-        record.setExtraParameters(extraParameters);
+        RetryRecord retryRecord = new RetryRecord(retryTestKey, entity, currentTime);
+        retryRecord.addAttempt(currentTime + Constants.TEN);
+        retryRecord.setExtraParameters(extraParameters);
         Mockito.when(spc.streamName()).thenReturn("topic");
-        Mockito.when(shoulderTapRetryRecordDAO.get(Mockito.any(RetryVehicleIdKey.class))).thenReturn(record);
+        Mockito.when(shoulderTapRetryRecordDAO.get(Mockito.any(RetryVehicleIdKey.class))).thenReturn(retryRecord);
 
         // Max Retry is set to Constants.TWO here.
         shoulderTapRetryHandler.setRetryIntervalDivisor(Constants.TEN);
@@ -352,12 +347,12 @@ public class DeviceShoulderTapRetryHandlerTest {
         DeviceMessage entity = new DeviceMessage(transformer.toBlob(event),
                 Version.V1_0, event, sourceTopic, Constants.THREAD_SLEEP_TIME_60000);
 
-        RetryRecord record = new RetryRecord(retryTestKey, entity, currentTime);
-        record.addAttempt(currentTime + Constants.TEN);
-        record.addAttempt(currentTime + Constants.TWENTY);
-        record.setExtraParameters(extraParameters);
+        RetryRecord retryRecord = new RetryRecord(retryTestKey, entity, currentTime);
+        retryRecord.addAttempt(currentTime + Constants.TEN);
+        retryRecord.addAttempt(currentTime + Constants.TWENTY);
+        retryRecord.setExtraParameters(extraParameters);
         Mockito.when(spc.streamName()).thenReturn("topic");
-        Mockito.when(shoulderTapRetryRecordDAO.get(Mockito.any(RetryVehicleIdKey.class))).thenReturn(record);
+        Mockito.when(shoulderTapRetryRecordDAO.get(Mockito.any(RetryVehicleIdKey.class))).thenReturn(retryRecord);
 
         // Max Retry is set to Constants.TWO here.
         int maxRetry = Constants.TWO;
@@ -461,10 +456,10 @@ public class DeviceShoulderTapRetryHandlerTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void testInitInvalidDeviceShoulderTapInvokerImplConfig() throws InterruptedException {
-        String deviceShoulderTapInvoker =
+        String deviceShoulderTapInvokerImpl =
                 "org.eclipse.ecsp.stream.dma.shouldertap.ShoulderTapInvokerWAMImp";
         ReflectionTestUtils.setField(shoulderTapRetryHandler,
-                "deviceShoulderTapInvokerImplClass", deviceShoulderTapInvoker);
+                "deviceShoulderTapInvokerImplClass", deviceShoulderTapInvokerImpl);
 
         shoulderTapRetryHandler.init();
     }
@@ -571,11 +566,11 @@ public class DeviceShoulderTapRetryHandlerTest {
         DeviceMessage entity = new DeviceMessage(transformer.toBlob(event),
                 Version.V1_0, event, sourceTopic, Constants.THREAD_SLEEP_TIME_60000);
 
-        RetryRecord record = new RetryRecord(retryTestKey, entity, currentTime);
-        record.addAttempt(currentTime + Constants.TEN);
-        record.setExtraParameters(extraParameters);
+        RetryRecord retryRecord = new RetryRecord(retryTestKey, entity, currentTime);
+        retryRecord.addAttempt(currentTime + Constants.TEN);
+        retryRecord.setExtraParameters(extraParameters);
         Mockito.when(spc.streamName()).thenReturn("topic");
-        Mockito.when(shoulderTapRetryRecordDAO.get(Mockito.any(RetryVehicleIdKey.class))).thenReturn(record);
+        Mockito.when(shoulderTapRetryRecordDAO.get(Mockito.any(RetryVehicleIdKey.class))).thenReturn(retryRecord);
 
         boolean registered = shoulderTapRetryHandler.registerDevice(retryTestKey, entity, extraParameters);
         assertTrue(registered);

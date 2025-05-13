@@ -202,10 +202,8 @@ public class HarmanRocksDBStoreTest {
 
         String key = "key1";
         byte[] keyArr = key.getBytes(StandardCharsets.UTF_8);
-        String value = "value1";
         byte[] valueArr = key.getBytes(StandardCharsets.UTF_8);
-        Headers header = new RecordHeaders();
-
+        
         ConsumerRecord<byte[], byte[]> record1 = new
                 ConsumerRecord<byte[], byte[]>("testTopic", 0, 0, keyArr, valueArr);
         List<ConsumerRecord<byte[], byte[]>> consumerRecords = new ArrayList<>();

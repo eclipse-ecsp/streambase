@@ -158,7 +158,6 @@ public class DeviceMessagingAgentPreProcessorTest {
         RetryTestEvent event = new RetryTestEvent();
         event.setMessageId("msgId223");
         event.setCorrelationId(msgId);
-        String mapKey = RetryRecordKey.getMapKey(serviceName, taskId);
         dmaPreProcessor.configChanged(new Properties());
         dmaPreProcessor.punctuate(TestConstants.TWELVE);
         dmaPreProcessor.setMapKey(null);

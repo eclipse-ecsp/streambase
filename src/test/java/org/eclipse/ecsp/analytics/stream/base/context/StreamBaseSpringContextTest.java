@@ -40,7 +40,6 @@
 package org.eclipse.ecsp.analytics.stream.base.context;
 
 import org.eclipse.ecsp.analytics.stream.base.Launcher;
-import org.eclipse.ecsp.analytics.stream.base.context.StreamBaseSpringContext;
 import org.eclipse.ecsp.analytics.stream.base.metrics.reporter.HarmanRocksDBMetricsExporter;
 import org.eclipse.ecsp.analytics.stream.base.utils.KafkaStreamsApplicationTestBase;
 import org.junit.Assert;

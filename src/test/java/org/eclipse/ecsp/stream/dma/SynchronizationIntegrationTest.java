@@ -141,54 +141,6 @@ public class SynchronizationIntegrationTest extends KafkaStreamsApplicationTestB
         Assert.assertEquals(entityPut.getIgniteKey(), entityRead.getIgniteKey());
     }
 
-    //    @Test
-    //    public void testDeviceConnSyncWithCacheIntegration() throws InterruptedException {
-    //        ConcurrentHashSet<String> value = new ConcurrentHashSet<String>();
-    //        value.add("deviceId12345");
-    //        VehicleIdDeviceIdMapping mapping = new VehicleIdDeviceIdMapping(Version.V1_0, value);
-    //
-    //        ConcurrentHashSet<String> value2 = new ConcurrentHashSet<String>();
-    //        value2.add("deviceId22345");
-    //        VehicleIdDeviceIdMapping mapping2 = new VehicleIdDeviceIdMapping(Version.V1_0, value2);
-    //
-    //        ConcurrentHashSet<String> value3 = new ConcurrentHashSet<String>();
-    //        value3.add("deviceId32345");
-    //        VehicleIdDeviceIdMapping mapping3 = new VehicleIdDeviceIdMapping(Version.V1_0, value3);
-    //
-    //        DeviceStatusKey abc = new DeviceStatusKey("abc");
-    //        DeviceStatusKey efg = new DeviceStatusKey("efg");
-    //        DeviceStatusKey hij = new DeviceStatusKey("hij");
-    //
-    //        // Device Connection status from now on will be put in to cache from
-    //        // HiveMq and not by DMA
-    //
-    //        putToCache(abc, mapping);
-    //        putToCache(efg, mapping2);
-    //        putToCache(hij, mapping3);
-    //        deviceStatusCacheBackedInMemoryDAO.initialize();
-    //
-    //        Assert.assertEquals(mapping.toString(),
-    //                deviceStatusCacheBackedInMemoryDAO.get(abc).toString());
-    //        Assert.assertEquals(mapping2.toString(),
-    //                deviceStatusCacheBackedInMemoryDAO.get(efg).toString());
-    //    }
-
-    /**
-     * Put to cache.
-     *
-     * @param key the key
-     * @param value the value
-     */
-    private void putToCache(DeviceStatusKey key, VehicleIdDeviceIdMapping value) {
-        PutMapOfEntitiesRequest<VehicleIdDeviceIdMapping> putRequest = new PutMapOfEntitiesRequest<>();
-        putRequest.withKey(key.getMapKey(serviceName));
-        Map<String, VehicleIdDeviceIdMapping> pair = new HashMap<String, VehicleIdDeviceIdMapping>();
-        pair.put(key.convertToString(), value);
-        putRequest.withValue(pair);
-        putRequest.withNamespaceEnabled(false);
-        cache.putMapOfEntities(putRequest);
-    }
-
     /**
      * Test retry record sync with cache integration.
      *

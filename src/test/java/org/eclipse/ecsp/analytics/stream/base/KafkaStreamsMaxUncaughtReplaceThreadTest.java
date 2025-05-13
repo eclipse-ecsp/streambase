@@ -49,8 +49,6 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
-import org.eclipse.ecsp.analytics.stream.base.Launcher;
-import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
 import org.eclipse.ecsp.analytics.stream.base.constants.TestConstants;
 import org.eclipse.ecsp.analytics.stream.base.discovery.PropBasedDiscoveryServiceImpl;
 import org.eclipse.ecsp.analytics.stream.base.utils.KafkaStreamsApplicationTestBase;
@@ -220,7 +218,7 @@ public class KafkaStreamsMaxUncaughtReplaceThreadTest extends KafkaStreamsApplic
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
 
     }
@@ -272,7 +270,7 @@ public class KafkaStreamsMaxUncaughtReplaceThreadTest extends KafkaStreamsApplic
          */
         @Override
         public void close() {
-
+            // Nothing to do.
         }
     }
 }

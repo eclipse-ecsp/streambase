@@ -63,9 +63,6 @@ public class TestStreamProcessorMultiForwards implements IgniteEventStreamProces
 
     /** The log. */
     private final Logger log = LoggerFactory.getLogger(TestStreamProcessor.class);
-
-    /** The props. */
-    private Properties props;
     
     /** The ctxt. */
     private StreamProcessingContext<IgniteKey<?>, IgniteEvent> ctxt;
@@ -144,7 +141,7 @@ public class TestStreamProcessorMultiForwards implements IgniteEventStreamProces
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("Key={},Value={}", key.toString(), value.toString());
+            log.debug("Key={},Value={}", key, value);
         }
 
         // do processing and then forward the event.
@@ -170,7 +167,7 @@ public class TestStreamProcessorMultiForwards implements IgniteEventStreamProces
      */
     @Override
     public void punctuate(long timestamp) {
-
+        // Nothing to do.
     }
 
     /**
@@ -178,7 +175,7 @@ public class TestStreamProcessorMultiForwards implements IgniteEventStreamProces
      */
     @Override
     public void close() {
-
+        // Nothing to do.
     }
 
     /**
@@ -188,7 +185,7 @@ public class TestStreamProcessorMultiForwards implements IgniteEventStreamProces
      */
     @Override
     public void configChanged(Properties props) {
-
+        // Nothing to do.
     }
 
     /**
@@ -198,7 +195,6 @@ public class TestStreamProcessorMultiForwards implements IgniteEventStreamProces
      */
     @Override
     public void initConfig(Properties props) {
-        this.props = props;
         String sourceTopicNames = (String) props.get("source.topic.name");
         sourceTopics = sourceTopicNames.split(",");
         log.info("source topic list {}", sourceTopicNames);

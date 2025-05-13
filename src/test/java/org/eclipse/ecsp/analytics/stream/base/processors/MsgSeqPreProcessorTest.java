@@ -50,7 +50,6 @@ import org.apache.kafka.streams.processor.api.Record;
 import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.eclipse.ecsp.analytics.stream.base.StreamProcessingContext;
-import org.eclipse.ecsp.analytics.stream.base.constants.TestConstants;
 import org.eclipse.ecsp.analytics.stream.base.stores.HarmanPersistentKVStore;
 import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
 import org.eclipse.ecsp.domain.EventID;
@@ -96,7 +95,7 @@ public class MsgSeqPreProcessorTest {
      */
     @Before
     public void setup() {
-
+        // Nothing to do.
     }
 
     /**
@@ -368,8 +367,7 @@ public class MsgSeqPreProcessorTest {
          */
         @Override
         public void checkpoint() {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -393,6 +391,7 @@ public class MsgSeqPreProcessorTest {
          */
         @Override
         public void forwardDirectly(String key, String value, String topic) {
+            // Nothing to do.
         }
 
         /**
@@ -437,7 +436,7 @@ public class MsgSeqPreProcessorTest {
          */
         @Override
         public void schedule(long interval, PunctuationType punctuationType, Punctuator punctuator) {
-
+            // Nothing to do.
 
         }
 
@@ -462,7 +461,7 @@ public class MsgSeqPreProcessorTest {
          */
         @Override
         public void forward(Record<K, V> kafkaRecord, String name) {
-
+            // Nothing to do.
 
         }
 
@@ -554,7 +553,7 @@ public class MsgSeqPreProcessorTest {
          */
         @Override
         public void flush() {
-
+            // Nothing to do.
 
         }
 
@@ -563,8 +562,7 @@ public class MsgSeqPreProcessorTest {
          */
         @Override
         public void close() {
-
-
+            // Nothing to do.
         }
 
         /**
@@ -667,7 +665,7 @@ public class MsgSeqPreProcessorTest {
          */
         @Override
         public void putAll(List<KeyValue<String, Object>> entries) {
-
+            // Nothing to do.
 
         }
 

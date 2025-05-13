@@ -124,25 +124,23 @@ public class EmbeddedKafka {
      * @return the properties
      */
     private Properties effectiveConfigFrom(final Properties initialConfig) {
-        final Properties effectiveConfig = new Properties();
-        effectiveConfig.put(KafkaConfig$.MODULE$.BrokerIdProp(), 0);
-        effectiveConfig.put(KafkaConfig.ListenersProp(), "PLAINTEXT://127.0.0.1:9092");
-        effectiveConfig.put(KafkaConfig$.MODULE$.NumPartitionsProp(), 1);
-        effectiveConfig.put(KafkaConfig$.MODULE$.AutoCreateTopicsEnableProp(), true);
-        effectiveConfig.put(KafkaConfig$.MODULE$.MessageMaxBytesProp(), Constants.INT_1000000);
-        effectiveConfig.put(KafkaConfig$.MODULE$.ControlledShutdownEnableProp(), true);
+        final Properties effectiveConfigProps = new Properties();
+        effectiveConfigProps.put(KafkaConfig$.MODULE$.BrokerIdProp(), 0);
+        effectiveConfigProps.put(KafkaConfig.ListenersProp(), "PLAINTEXT://127.0.0.1:9092");
+        effectiveConfigProps.put(KafkaConfig$.MODULE$.NumPartitionsProp(), 1);
+        effectiveConfigProps.put(KafkaConfig$.MODULE$.AutoCreateTopicsEnableProp(), true);
+        effectiveConfigProps.put(KafkaConfig$.MODULE$.MessageMaxBytesProp(), Constants.INT_1000000);
+        effectiveConfigProps.put(KafkaConfig$.MODULE$.ControlledShutdownEnableProp(), true);
 
-        effectiveConfig.putAll(initialConfig);
-        effectiveConfig.setProperty(KafkaConfig$.MODULE$.LogDirProp(), logDir.getAbsolutePath());
+        effectiveConfigProps.putAll(initialConfig);
+        effectiveConfigProps.setProperty(KafkaConfig$.MODULE$.LogDirProp(), logDir.getAbsolutePath());
 
         //effectiveConfig.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, effectiveConfig)
-        effectiveConfig.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-        effectiveConfig.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-        //effectiveConfig.put(PropertyNames.NUM_STREAM_THREADS, "1");
-        //effectiveConfig.put(PropertyNames.REPLICATION_FACTOR, "1");
-        effectiveConfig.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams");
+        effectiveConfigProps.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+        effectiveConfigProps.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+        effectiveConfigProps.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/kafka-streams");
 
-        return effectiveConfig;
+        return effectiveConfigProps;
     }
 
     /**

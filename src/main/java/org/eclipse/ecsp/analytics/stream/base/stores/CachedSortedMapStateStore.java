@@ -57,6 +57,8 @@ public class CachedSortedMapStateStore<K extends CacheKeyConverter<K>, V extends
     /** The task id. */
     //This taskId has been added here to pass it down to CacheBypass from syncWithMapCacheMethod
     private String taskId;
+    
+    private final String AND_MUTATION_ID = "and mutationId {}";
 
     /**
      * Sets the cache.
@@ -115,7 +117,7 @@ public class CachedSortedMapStateStore<K extends CacheKeyConverter<K>, V extends
     @Override
     public void put(K key, V value, Optional<MutationId> mutationId, String cacheType) {
         logger.debug("Invoking put of CacheBackedGenericInMemoryDAOImpl with key {} and value {} "
-            + "and mutationId {}", key, value, mutationId);
+            + AND_MUTATION_ID, key, value, mutationId);
         putToCache(key, value, mutationId);
         super.put(key, value);
         cacheGuage.set(super.approximateNumEntries(), cacheType, svc, nodeName, taskId);
@@ -133,7 +135,7 @@ public class CachedSortedMapStateStore<K extends CacheKeyConverter<K>, V extends
     @Override
     public V putIfAbsent(K key, V value, Optional<MutationId> mutationId, String cacheType) {
         logger.debug("Invoking put of CacheBackedGenericInMemoryDAOImpl with key {} and value {} "
-            + "and mutationId {}", key, value, mutationId);
+            + AND_MUTATION_ID, key, value, mutationId);
         V oldValue = super.putIfAbsent(key, value);
         cacheGuage.set(super.approximateNumEntries(), cacheType, svc, nodeName, taskId);
 
@@ -152,8 +154,8 @@ public class CachedSortedMapStateStore<K extends CacheKeyConverter<K>, V extends
      */
     @Override
     public void delete(K key, Optional<MutationId> mutationId, String cacheType) {
-        logger.debug("Invoking delete of CacheBackedGenericInMemoryDAOImpl with key {} and "
-            + "mutationId", key, mutationId);
+        logger.debug("Invoking delete of CacheBackedGenericInMemoryDAOImpl with key {} " 
+            + AND_MUTATION_ID, key, mutationId);
         super.delete(key);
         cacheGuage.set(super.approximateNumEntries(), cacheType, svc, nodeName, taskId);
         deleteFromCache(key, mutationId);
@@ -243,7 +245,7 @@ public class CachedSortedMapStateStore<K extends CacheKeyConverter<K>, V extends
     public void putToMap(String mapKey, K mapEntryKey, V mapEntryValue, 
             Optional<MutationId> mutationId, String cacheType) {
         logger.debug("Invoking put to map of CachedMapStateStore with key {} and value {} "
-            + "and mutationId {}", mapEntryKey, mapEntryValue, mutationId);
+            + AND_MUTATION_ID, mapEntryKey, mapEntryValue, mutationId);
         putToMapCache(mapKey, mapEntryKey, mapEntryValue, mutationId);
         super.put(mapEntryKey, mapEntryValue);
         cacheGuage.set(super.approximateNumEntries(), cacheType, svc, nodeName, taskId);

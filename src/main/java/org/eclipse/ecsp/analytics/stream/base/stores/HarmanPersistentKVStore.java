@@ -229,6 +229,8 @@ public abstract class HarmanPersistentKVStore<K, V> implements KeyValueStore<K, 
 
      * @param context ProcessorContext instance
      * @param root StateStore instance
+     * 
+     * @deprecated since 2.41.0-1
      */
     @Deprecated(since = "2.41.0-1")
     @Override

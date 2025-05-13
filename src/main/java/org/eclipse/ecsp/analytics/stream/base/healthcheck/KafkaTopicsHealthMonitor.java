@@ -105,7 +105,7 @@ public class KafkaTopicsHealthMonitor implements HealthMonitor {
     private KafkaSslConfig kafkaSslConfig;
 
     /** The props. */
-    private Properties props = new Properties();
+    private Properties properties = new Properties();
 
     /** The topic config. */
     private Map<String, String[]> topicConfig;
@@ -126,11 +126,11 @@ public class KafkaTopicsHealthMonitor implements HealthMonitor {
     public void init() {
         PROPS.put(PropertyNames.BOOTSTRAP_SERVERS, bootstrapServer);
         PROPS.put(ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG, connectionsMaxIdleMs);
-        kafkaSslConfig.setSslPropsIfEnabled(props);
+        kafkaSslConfig.setSslPropsIfEnabled(properties);
         logger.debug("Admin client config for topics health monitor {}", PROPS);
         topicConfig = getTopicsConfig();
         topics = topicConfig.keySet();
-        logger.info("Creating admin client with properties : {}", props);
+        logger.info("Creating admin client with properties : {}", properties);
         admin = AdminClient.create(PROPS);
         logger.info("admin client created - {}", admin.getClass());
         logger.info("Get topic descriptions for topics {}", topics);

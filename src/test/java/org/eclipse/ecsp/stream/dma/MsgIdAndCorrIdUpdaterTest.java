@@ -128,12 +128,6 @@ public class MsgIdAndCorrIdUpdaterTest {
                 Version.V1_0, value, sourceTopic, Constants.THREAD_SLEEP_TIME_60000);
         DeviceMessageHeader valueWithHeaders = deviceIdUpdater.addMessageIdAndCorrelationIdIfNotPresent(entity)
                 .getDeviceMessageHeader();
-        ShortHashCodeIdPartGenerator shcApp = new ShortHashCodeIdPartGenerator();
-        String incVal = shcApp.generateIdPart(SERVICE_SP_NAME);
-
-        boolean containsHashCode = valueWithHeaders.getMessageId().toString()
-                .startsWith(incVal);
-        // Assert.assertTrue(containsHashCode);
         Assert.assertNull(valueWithHeaders.getCorrelationId());
 
     }
@@ -152,12 +146,6 @@ public class MsgIdAndCorrIdUpdaterTest {
 
         DeviceMessageHeader valueWithHeaders = deviceIdUpdater.addMessageIdAndCorrelationIdIfNotPresent(entity)
                 .getDeviceMessageHeader();
-        ShortHashCodeIdPartGenerator shcApp = new ShortHashCodeIdPartGenerator();
-        String incVal = shcApp.generateIdPart(SERVICE_SP_NAME);
-
-        boolean containsHashCode = valueWithHeaders.getMessageId().toString()
-                .startsWith(incVal);
-        // Assert.assertTrue(containsHashCode);
         Assert.assertEquals("12345", valueWithHeaders.getCorrelationId());
     }
 
@@ -210,7 +198,7 @@ public class MsgIdAndCorrIdUpdaterTest {
          * Instantiates a new test event.
          */
         public TestEvent() {
-
+            // Nothing to do.
         }
 
         /**
