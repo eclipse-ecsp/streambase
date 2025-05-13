@@ -224,7 +224,7 @@ public class DeviceMessagingHandlerChain {
          * DeviceMessage which will contain the information whether this DeviceMessage has to be published to
          * some other broker than HiveMQ.
          */
-        if (brokerToEcuTypesMapping != null && !brokerToEcuTypesMapping.isEmpty()) {
+        if (brokerToEcuTypesMapping != null && !brokerToEcuTypesMapping.isEmpty() && value.getEcuType() != null) {
             String ecuType = value.getEcuType().toLowerCase();
             for (Map.Entry<String, Map<String, String>> entry : brokerToEcuTypesMapping.entrySet()) {
                 Map<String, String> map = entry.getValue();
