@@ -345,7 +345,7 @@ public class PahoMqttDispatcher extends MqttDispatcher {
                         + "Resetting reference to null.", mqttClientId, platform);
                 client = null;
             }
-            mqttClientMap.put(platform, null);
+            mqttClientMap.remove(platform);
         }
     }
 

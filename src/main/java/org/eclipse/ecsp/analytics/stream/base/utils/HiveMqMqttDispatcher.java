@@ -321,6 +321,7 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
                         client.getConfig().getClientIdentifier());
                 client = null;
             }
+            mqttClientMap.remove(platform);
         }
     }
 
