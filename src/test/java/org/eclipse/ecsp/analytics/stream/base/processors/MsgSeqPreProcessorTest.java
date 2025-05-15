@@ -545,7 +545,7 @@ public class MsgSeqPreProcessorTest {
          */
         @Override
         public void init(ProcessorContext context, StateStore root) {
-
+            // Nothing to do.
         }
 
         /**

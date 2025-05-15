@@ -227,6 +227,7 @@ public class DLQHandlerTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void init(StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc) {
+            // Nothing to do.
         }
 
         /**

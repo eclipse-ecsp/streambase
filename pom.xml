@@ -882,8 +882,8 @@
                             <id>default-test</id>
                             <configuration>
                                 <includes>
-                                    <include>**/ignite/cache/redis/*</include>
-                                    <include>**/ignite/dao/utils/*</include>
+                                    <include>**/ecsp/cache/redis/*</include>
+                                    <include>**/ecsp/dao/utils/*</include>
                                     <include>**/redis/embedded/*</include>
                                     <include>**/analytics/stream/base/utils/EmbeddedMQTTServer.class</include>
                                     <include>**/analytics/stream/base/kafka/EmbeddedKafka.class</include>

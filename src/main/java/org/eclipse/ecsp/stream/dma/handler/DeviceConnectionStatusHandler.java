@@ -68,6 +68,7 @@ import org.eclipse.ecsp.stream.dma.dao.DeviceStatusAPIInMemoryService;
 import org.eclipse.ecsp.stream.dma.dao.DeviceStatusDaoCacheBackedInMemoryImpl;
 import org.eclipse.ecsp.stream.dma.dao.DeviceStatusDaoInMemoryCache;
 import org.eclipse.ecsp.stream.dma.dao.DeviceStatusService;
+import org.eclipse.ecsp.stream.dma.entities.IgniteDeviceStatusRecord;
 import org.eclipse.ecsp.stream.dma.presencemanager.DeviceFetchConnectionStatusProducer;
 import org.eclipse.ecsp.stream.dma.scheduler.DeviceMessagingEventScheduler;
 import org.eclipse.ecsp.stream.dma.shouldertap.DeviceShoulderTapService;
@@ -79,6 +80,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -195,19 +197,33 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
     @Autowired
     private PlatformUtils platformUtils;
 
+    /**
+     * This instance used to publish application events.
+     * This allows the handler to notify other components of specific events
+     * occurring during the processing of device connection statuses.
+     */
+    @Autowired
+    private ApplicationEventPublisher messagePublisher;
+
     /** The filtered buffer entry. */
     FilterDMOfflineBufferEntry filteredBufferEntry;
     
     /** The connection status retriever. */
     private ConnectionStatusRetriever connectionStatusRetriever;
 
-    /** The events to S kip offline buffer. */
+    /** The events to skip offline buffer. */
     /*
      * CR-1758 property which will hold events that will not be saved to
      * offline buffer in DMA
      */
     @Value("${" + PropertyNames.DMA_EVENTS_SKIP_ONLINE_BUFFER + ":}")
     private String eventsToSKipOfflineBuffer;
+
+    /**
+     * This property will enable forwarding event and key when the device connection status changes.
+     */
+    @Value("${" + PropertyNames.DMA_DEVICE_CONN_STATUS_EVENT_FORWARDING_ENABLED + ":}")
+    private boolean eventForwardingEnabled;
 
     /** The sub services. */
     /*
@@ -535,7 +551,7 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
          * @param meta the meta
          */
         @Override
-        public void process(IgniteKey key, IgniteEvent value, OffsetMetadata meta) {
+        public void process(IgniteKey<?> key, IgniteEvent value, OffsetMetadata meta) {
             logger.debug("Received in DeviceStatusCallBack with  IgniteKey {} and IgniteEvent {}", key, value);
             if (key != null && value.getEventData() != null) {
                 try {
@@ -562,6 +578,7 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
                     if (StringUtils.isNotEmpty(deviceId) && StringUtils.isNotEmpty(vehicleId)) {
                         performActionAsPerConnStatus(meta, deviceStatus, deviceId, vehicleId, subService, 
                                 validSubService, validEcuType);
+                        forwardRecordToConsumer(key, value);
                     } else {
                         logger.error("DeviceId {} or VehicleId {} not set for IgniteEvent {} in device status "
                                 + "Kafka topic with IgniteKey {}", deviceId, vehicleId, value, key);
@@ -572,6 +589,25 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
                 }
             } else {
                 logger.error("Key {} or EventData {} cannot be null", key, value.getEventData());
+            }
+        }
+
+        /**
+         * Forwards the connection status event and key to the consumer if event forwarding is enabled.
+         * This method creates an `IgniteDeviceStatusRecord` containing the key and event,
+         * and publishes it using the `messagePublisher`.
+         *
+         * @param key   The `IgniteKey` associated with the event.
+         * @param value The `IgniteEvent` containing the connection status data.
+         */
+        private void forwardRecordToConsumer(IgniteKey<?> key, IgniteEvent value) {
+
+            if (eventForwardingEnabled) {
+                IgniteDeviceStatusRecord deviceStatusRecord = new IgniteDeviceStatusRecord();
+                deviceStatusRecord.setKey(key);
+                deviceStatusRecord.setEvent(value);
+                logger.info("Forwarding connection status event and key with record {} ", deviceStatusRecord);
+                messagePublisher.publishEvent(deviceStatusRecord);
             }
         }
 

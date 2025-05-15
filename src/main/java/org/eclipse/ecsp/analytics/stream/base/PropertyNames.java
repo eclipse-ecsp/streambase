@@ -889,6 +889,10 @@ public class PropertyNames {
      * CR-1758 property which will hold events that will not be saved to offline buffer in DMA.
      */
     public static final String DMA_EVENTS_SKIP_ONLINE_BUFFER = "dma.events.skip.offline.buffer";
+
+    /** This flag is used to enable or disable DMA forwarding the connection status event. */
+    public static final String DMA_DEVICE_CONN_STATUS_EVENT_FORWARDING_ENABLED =
+            "dma.device.conn.status.event.forwarding.enabled";
     
     /** The Constant SUB_SERVICES. */
     /*
