@@ -39,11 +39,9 @@
 
 package org.eclipse.ecsp.analytics.stream.base.utils;
 
-import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
 import org.eclipse.ecsp.analytics.stream.base.exception.InputStreamMaxSizeExceededException;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedInputStream;
@@ -64,8 +62,7 @@ import java.util.zip.ZipInputStream;
 public class CompressionJack {
 
     /** The threshold size. */
-    @Value("${" + PropertyNames.MAX_DECOMPRESS_INPUT_STREAM_SIZE_IN_BYTES + ":1000000000}")
-    private static long thresholdSize;
+    private static long thresholdSize = 1000000000;
 
     /**
      * sniff method.
@@ -84,9 +81,7 @@ public class CompressionJack {
                     return CompressionType.Z;
                 case Constants.SHORT_0_X_425_A:
                     return CompressionType.BZIP2;
-                case Constants.SHORT_0_X_7801:
-                case Constants.SHORT_0_X_789_C:
-                case Constants.SHORT_0_X_78_DA:
+                case Constants.SHORT_0_X_7801, Constants.SHORT_0_X_789_C, Constants.SHORT_0_X_78_DA:
                     return CompressionType.ZLIB;
                 case Constants.SHORT_0_X_504_B:
                     return CompressionType.ZIP;
