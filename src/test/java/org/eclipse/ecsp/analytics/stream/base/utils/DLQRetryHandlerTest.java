@@ -268,6 +268,7 @@ public class DLQRetryHandlerTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void init(StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc) {
+            // Nothing to do.
         }
 
         /**

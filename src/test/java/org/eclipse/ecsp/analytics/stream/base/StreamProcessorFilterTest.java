@@ -431,7 +431,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          */
         @Override
         public void punctuate(long timestamp) {
-
+            // Nothing to do.
         }
 
         /**
@@ -507,7 +507,7 @@ public class StreamProcessorFilterTest extends KafkaStreamsApplicationTestBase {
          * Instantiates a new stream post processor disabled.
          */
         public StreamPostProcessorDisabled() {
-
+            // Nothing to do.
         }
 
         /**

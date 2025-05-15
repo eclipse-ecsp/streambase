@@ -14,6 +14,7 @@ import org.eclipse.ecsp.analytics.stream.base.utils.DefaultMqttTopicNameGenerato
 import org.eclipse.ecsp.analytics.stream.base.utils.KafkaStreamsApplicationTestBase;
 import org.eclipse.ecsp.analytics.stream.base.utils.KafkaTestUtils;
 import org.eclipse.ecsp.analytics.stream.base.utils.PahoMqttDispatcher;
+import org.eclipse.ecsp.domain.DeviceConnStatusV1_0;
 import org.eclipse.ecsp.entities.AbstractIgniteEvent;
 import org.eclipse.ecsp.entities.IgniteEvent;
 import org.eclipse.ecsp.entities.IgniteEventImpl;
@@ -21,6 +22,7 @@ import org.eclipse.ecsp.entities.dma.DeviceMessageHeader;
 import org.eclipse.ecsp.key.IgniteKey;
 import org.eclipse.ecsp.stream.dma.dao.DMAConstants;
 import org.eclipse.ecsp.stream.dma.dao.DeviceStatusService;
+import org.eclipse.ecsp.stream.dma.entities.IgniteDeviceStatusRecord;
 import org.eclipse.ecsp.stream.dma.handler.DeviceConnectionStatusHandler;
 import org.eclipse.ecsp.stream.dma.handler.DeviceStatusBackDoorKafkaConsumer;
 import org.eclipse.ecsp.utils.ConcurrentHashSet;
@@ -43,6 +45,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -93,6 +96,10 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
     /** The paho mqtt dispatcher. */
     @Autowired
     private PahoMqttDispatcher pahoMqttDispatcher;
+
+    /** The dma record test consumer. */
+    @Autowired
+    private DmaRecordTestConsumer consumer;
     
     /** The device status back door kafka consumer. */
     @Autowired
@@ -149,6 +156,44 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
         deviceStatusBackDoorKafkaConsumer.addCallback(deviceConnectionStatusHandler.new DeviceStatusCallBack(), 0);
         deviceStatusBackDoorKafkaConsumer.startBackDoorKafkaConsumer();
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
+    }
+
+    @Test
+    public void testDmaDeviceStatusForwardEvent() throws Exception {
+        ConcurrentHashSet<String> expectedValue = new ConcurrentHashSet<>();
+        expectedValue.add(deviceId);
+        ksProps.put(PropertyNames.SERVICE_STREAM_PROCESSORS, DMATestServiceProcessor.class.getName());
+        ksProps.put(PropertyNames.APPLICATION_ID, "test-sp" + System.currentTimeMillis());
+        launchApplication();
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
+
+        String deviceConnStatusEvent = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
+                + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
+                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12345\"}";
+
+        String deviceIdKey = vehicleId;
+        Assert.assertNull(deviceService.get(deviceIdKey, Optional.empty()));
+
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
+                deviceConnStatusEvent.getBytes());
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
+
+        List<IgniteDeviceStatusRecord> recordList = consumer.getMessages();
+        Assert.assertNotNull(recordList);
+        DeviceConnStatusV1_0 deviceStatus = (DeviceConnStatusV1_0) recordList.get(0).getEvent().getEventData();
+        Assert.assertEquals(DeviceConnStatusV1_0.ConnectionStatus.ACTIVE, deviceStatus.getConnStatus());
+
+        String terminateDeviceConnStatusEvent = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
+                + "\"Data\": {\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
+                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12345\"}";
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
+                terminateDeviceConnStatusEvent.getBytes());
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
+
+        recordList = consumer.getMessages();
+        Assert.assertNotNull(recordList);
+        DeviceConnStatusV1_0 deviceStatus2 = (DeviceConnStatusV1_0) recordList.get(1).getEvent().getEventData();
+        Assert.assertEquals(DeviceConnStatusV1_0.ConnectionStatus.INACTIVE, deviceStatus2.getConnStatus());
     }
 
     /**

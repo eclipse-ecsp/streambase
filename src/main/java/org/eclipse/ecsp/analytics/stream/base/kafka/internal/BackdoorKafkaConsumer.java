@@ -413,7 +413,7 @@ public abstract class BackdoorKafkaConsumer implements HealthMonitor {
         }
 
         if (StringUtils.isNotEmpty(connectionMsgKeyTransformer)) {
-            payloadKeyTransformer = (IgniteKeyTransformer) getInstance(connectionMsgKeyTransformer);
+            payloadKeyTransformer = (IgniteKeyTransformer<?>) getInstance(connectionMsgKeyTransformer);
             logger.info("Class {} loaded as connection status value transformer", connectionMsgKeyTransformer);
         }
 

@@ -64,8 +64,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class GenericSortedMapStateStore<K, V> extends GenericMapStateStoreBase<K, V, ConcurrentSkipListMap<K, V>>
         implements SortedKeyValueStore<K, V> {
 
-    /** The logger. */
-    private static IgniteLogger logger = IgniteLoggerFactory.getLogger(GenericSortedMapStateStore.class);
+    /** The loggerGenericStortedMap. */
+    private static IgniteLogger loggerGenericStortedMap = IgniteLoggerFactory.getLogger(GenericSortedMapStateStore.class);
 
     /** The Constant STORE_NAME. */
     private static final String STORE_NAME = "GenericSortedMapStateStoreName";
@@ -182,7 +182,7 @@ public class GenericSortedMapStateStore<K, V> extends GenericMapStateStoreBase<K
              * Since we have to iterate over the original map, make a deep copy
              * of this map.
              */
-            logger.trace("Initializing iterator for map state store.");
+            loggerGenericStortedMap.trace("Initializing iterator for map state store.");
             this.sortedMap = new ConcurrentSkipListMap<>();
             this.sortedMap.putAll(map);
             keyIter = map.keySet().iterator();
