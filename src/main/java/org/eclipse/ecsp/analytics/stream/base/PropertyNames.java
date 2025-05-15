@@ -963,8 +963,5 @@ public class PropertyNames {
     
     /** The Constant MQTT_SERVICE_TRUSTSTORE_TYPE_SUFFIX. */
     public static final String MQTT_SERVICE_TRUSTSTORE_TYPE_SUFFIX = ".service.truststore.type";
-    
-    /** The Constant MAX_DECOMPRESS_INPUT_STREAM_SIZE_IN_BYTES. */
-    public static final String MAX_DECOMPRESS_INPUT_STREAM_SIZE_IN_BYTES = "max.decompress.input.stream.size.in.bytes";
 }
 
