@@ -689,7 +689,7 @@ public class ProtocolTranslatorPreProcessor implements StreamProcessor<byte[], b
      * @param igniteEvent the ignite event
      */
     private void collectDataConsumptionMetric(IgniteKey<?> igniteKey, IgniteEvent igniteEvent) {
-        Transformer trans = transformerMap.get(transformerSource);
+        Transformer trans = transformerMap.get(IgniteEventSource.IGNITE);
         // handle composite-event
         if (igniteEvent.getNestedEvents() != null && !igniteEvent.getNestedEvents().isEmpty()) {
             for (IgniteEvent event : igniteEvent.getNestedEvents()) {
