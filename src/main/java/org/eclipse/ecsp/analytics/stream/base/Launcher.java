@@ -76,7 +76,8 @@ import static org.eclipse.ecsp.analytics.stream.base.utils.Constants.COLON_9100;
  */
 @Configuration
 @ComponentScan(basePackages = { "org.eclipse.ecsp", "com.harman" }, excludeFilters
-        = {@ComponentScan.Filter(type = FilterType.REGEX, pattern = "org.eclipse.ecsp.hashicorp.*") })
+        = {@ComponentScan.Filter(type = FilterType.REGEX,
+        pattern = "org.eclipse.ecsp.hashicorp.*|com.harman.hashicorp.*") })
 @PropertySource("classpath:/application-base.properties")
 @PropertySource(ignoreResourceNotFound = true, value = "classpath:/application.properties")
 @PropertySource(ignoreResourceNotFound = true, value = "classpath:/application-ext.properties")
