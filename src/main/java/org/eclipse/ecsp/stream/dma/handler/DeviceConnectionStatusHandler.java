@@ -253,7 +253,7 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
      * @param ecuTypes the new up ecu types
      */
     private static void setupEcuTypes(List<String> ecuTypes) {
-        DeviceConnectionStatusHandler.ecuTypes = ecuTypes;
+        DeviceConnectionStatusHandler.ecuTypes = (ecuTypes != null) ? ecuTypes : new ArrayList<>();
     }
 
     /**
