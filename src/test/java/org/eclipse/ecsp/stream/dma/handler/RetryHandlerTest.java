@@ -101,7 +101,7 @@ public class RetryHandlerTest {
     
     /** The retry test key. */
     private RetryTestKey retryTestKey = new RetryTestKey();
-    
+
     /** The max retry. */
     private int maxRetry = 3;
 
@@ -403,7 +403,7 @@ public class RetryHandlerTest {
     @Test
     public void testRetryHandleWhenMaxRetryThresholdHasNotBeenReached() throws InterruptedException {
         retryHandler.close();
-        String retryRecordKey = "vehicleId;msg123";
+        String retryRecordKey = "Vehicle12345;msg123";
         ConcurrentHashSet<String> retryRecordKeys = new ConcurrentHashSet<String>();
         retryRecordKeys.add(retryRecordKey);
         // It should be able to retry past keys, hence we are subtracting 10
@@ -525,7 +525,7 @@ public class RetryHandlerTest {
     @Test
     public void testRetryHandleWhenMaxRetryThresholdHasReached() throws InterruptedException {
         retryHandler.close();
-        String retryRecordKey = "vehicleId;msg123";
+        String retryRecordKey = "Vehicle12345;msg123";
         ConcurrentHashSet<String> retryRecordKeys = new ConcurrentHashSet<String>();
         retryRecordKeys.add(retryRecordKey);
 
@@ -607,7 +607,7 @@ public class RetryHandlerTest {
     @Test
     public void testRetryHandleWhenNoDataPresentInRetryEventDAO() throws InterruptedException {
         retryHandler.close();
-        String retryRecordKey = "vehicleId;msg123";
+        String retryRecordKey = "Vehicle12345;msg123";
         ConcurrentHashSet<String> retryRecordKeys = new ConcurrentHashSet<String>();
         retryRecordKeys.add(retryRecordKey);
 
