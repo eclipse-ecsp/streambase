@@ -359,7 +359,7 @@ public class RetryHandler implements DeviceMessageHandler {
             return;
         }
         boolean cutOffNotExceeded = validateIgniteEvent(header);
-        String retryRecordKeyPart = RetryRecordKey.createVehiclePart(header.getVehicleId(), header.getMessageId());
+        String retryRecordKeyPart = RetryRecordKey.createKeyPart((String) key.getKey(), header.getMessageId());
         if (cutOffNotExceeded) {
             if (checkDeviceInactive(key, value)) {
                 logger.debug("Device is inactive for ignitekey {} and value {}. Removing Retry entry Record "
@@ -565,7 +565,7 @@ public class RetryHandler implements DeviceMessageHandler {
                 ? value.getDeviceMessageHeader().getDevMsgTopicSuffix().toLowerCase() : null);
         logger.info("Saved event with key: {} and value: {} to mongo as max retries have exhausted.",
                 key, value);
-        String retryRecordKeyPart = RetryRecordKey.createVehiclePart(value.getDeviceMessageHeader().getVehicleId(),
+        String retryRecordKeyPart = RetryRecordKey.createKeyPart((String) key.getKey(),
                 value.getDeviceMessageHeader().getMessageId());
         RetryRecordKey retryKey = new RetryRecordKey(retryRecordKeyPart, taskId);
         retryEventDAO.deleteFromMap(retryEventMapKey, retryKey, Optional.empty(),

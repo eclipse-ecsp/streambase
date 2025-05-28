@@ -144,7 +144,7 @@ public class DeviceMessagingAgentPreProcessor implements IgniteEventStreamProces
 
         if (StringUtils.isNotEmpty(correlationId)) {
             String igniteKey = (String) key.getKey();
-            String retryRecordKeyPart = RetryRecordKey.createVehiclePart(igniteKey, correlationId);
+            String retryRecordKeyPart = RetryRecordKey.createKeyPart(igniteKey, correlationId);
             removeEventFromCache(retryRecordKeyPart);
         }
         this.spc.forward(new Record<>(key, value, System.currentTimeMillis()));

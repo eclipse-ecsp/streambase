@@ -74,14 +74,14 @@ public class RetryRecordKey implements CacheKeyConverter<RetryRecordKey> {
     }
 
     /**
-     * Creates the vehicle part.
+     * Creates the key part.
      *
-     * @param vehicleId the vehicle id
+     * @param key the event key
      * @param messageId the message id
      * @return the string
      */
-    public static String createVehiclePart(String vehicleId, String messageId) {
-        return (vehicleId + DMAConstants.SEMI_COLON + messageId);
+    public static String createKeyPart(String key, String messageId) {
+        return (key + DMAConstants.SEMI_COLON + messageId);
     }
 
     /**
