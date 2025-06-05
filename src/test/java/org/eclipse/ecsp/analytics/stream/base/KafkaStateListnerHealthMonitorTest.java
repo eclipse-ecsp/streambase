@@ -43,9 +43,6 @@ import org.apache.kafka.streams.KafkaStreams.State;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Collections;
-
-
 /**
  * test class for KafkaStateListnerHealthMonitor.
  */
@@ -57,7 +54,6 @@ public class KafkaStateListnerHealthMonitorTest {
     @Test
     public void testKafkaStateListenerHealthMonitor() {
         KafkaStateListener kafkaStateListener = new KafkaStateListener();
-        kafkaStateListener.setBackdoorConsumers(Collections.EMPTY_LIST);
         kafkaStateListener.onChange(State.RUNNING, State.CREATED);
         Assert.assertTrue(kafkaStateListener.isHealthy(true));
         kafkaStateListener.onChange(State.PENDING_SHUTDOWN, State.CREATED);

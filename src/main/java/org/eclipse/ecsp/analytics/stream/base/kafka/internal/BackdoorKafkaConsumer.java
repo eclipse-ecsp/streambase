@@ -500,16 +500,9 @@ public abstract class BackdoorKafkaConsumer implements HealthMonitor {
         } catch (Exception e) {
             healthy.set(false);
             logger.error("Unhandled BackDoor Kafka Consumer error !!! ", e);
-            if (getStreamState() == State.RUNNING) {
-                logger.info(
-                        "Attempting to shutdown and restart Backdoor Kafka Consumer, "
-                                + "as an exception occured and  Kafka Streams is in RUNNING state");
-                restartKafkaBackDoorConsumer();
-            } else {
-                logger.error("Closing Backdoor Kafka Consumer, Unhandled exception "
-                        + "occured and as Kafka Streams is not RUNNING");
-                shutdownWithOutWakeup();
-            }
+            logger.info("Attempting to shutdown and restart Backdoor Kafka Consumer, "
+                                + "as an exception occured in Backdoor Kafka Consumer.");
+            restartKafkaBackDoorConsumer();
         }
     }
 
@@ -725,11 +718,8 @@ public abstract class BackdoorKafkaConsumer implements HealthMonitor {
             System.exit(1);
         }
     }
-
-    /**
-     * Shutdown with out wakeup.
-     */
-    // This method is invoked when BackDoor kafka consumer has an exception
+    
+    /** This method is invoked when BackDoor kafka consumer has an exception. */
     private void shutdownWithOutWakeup() {
         try {
             consumer.close();
@@ -891,7 +881,6 @@ public abstract class BackdoorKafkaConsumer implements HealthMonitor {
      *
      * @return the kafka consumer run executor
      */
-    // Setters for unit test
     protected ExecutorService getKafkaConsumerRunExecutor() {
         return kafkaConsumerRunExecutor;
     }
@@ -988,10 +977,6 @@ public abstract class BackdoorKafkaConsumer implements HealthMonitor {
      */
     @Override
     public boolean isHealthy(boolean forceHealthCheck) {
-        State currState = getStreamState();
-        if (currState != null && currState != State.RUNNING) {
-            return true;
-        }
         return healthy.get();
     }
 
@@ -1000,7 +985,6 @@ public abstract class BackdoorKafkaConsumer implements HealthMonitor {
      *
      * @param connectionMsgValueTransformer the new connection msg value transformer
      */
-    // The below setter and getter are for test cases
     public void setConnectionMsgValueTransformer(String connectionMsgValueTransformer) {
         this.connectionMsgValueTransformer = connectionMsgValueTransformer;
     }
