@@ -39,11 +39,13 @@
 
 package org.eclipse.ecsp.analytics.stream.base;
 
+
+import io.prometheus.client.Counter;
+import jakarta.annotation.PostConstruct;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KafkaStreams.State;
 import org.eclipse.ecsp.analytics.stream.base.kafka.internal.BackdoorKafkaConsumer;
 import org.eclipse.ecsp.analytics.stream.base.offset.OffsetManager;
-import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
 import org.eclipse.ecsp.healthcheck.HealthMonitor;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
@@ -51,50 +53,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import java.time.Duration;
-import java.util.List;
+
 import java.util.Map;
 
 /**
- * An implementation of {@link KafkaStreams.StateListener} and {@link HealthMonitor} that monitors
- * the state of {@link KafkaStreams} and takes appropriate actions based on state changes.
+ * An implementation of {@link KafkaStreams.StateListener} and
+ * {@link HealthMonitor} that monitors the state of {@link KafkaStreams} and
+ * takes appropriate actions based on state changes.
  *
  * <p>Key functionalities include:
  * <ul>
- *   <li>Restarting {@link BackdoorKafkaConsumer} instances when the state changes to RUNNING.</li>
- *   <li>Monitoring the REBALANCING state and restarting the application if it persists for too long.</li>
- *   <li>Notifying {@link OffsetManager} to repopulate offsets from MongoDB.</li>
+ * <li>Restarting {@link BackdoorKafkaConsumer} instances when the state changes
+ * to RUNNING.</li>
+ * <li>Monitoring the REBALANCING state and restarting the application if it
+ * persists for too long.</li>
+ * <li>Notifying {@link OffsetManager} to repopulate offsets from MongoDB.</li>
  * </ul>
  */
 @Component
 public class KafkaStateListener implements KafkaStreams.StateListener, HealthMonitor {
-    
+
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(KafkaStateListener.class);
 
     /** How long to monitor the KafkaStreams state. */
     @Value("${" + PropertyNames.KAFKA_REBALANCE_TIME_MINS + ":10}")
     private int timeToRebalance;
-    
+
     /** The timeout before closing the KafkaStreams. */
     @Value("${" + PropertyNames.KAFKA_CLOSE_TIMEOUT_SECS + ":30}")
     private int closeTimeout;
-    
-    /** Indicates whether the KafkaStreams is in rebalancing state or not. */
-    private volatile boolean balancing;
-    
-    /** The {@link KafkaStreams} instance. */
-    private KafkaStreams streams;
-    
-    /** The list of {@link BackdoorKafkaConsumer} to be restarted if KafkaStreams state changes 
-     * from anything to RUNNING. */
-    @Autowired
-    private List<BackdoorKafkaConsumer> backdoorConsumers;
-    
+
     /** The {@link OffsetManager} instance. */
     @Autowired
     private OffsetManager offsetManager;
-    
+
     /** The Spring's ApplicationContext. */
     @Autowired
     private ApplicationContext applicationContext;
@@ -102,47 +95,58 @@ public class KafkaStateListener implements KafkaStreams.StateListener, HealthMon
     /** Whether DMA is enabled or not. */
     @Value("${" + PropertyNames.DMA_ENABLED + ":true}")
     private boolean isDmaEnabled;
+    
+    /** The name of the service. */
+    @Value("${" + PropertyNames.SERVICE_NAME + "}")
+    private String serviceName;
+    
+    /**
+     * Flag to enable prometheus metrics.
+     */
+    @Value("${" + PropertyNames.ENABLE_PROMETHEUS + ":true}")
+    private boolean prometheusEnabled;
 
     /** Whether KafkaConsumer group health monitor is enabled or not. */
     @Value("${health.kafka.consumer.group.monitor.enabled:true}")
     protected boolean healthMonitorEnabled;
 
-    /** Whether to restart the KafkaStreams if KafkaConsumer group health monitor reports UNHEALTHY. */
-    @Value("${health.kafka.consumer.group.needs.restart.on.failure:false}")
-    protected boolean needsRestartOnFailure;
-
     /** The Constant GROUP_HEALTH_MONITOR. */
     protected static final String GROUP_HEALTH_MONITOR = "KAFKA_CONSUMER_GROUP_HEALTH_MONITOR";
-    
+
     /** The Constant GROUP_HEALTH_GUAGE. */
     protected static final String GROUP_HEALTH_GUAGE = "KAFKA_CONSUMER_GROUP_HEALTH_GUAGE";
     
+    /** The Constant KAFKA_STREAMS_THREAD_STATE_GAUGE. */
+    protected static final String KAFKA_STREAMS_THREAD_STATE_COUNTER = "KAFKA_STREAMS_THREAD_STATE_COUNTER";
+
     /** Indicates the health status reported by this health monitor. */
     private volatile boolean healthy;
+    
+    /**
+     * Prometheus counter to keep count of the state of Kafka Streams threads.
+     * This counter will be used to report and count the state of each Kafka Streams thread
+     * with labels as service name, thread name, state and last updated timestamp.
+     */
+    private Counter streamsThreadStateCounter;
+    
+    /**
+     * Initializes the Prometheus counter for Kafka Streams thread state.
+     */
+    @PostConstruct
+    public void init() {
+        streamsThreadStateCounter = Counter.build()
+                .name(KAFKA_STREAMS_THREAD_STATE_COUNTER)
+                .help("Kafka Streams Thread State")
+                .labelNames("service_name", "thread_name", "state", "last_updated_timestamp")
+                .register();
+        logger.info("Initialized Prometheus gauge for Kafka Streams thread state.");
+    }
 
     /**
      * Instantiates a new kafka state listener.
      */
     public KafkaStateListener() {
-        //default constructor
-    }
-
-    /**
-     * Sets the streams.
-     *
-     * @param streams the new streams
-     */
-    public void setStreams(KafkaStreams streams) {
-        this.streams = streams;
-    }
-
-    /**
-     * Should be used only in testcases.
-     *
-     * @param backdoorConsumers backdoorConsumers
-     */
-    void setBackdoorConsumers(List<BackdoorKafkaConsumer> backdoorConsumers) {
-        this.backdoorConsumers = backdoorConsumers;
+        // default constructor
     }
 
     /**
@@ -150,23 +154,21 @@ public class KafkaStateListener implements KafkaStreams.StateListener, HealthMon
      *
      * <p>This method performs the following actions:
      * <ul>
-     *   <li>Notifies all {@link BackdoorKafkaConsumer} instances about the state change.</li>
-     *   <li>Updates the health status based on the new state.</li>
-     *   <li>Monitors the REBALANCING state and starts a thread to validate if it persists too long.</li>
-     *   <li>Notifies {@link OffsetManager} to repopulate offsets when transitioning from REBALANCING to RUNNING.</li>
-     *   <li>Invokes any registered {@link KafkaStateAgentListener} instances when
-     *   transitioning from REBALANCING to RUNNING.</li>
+     * <li>Updates the health status based on the new state.</li>
+     * <li>Monitors the NON RUNNING states and publishes respective state metrics to Prometheus.</li>
+     * <li>Notifies {@link OffsetManager} to repopulate offsets when
+     * transitioning from REBALANCING to RUNNING.</li>
+     * <li>Invokes any registered {@link KafkaStateAgentListener} instances when
+     * transitioning from REBALANCING to RUNNING.</li>
      * </ul>
      *
-     * @param newState the new state of the {@link KafkaStreams}.
-     * @param oldState the previous state of the {@link KafkaStreams}.
+     * @param newState
+     *            the new state of the {@link KafkaStreams}.
+     * @param oldState
+     *            the previous state of the {@link KafkaStreams}.
      */
     @Override
     public void onChange(State newState, State oldState) {
-
-        backdoorConsumers.forEach(backdoorConsumer ->
-            backdoorConsumer.setStreamState(newState)
-        );
         if (State.RUNNING == newState) {
             healthy = true;
         } else {
@@ -174,52 +176,37 @@ public class KafkaStateListener implements KafkaStreams.StateListener, HealthMon
         }
         logger.info("Stream state changed from {} to {}", oldState, newState);
         if (State.REBALANCING == newState || State.ERROR == newState || State.NOT_RUNNING == newState) {
-            if (!balancing) {
-                balancing = true;
-                Thread rebalanceMonitor = new Thread(() -> {
-                    try {
-                        Thread.sleep(timeToRebalance * Constants.LONG_60000);
-                    } catch (InterruptedException e) {
-                        logger.error("Interrupted exception occurred when waiting for REBALANCING to complete. "
-                                + "Error - {}", e);
-                        Thread.currentThread().interrupt();
-                    }
-                    validateStateBalancing();
-                });
-                rebalanceMonitor.setName("IgniteKafkaStateListener:" + Thread.currentThread().getName());
-                rebalanceMonitor.setDaemon(true);
-                rebalanceMonitor.start();
+            String streamsThreadName = Thread.currentThread().getName();
+            logger.error("Streams thread: {} is in {} state!", streamsThreadName, newState.toString());
+            
+            if (prometheusEnabled) {
+                switch (newState) {
+                    case REBALANCING:
+                        streamsThreadStateCounter.labels(serviceName, streamsThreadName, 
+                                State.REBALANCING.toString(), System.currentTimeMillis() + "")
+                                .inc();
+                        break;
+                    case ERROR:
+                        streamsThreadStateCounter.labels(serviceName, streamsThreadName, 
+                                State.ERROR.toString(), System.currentTimeMillis() + "")
+                                .inc();
+                        break;
+                    case NOT_RUNNING:
+                        streamsThreadStateCounter.labels(serviceName, streamsThreadName, 
+                                State.NOT_RUNNING.toString(), System.currentTimeMillis() + "")
+                                .inc();
+                        break;
+                    default:
+                        logger.error("Unknown Kafka Streams state!");
+                }        
             }
-        } else {
-            balancing = false;
         }
         if (State.REBALANCING == oldState && State.RUNNING == newState) {
-            Map<String, KafkaStateAgentListener> kafkaAgentListeners =
-                    applicationContext.getBeansOfType(KafkaStateAgentListener.class);
+            Map<String, KafkaStateAgentListener> kafkaAgentListeners = applicationContext
+                    .getBeansOfType(KafkaStateAgentListener.class);
 
-            kafkaAgentListeners.values().forEach(listner ->
-                listner.onChange(newState, oldState)
-            );
+            kafkaAgentListeners.values().forEach(listner -> listner.onChange(newState, oldState));
             offsetManager.setUp();
-        }
-    }
-
-    /**
-     * Checks if the KafkaStreams has been rebalancing for more than 10 mins. If yes, then close the 
-     * current streams instance and restart the application.
-     */
-    private void validateStateBalancing() {
-        if (balancing) {
-            logger.error("I have been rebalancing or in error state for last {} minutes. Exiting the JVM to restart.",
-                    timeToRebalance);
-            if (streams.close(Duration.ofSeconds(closeTimeout))) {
-                logger.error("All threads were successfully stopped, Streams closed");
-            } else {
-                logger.error("Streams closed after time out of {} seconds.", closeTimeout);
-            }
-            System.exit(1);
-        } else {
-            logger.info("Stream back to normal");
         }
     }
 
@@ -236,7 +223,8 @@ public class KafkaStateListener implements KafkaStreams.StateListener, HealthMon
     /**
      * Returns true if the health monitor for KafkaConsumer group is HEALTHY.
      *
-     * @param arg0 the arg 0
+     * @param arg0
+     *            the arg 0
      * @return true, if is healthy
      */
     @Override
@@ -255,7 +243,8 @@ public class KafkaStateListener implements KafkaStreams.StateListener, HealthMon
     }
 
     /**
-     * Name of the Prometheus Guage under which these health metrics will be captured.
+     * Name of the Prometheus Guage under which these health metrics will be
+     * captured.
      *
      * @return the name of the Guage.
      */
@@ -265,13 +254,14 @@ public class KafkaStateListener implements KafkaStreams.StateListener, HealthMon
     }
 
     /**
-     * Returns true if the application Needs to be restarted on UNHEALTHY health status reported by 
-     * this health monitor.
+     * Always return false because streambase library should not take this important decision of restarting 
+     * the whole service and introduce downtime, just because stream thread(s) went into NON_RUNNING state.
+     * This decision should be taken by the service owner / ops itself based on its requirements.
      *
-     * @return true, if to be restarted.
+     * @return false.
      */
     @Override
     public boolean needsRestartOnFailure() {
-        return needsRestartOnFailure;
+        return false;
     }
 }
