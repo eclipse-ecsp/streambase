@@ -137,7 +137,7 @@ public class KafkaStateListener implements KafkaStreams.StateListener, HealthMon
         streamsThreadStateCounter = Counter.build()
                 .name(KAFKA_STREAMS_THREAD_STATE_COUNTER)
                 .help("Kafka Streams Thread State")
-                .labelNames("service_name", "thread_name", "state", "last_updated_timestamp")
+                .labelNames("service_name", "thread_name", "old_state", "new_state", "last_updated_timestamp")
                 .register();
         logger.info("Initialized Prometheus gauge for Kafka Streams thread state.");
     }
@@ -169,37 +169,36 @@ public class KafkaStateListener implements KafkaStreams.StateListener, HealthMon
      */
     @Override
     public void onChange(State newState, State oldState) {
+        logger.info("Stream state changed from {} to {}", oldState, newState);
+        String streamsThreadName = Thread.currentThread().getName();
         if (State.RUNNING == newState) {
             healthy = true;
+            publishStateMetrics(newState, oldState, streamsThreadName);
         } else {
             healthy = false;
-        }
-        logger.info("Stream state changed from {} to {}", oldState, newState);
-        if (State.REBALANCING == newState || State.ERROR == newState || State.NOT_RUNNING == newState) {
-            String streamsThreadName = Thread.currentThread().getName();
             logger.error("Streams thread: {} is in {} state!", streamsThreadName, newState.toString());
-            
-            if (prometheusEnabled) {
-                switch (newState) {
-                    case REBALANCING:
-                        streamsThreadStateCounter.labels(serviceName, streamsThreadName, 
-                                State.REBALANCING.toString(), System.currentTimeMillis() + "")
-                                .inc();
-                        break;
-                    case ERROR:
-                        streamsThreadStateCounter.labels(serviceName, streamsThreadName, 
-                                State.ERROR.toString(), System.currentTimeMillis() + "")
-                                .inc();
-                        break;
-                    case NOT_RUNNING:
-                        streamsThreadStateCounter.labels(serviceName, streamsThreadName, 
-                                State.NOT_RUNNING.toString(), System.currentTimeMillis() + "")
-                                .inc();
-                        break;
-                    default:
-                        logger.error("Unknown Kafka Streams state!");
-                }        
-            }
+            switch (newState) {
+                case CREATED: 
+                    publishStateMetrics(newState, oldState, streamsThreadName);
+                    break;
+                case REBALANCING:
+                    publishStateMetrics(newState, oldState, streamsThreadName);
+                    break;
+                case PENDING_SHUTDOWN:
+                    publishStateMetrics(newState, oldState, streamsThreadName);
+                    break;
+                case PENDING_ERROR:
+                    publishStateMetrics(newState, oldState, streamsThreadName);
+                    break;
+                case ERROR:
+                    publishStateMetrics(newState, oldState, streamsThreadName);
+                    break;
+                case NOT_RUNNING:
+                    publishStateMetrics(newState, oldState, streamsThreadName);
+                    break;
+                default:
+                    logger.error("Unknown Kafka Streams state!");
+            }        
         }
         if (State.REBALANCING == oldState && State.RUNNING == newState) {
             Map<String, KafkaStateAgentListener> kafkaAgentListeners = applicationContext
@@ -207,6 +206,26 @@ public class KafkaStateListener implements KafkaStreams.StateListener, HealthMon
 
             kafkaAgentListeners.values().forEach(listner -> listner.onChange(newState, oldState));
             offsetManager.setUp();
+        }
+    }
+    
+    /**
+     * Publishes the {@link KafkaStreams} thread state metrics to Prometheus.
+     *
+     * @param newState
+     *            the new state of the Kafka Streams thread.
+     * @param oldState
+     *            the old state of the Kafka Streams thread.
+     * @param threadName
+     *            the name of the Kafka Streams thread.
+     */
+    private void publishStateMetrics(State newState, State oldState, String threadName) {
+        if (prometheusEnabled) {
+            streamsThreadStateCounter.labels(serviceName, threadName, oldState.toString(), 
+                    newState.toString(), System.currentTimeMillis() + "")
+                    .inc();
+            logger.info("Published state metrics for Kafka Streams thread: {} with state: {}", 
+                    threadName, newState);
         }
     }
 
