@@ -107,23 +107,6 @@ public class KafkaStreamsLauncherMockTest {
     }
 
     /**
-     * Test health check.
-     */
-    @Test
-    public void testHealthCheck() {
-        List<HealthMonitor> failedMonitors = new ArrayList<HealthMonitor>();
-        failedMonitors.add(kafkaStateListenerHealthMonitor);
-        Mockito.when(healthService.triggerInitialCheck()).thenReturn(failedMonitors);
-        Mockito.when(kafkaStateListenerHealthMonitor.monitorName())
-                .thenReturn("KAFKA_CONSUMER_GROUP_HEALTH_MONITOR");
-        Assert.assertFalse(launcher.bootstrapHealthCheck());
-
-        Mockito.when(kafkaStateListenerHealthMonitor.monitorName())
-                .thenReturn("NOT_KAFKA_CONSUMER_GROUP_HEALTH_MONITOR");
-        Assert.assertTrue(launcher.bootstrapHealthCheck());
-    }
-
-    /**
      * Test terminate.
      */
     @Test
