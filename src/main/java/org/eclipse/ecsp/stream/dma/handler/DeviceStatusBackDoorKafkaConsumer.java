@@ -339,10 +339,6 @@ public class DeviceStatusBackDoorKafkaConsumer extends BackdoorKafkaConsumer {
      * startDMABackDoorConsumer().
      */
     public void startDMABackDoorConsumer() {
-        connectionStatusDao.close();
-        logger.info("Cleared Device status cache as request to start Back Door Kafka Consumer was triggered");
-        connectionStatusDao.initialize();
-        logger.info("Synced Device status cache from redis as request to start Back Door Kafka Consumer was triggered");
         super.startBackDoorKafkaConsumer();
     }
 
