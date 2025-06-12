@@ -14,20 +14,20 @@ jobs:
   secret-presence:
     runs-on: ubuntu-latest
     outputs:
-      HAS_OSSRH: ${{ steps.secret-presence.outputs.HAS_OSSRH }}
+      HAS_CENTRAL_SONATYPE_SECRETS: ${{ steps.secret-presence.outputs.HAS_CENTRAL_SONATYPE_SECRETS }}
     steps:
       - name: Check whether secrets exist
         id: secret-presence
         run: |
           [ ! -z "${{ secrets.GPG_PASSPHRASE }}" ] && 
           [ ! -z "${{ secrets.GPG_PRIVATE_KEY }}" ] && 
-          [ ! -z "${{ secrets.OSSRH_USERNAME }}" ] && 
-          [ ! -z "${{ secrets.OSSRH_PASSWORD }}" ]  && 
-          echo "HAS_OSSRH=true" >> $GITHUB_OUTPUT
+          [ ! -z "${{ secrets.CENTRAL_SONATYPE_TOKEN_USERNAME }}" ] && 
+          [ ! -z "${{ secrets.CENTRAL_SONATYPE_TOKEN_PASSWORD }}" ]  && 
+          echo "HAS_CENTRAL_SONATYPE_SECRETS=true" >> $GITHUB_OUTPUT
           exit 0
           
   publish-to-sonatype:
-    name: "Publish artifacts to OSSRH Snapshots / MavenCentral"
+    name: "Publish artifacts to Maven Central"
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,7 +35,7 @@ jobs:
     needs: [ secret-presence ]
 
     if: |
-      needs.secret-presence.outputs.HAS_OSSRH
+      needs.secret-presence.outputs.HAS_CENTRAL_SONATYPE_SECRETS
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,9 +58,9 @@ jobs:
           echo "<settings xmlns='http://maven.apache.org/SETTINGS/1.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd'>
             <servers>
               <server>
-                <id>ossrh</id>
-                <username>${{ secrets.OSSRH_USERNAME }}</username>
-                <password>${{ secrets.OSSRH_PASSWORD }}</password>
+                <id>central</id>
+                <username>${{ secrets.CENTRAL_SONATYPE_TOKEN_USERNAME }}</username>
+                <password>${{ secrets.CENTRAL_SONATYPE_TOKEN_PASSWORD }}</password>
               </server>
             </servers>
           </settings>" > $HOME/.m2/settings.xml
