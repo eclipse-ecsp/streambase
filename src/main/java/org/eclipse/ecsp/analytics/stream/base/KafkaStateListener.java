@@ -101,43 +101,30 @@ public class KafkaStateListener implements KafkaStreams.StateListener {
     @Override
     public void onChange(State newState, State oldState) {
         logger.info("Stream state changed from {} to {}", oldState, newState);
-        String streamsThreadName = Thread.currentThread().getName();
-        if (State.RUNNING == newState) {
-            logger.info("Streams thread: {} is in RUNNING state!", streamsThreadName);
-        } else {
-            logger.error("Streams thread: {} is in {} state!", streamsThreadName, newState.toString());
-            switch (newState) {
-                case CREATED:
-                    logger.error("Streams thread: {} is in CREATED state!", streamsThreadName);
-                    break;
-                case REBALANCING:
-                    logger.error("Streams thread: {} is in REBALANCING state!", streamsThreadName);
-                    break;
-                case PENDING_SHUTDOWN:
-                    logger.error("Streams thread: {} is in PENDING_SHUTDOWN state! "
-                            + "This may be due to a rebalance or shutdown request.", streamsThreadName);
-                    break;
-                case PENDING_ERROR:
-                    logger.error("Streams thread: {} is in PENDING_ERROR state!.", streamsThreadName);
-                    break;
-                case ERROR:
-                    logger.error("Streams thread: {} is in ERROR state! "
-                            + "This may be due to an uncaught exception or processing error.", streamsThreadName);
-                    break;
-                case NOT_RUNNING:
-                    logger.error("Streams thread: {} is in NOT_RUNNING state! "
-                            + "This may be due to a failure or shutdown request.", streamsThreadName);
-                    break;
-                default:
-                    logger.error("Unknown Kafka Streams state!");
-            }        
-        }
+        logState(newState);
         if (State.REBALANCING == oldState && State.RUNNING == newState) {
             Map<String, KafkaStateAgentListener> kafkaAgentListeners = applicationContext
                     .getBeansOfType(KafkaStateAgentListener.class);
 
             kafkaAgentListeners.values().forEach(listner -> listner.onChange(newState, oldState));
             offsetManager.setUp();
+        }
+    }
+    
+    /**
+     * Logs the state of the stream thread.
+     *
+     * @param newState The new state of the stream thread.
+     * @param oldState The old state of the stream thread.
+     * @param streamsThreadName The name of the stream thread.
+     */
+    private void logState(State newState) {
+        String streamsThreadName = Thread.currentThread().getName();
+        if (newState == State.REBALANCING || newState == State.PENDING_SHUTDOWN
+                || newState == State.NOT_RUNNING || newState == State.ERROR) {
+            logger.error("Stream thread {} is in state: {}", streamsThreadName, newState.toString());
+        } else if (newState == State.RUNNING) {
+            logger.info("Stream thread {} is now RUNNING", streamsThreadName);
         }
     }
 }
