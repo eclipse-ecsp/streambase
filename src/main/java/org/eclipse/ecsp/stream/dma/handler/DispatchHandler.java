@@ -119,7 +119,8 @@ public class DispatchHandler implements DeviceMessageHandler {
      */
     @Override
     public void handle(IgniteKey<?> key, DeviceMessage value) {
-        if (brokerToEcuTypesMapping != null && brokerToEcuTypesMapping.size() > 0) {
+        if (brokerToEcuTypesMapping != null && brokerToEcuTypesMapping.size() > 0 
+                && value.getEvent().getEcuType() != null) {
             for (Map.Entry<String, Map<String, String>> entry : brokerToEcuTypesMapping.entrySet()) {
                 String broker = entry.getKey();
                 Map<String, String> ecuTypeToTopicMapping = entry.getValue();
