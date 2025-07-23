@@ -114,17 +114,15 @@ public class KafkaStateListener implements KafkaStreams.StateListener {
     /**
      * Logs the state of the stream thread.
      *
-     * @param newState The new state of the stream thread.
-     * @param oldState The old state of the stream thread.
-     * @param streamsThreadName The name of the stream thread.
+     * @param newState The State of the stream thread.
+     *
      */
     private void logState(State newState) {
         String streamsThreadName = Thread.currentThread().getName();
-        if (newState == State.REBALANCING || newState == State.PENDING_SHUTDOWN
-                || newState == State.NOT_RUNNING || newState == State.ERROR) {
-            logger.error("Stream thread {} is in state: {}", streamsThreadName, newState.toString());
-        } else if (newState == State.RUNNING) {
-            logger.info("Stream thread {} is now RUNNING", streamsThreadName);
+        if (newState == State.RUNNING || newState == State.REBALANCING || newState == State.PENDING_SHUTDOWN) {
+            logger.info("Stream thread {} is in state: {}", streamsThreadName, newState.toString());
+        } else if (newState == State.NOT_RUNNING || newState == State.ERROR) {
+            logger.error("Stream thread {} is now RUNNING", streamsThreadName);
         }
     }
 }
