@@ -1,7 +1,7 @@
 maven/mavencentral/ch.qos.logback/logback-classic/1.5.5, EPL-1.0 AND LGPL-2.1-only, approved, #15279
 maven/mavencentral/ch.qos.logback/logback-core/1.5.5, EPL-1.0 AND LGPL-2.1-only, approved, #15210
 maven/mavencentral/ch.qos.reload4j/reload4j/1.2.19, Apache-2.0, approved, #17936
-maven/mavencentral/com.bugsnag/bugsnag/3.7.2, MIT, approved, #8921
+maven/mavencentral/com.bugsnag/bugsnag/3.8.0, MIT, approved, #22566
 maven/mavencentral/com.esotericsoftware/kryo/5.6.0, BSD-3-Clause, approved, clearlydefined
 maven/mavencentral/com.esotericsoftware/minlog/1.3.1, BSD-2-Clause, approved, CQ9247
 maven/mavencentral/com.esotericsoftware/reflectasm/1.11.9, BSD-3-Clause, approved, #6835
