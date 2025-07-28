@@ -122,7 +122,7 @@ public class KafkaStateListener implements KafkaStreams.StateListener {
         if (newState == State.RUNNING || newState == State.REBALANCING || newState == State.PENDING_SHUTDOWN) {
             logger.info("Stream thread {} is in state: {}", streamsThreadName, newState.toString());
         } else if (newState == State.NOT_RUNNING || newState == State.ERROR) {
-            logger.error("Stream thread {} is now RUNNING", streamsThreadName);
+            logger.error("Stream thread {} is in state: {}", streamsThreadName, newState.toString());
         }
     }
 }
