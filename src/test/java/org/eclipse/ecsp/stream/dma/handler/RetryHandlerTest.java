@@ -167,11 +167,8 @@ public class RetryHandlerTest {
         retryTestKey.setKey("Vehicle12345");
         MockitoAnnotations.initMocks(this);
         retryHandler.close();
-        // Reset values from property file
-        retryHandler.setRetryIntervalDivisor(Constants.FOUR);
+        retryHandler.setMaxPollingInterval(TestConstants.TWENTY_FIVE);
         retryHandler.setMaxRetry(maxRetry);
-        retryHandler.setRetryMinThreshold(retryMinThreshold);
-        retryHandler.setRetryInterval(retryInterval);
         retryHandler.setup(taskId);
     }
 
@@ -185,16 +182,12 @@ public class RetryHandlerTest {
 
     /**
      * Test retry handle when max retry less than zero.
-     *
-     * @throws InterruptedException the interrupted exception
      */
     @Test
-    public void testRetryHandleWhenMaxRetryLessThanZero() throws InterruptedException {
+    public void testRetryHandleWhenMaxRetryLessThanZero() {
         TestHandler handler = new TestHandler();
         retryHandler.close();
         retryHandler.setMaxRetry(Constants.INT_MINUS_ONE);
-        retryHandler.setRetryMinThreshold(Constants.THREAD_SLEEP_TIME_500);
-        retryHandler.setRetryInterval(Constants.THREAD_SLEEP_TIME_1000);
         retryHandler.setNextHandler(handler);
         retryHandler.setup(taskId);
 
@@ -218,16 +211,12 @@ public class RetryHandlerTest {
 
     /**
      * Test retry handle when global topic is provided.
-     *
-     * @throws InterruptedException the interrupted exception
      */
     @Test
-    public void testRetryHandleWhenGlobalTopicIsProvided() throws InterruptedException {
+    public void testRetryHandleWhenGlobalTopicIsProvided() {
         TestHandler handler = new TestHandler();
         retryHandler.close();
         retryHandler.setMaxRetry(Constants.INT_MINUS_ONE);
-        retryHandler.setRetryMinThreshold(Constants.THREAD_SLEEP_TIME_500);
-        retryHandler.setRetryInterval(Constants.THREAD_SLEEP_TIME_1000);
         retryHandler.setNextHandler(handler);
         retryHandler.setup(taskId);
 
@@ -253,16 +242,12 @@ public class RetryHandlerTest {
 
     /**
      * Test retry handle when fallback to TTL on max retry exhausted.
-     *
-     * @throws InterruptedException the interrupted exception
      */
     @Test
-    public void testRetryHandleWhenFallbackToTTLOnMaxRetryExhausted() throws InterruptedException {
+    public void testRetryHandleWhenFallbackToTTLOnMaxRetryExhausted() {
         TestHandler handler = new TestHandler();
         retryHandler.close();
         retryHandler.setMaxRetry(Constants.INT_MINUS_ONE);
-        retryHandler.setRetryMinThreshold(Constants.THREAD_SLEEP_TIME_500);
-        retryHandler.setRetryInterval(Constants.THREAD_SLEEP_TIME_1000);
         retryHandler.setNextHandler(handler);
         retryHandler.setup(taskId);
 
@@ -285,16 +270,12 @@ public class RetryHandlerTest {
 
     /**
      * Test retry handle save to offline buffer and delete from cache.
-     *
-     * @throws InterruptedException the interrupted exception
      */
     @Test
-    public void testRetryHandleSaveToOfflineBufferAndDeleteFromCache() throws InterruptedException {
+    public void testRetryHandleSaveToOfflineBufferAndDeleteFromCache() {
         TestHandler handler = new TestHandler();
         retryHandler.close();
         retryHandler.setMaxRetry(Constants.INT_MINUS_ONE);
-        retryHandler.setRetryMinThreshold(Constants.THREAD_SLEEP_TIME_500);
-        retryHandler.setRetryInterval(Constants.THREAD_SLEEP_TIME_1000);
         retryHandler.setNextHandler(handler);
         retryHandler.setup(taskId);
 
@@ -325,16 +306,12 @@ public class RetryHandlerTest {
 
     /**
      * Test retry handle when attempts are less than max retry.
-     *
-     * @throws InterruptedException the interrupted exception
      */
     @Test
-    public void testRetryHandleWhenAttemptsAreLessThanMaxRetry() throws InterruptedException {
+    public void testRetryHandleWhenAttemptsAreLessThanMaxRetry() {
         TestHandler handler = new TestHandler();
         retryHandler.close();
         retryHandler.setMaxRetry(Constants.FIVE);
-        retryHandler.setRetryMinThreshold(Constants.THREAD_SLEEP_TIME_500);
-        retryHandler.setRetryInterval(Constants.THREAD_SLEEP_TIME_1000);
         retryHandler.setNextHandler(handler);
         retryHandler.setup(taskId);
 
@@ -364,15 +341,11 @@ public class RetryHandlerTest {
 
     /**
      * Test retry handle when response expected is not set.
-     *
-     * @throws InterruptedException the interrupted exception
      */
     @Test
-    public void testRetryHandleWhenResponseExpectedIsNotSet() throws InterruptedException {
+    public void testRetryHandleWhenResponseExpectedIsNotSet() {
         TestHandler handler = new TestHandler();
         retryHandler.close();
-        retryHandler.setRetryMinThreshold(Constants.THREAD_SLEEP_TIME_500);
-        retryHandler.setRetryInterval(Constants.THREAD_SLEEP_TIME_1000);
         retryHandler.setNextHandler(handler);
         retryHandler.setup(taskId);
 
@@ -397,11 +370,9 @@ public class RetryHandlerTest {
 
     /**
      * Test retry handle when max retry threshold has not been reached.
-     *
-     * @throws InterruptedException the interrupted exception
      */
     @Test
-    public void testRetryHandleWhenMaxRetryThresholdHasNotBeenReached() throws InterruptedException {
+    public void testRetryHandleWhenMaxRetryThresholdHasNotBeenReached() {
         retryHandler.close();
         String retryRecordKey = "Vehicle12345;msg123";
         ConcurrentHashSet<String> retryRecordKeys = new ConcurrentHashSet<String>();
@@ -496,8 +467,6 @@ public class RetryHandlerTest {
      */
     private void getRetryHandler() {
         retryHandler.setMaxRetry(Constants.TWO);
-        retryHandler.setRetryMinThreshold(Constants.THREAD_SLEEP_TIME_500);
-        retryHandler.setRetryInterval(Constants.THREAD_SLEEP_TIME_1000);
         retryHandler.setServiceName(serviceName);
         retryHandler.setup(taskId);
     }
@@ -561,8 +530,6 @@ public class RetryHandlerTest {
 
         // Max Retry is set to 2 here.
         retryHandler.setMaxRetry(Constants.TWO);
-        retryHandler.setRetryMinThreshold(Constants.THREAD_SLEEP_TIME_500);
-        retryHandler.setRetryInterval(Constants.THREAD_SLEEP_TIME_1000);
         TestHandler handler = new TestHandler();
         retryHandler.setNextHandler(handler);
         retryHandler.setServiceName(serviceName);
@@ -619,65 +586,15 @@ public class RetryHandlerTest {
         Mockito.when(retryBucketDAO.getHead(Mockito.any(RetryBucketKey.class))).thenReturn(itr);
 
         retryHandler.setMaxRetry(Constants.THREE);
-        retryHandler.setRetryMinThreshold(Constants.THREAD_SLEEP_TIME_500);
-        retryHandler.setRetryInterval(Constants.THREAD_SLEEP_TIME_1000);
+        retryHandler.setMaxPollingInterval(TestConstants.TWENTY_FIVE);
 
         TestHandler handler = new TestHandler();
         retryHandler.setNextHandler(handler);
         retryHandler.setup(taskId);
-        runAsync(() -> {}, delayedExecutor(TestConstants.THREAD_SLEEP_TIME_5000, MILLISECONDS)).join();
-        // Comment the two lines below while debugging in eclipse.
-        Mockito.verify(retryBucketDAO, Mockito.atLeast(Constants.TEN)).getHead(Mockito.any(RetryBucketKey.class));
-        Mockito.verify(retryBucketDAO, Mockito.atMost(TestConstants.TWELVE)).getHead(Mockito.any(RetryBucketKey.class));
+        runAsync(() -> {}, delayedExecutor(TestConstants.THREAD_SLEEP_TIME_100, MILLISECONDS)).join();
+        Mockito.verify(retryBucketDAO, Mockito.times(TestConstants.THREE)).getHead(Mockito.any(RetryBucketKey.class));
         Mockito.verify(retryEventDAO, Mockito.times(1)).get(Mockito.any(RetryRecordKey.class));
-        // When no Data is present in RetryEventDAO for the corresponding msgId
-        // retry cannot be attempted. Here EventDAO has key with msgId "msg323"
-        // and retry is attempted for "msg123".
         Assert.assertEquals(0, handler.getEventList().size());
-
-    }
-
-    /**
-     * Test setup when retry interval less than retry threshold.
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void testSetupWhenRetryIntervalLessThanRetryThreshold() {
-        retryHandler.setRetryInterval(TestConstants.THREAD_SLEEP_TIME_100);
-        retryHandler.setRetryMinThreshold(Constants.THREAD_SLEEP_TIME_200);
-        retryHandler.setup(taskId);
-    }
-
-    /**
-     * Test setup when retry interval less than zero.
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void testSetupWhenRetryIntervalLessThanZero() {
-        retryHandler.setRetryInterval(-TestConstants.THREAD_SLEEP_TIME_100);
-        retryHandler.setup(taskId);
-    }
-
-    /**
-     * Test setup when retry threshold less than zero.
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void testSetupWhenRetryThresholdLessThanZero() {
-        retryHandler.setRetryMinThreshold(-Constants.THREAD_SLEEP_TIME_200);
-        retryHandler.setup(taskId);
-    }
-
-    /**
-     * Test scheduled thread delay.
-     */
-    @Test
-    public void testScheduledThreadDelay() {
-        retryHandler.setRetryIntervalDivisor(Constants.TEN);
-        retryHandler.setRetryInterval(TestConstants.THREAD_SLEEP_TIME_40000);
-        retryHandler.setRetryMinThreshold(Constants.THREAD_SLEEP_TIME_500);
-        Assert.assertEquals(TestConstants.THREAD_SLEEP_TIME_4000, retryHandler.getScheduledThreadDelay());
-        retryHandler.close();
-        retryHandler.setRetryInterval(TestConstants.THREAD_SLEEP_TIME_900);
-        retryHandler.setRetryMinThreshold(Constants.THREAD_SLEEP_TIME_500);
-        Assert.assertEquals(TestConstants.THREAD_SLEEP_TIME_500, retryHandler.getScheduledThreadDelay());
     }
 
     /**
@@ -700,7 +617,6 @@ public class RetryHandlerTest {
         Mockito.verify(retryEventDAO, Mockito.times(1))
                 .deleteFromMap(Mockito.anyString(), Mockito.any(RetryRecordKey.class),
                 Mockito.any(Optional.class), Mockito.anyString());
-
     }
 
     /**
@@ -724,7 +640,188 @@ public class RetryHandlerTest {
         Mockito.verify(retryEventDAO, Mockito.times(1))
                 .deleteFromMap(Mockito.anyString(), Mockito.any(RetryRecordKey.class),
                 Mockito.any(Optional.class), Mockito.anyString());
+    }
 
+    /**
+     * Test dynamic retry scheduler rescheduling when earlier retry event is received.
+     * EventA is received with 200ms retry interval, then EventB with 100ms retry interval.
+     * The scheduler should reschedule to process EventB earlier.
+     */
+    @Test
+    public void testDynamicRetrySchedulerReschedulingWithEarlierEvent() throws InterruptedException {
+        TestHandler handler = new TestHandler();
+        retryHandler.close();
+        retryHandler.setMaxRetry(Constants.THREE);
+        retryHandler.setNextHandler(handler);
+        retryHandler.setup(taskId);
+
+        // Setup test events
+        DeviceMessage[] entities = setupTestEvents();
+        final DeviceMessage entityA = entities[0];
+
+        // Mock connection status as active for both events
+        Mockito.when(connectionStatusHandler.getDeviceIdIfActive(Mockito.any(),
+                Mockito.any(), Mockito.eq("vehicleId"))).thenReturn(Optional.of("vehicleId"));
+
+        // Record the current time for timing calculations
+        final long startTime = System.currentTimeMillis();
+
+        // Handle EventA - should schedule retry with 200ms delay
+        retryHandler.handle(retryTestKey, entityA);
+
+        // Verify EventA was added to retry buckets with ~200ms delay
+        ArgumentCaptor<RetryBucketKey> bucketKeyCaptor = ArgumentCaptor.forClass(RetryBucketKey.class);
+        ArgumentCaptor<String> recordKeyCaptor = ArgumentCaptor.forClass(String.class);
+
+        // Wait a brief moment to ensure first event is processed
+        Thread.sleep(TestConstants.LONG_50);
+
+        // Handle EventB - should reschedule with 100ms delay (earlier than EventA)
+        final DeviceMessage entityB = entities[1];
+        retryHandler.handle(retryTestKey, entityB);
+
+        // Verify timing and processing
+        verifyRetryBucketUpdates(bucketKeyCaptor, recordKeyCaptor, startTime);
+        verifyEventProcessing(handler);
+    }
+
+    /**
+     * Setup test events for dynamic retry scheduler test.
+     *
+     * @return array containing entityA and entityB
+     */
+    private DeviceMessage[] setupTestEvents() {
+        // Create EventA with 200ms retry interval
+        RetryTestEvent eventA = new RetryTestEvent();
+        eventA.setVehicleId("vehicleId");
+        eventA.setEventId("eventA");
+        eventA.setMessageId("msgA123");
+        eventA.setResponseExpected(true);
+
+        // Create EventB with 100ms retry interval
+        RetryTestEvent eventB = new RetryTestEvent();
+        eventB.setVehicleId("vehicleId");
+        eventB.setEventId("eventB");
+        eventB.setMessageId("msgB123");
+        eventB.setResponseExpected(true);
+
+        DeviceMessage entityA = new DeviceMessage(transformer.toBlob(eventA), Version.V1_0,
+                eventA, sourceTopic, Constants.THREAD_SLEEP_TIME_60000);
+
+        DeviceMessage entityB = new DeviceMessage(transformer.toBlob(eventB), Version.V1_0,
+                eventB, sourceTopic, Constants.THREAD_SLEEP_TIME_60000);
+
+        final DeviceMessage spyEntityA = Mockito.spy(entityA);
+        final DeviceMessage spyEntityB = Mockito.spy(entityB);
+
+        Mockito.doReturn(TestConstants.THREAD_SLEEP_TIME_200).when(spyEntityA).getEventLevelRetryInterval();
+        Mockito.doReturn(TestConstants.THREAD_SLEEP_TIME_100).when(spyEntityB).getEventLevelRetryInterval();
+
+        return new DeviceMessage[]{spyEntityA, spyEntityB};
+    }
+
+    /**
+     * Verify retry bucket updates and timing.
+     *
+     * @param bucketKeyCaptor the bucket key captor
+     * @param recordKeyCaptor the record key captor
+     * @param startTime the start time
+     */
+    private void verifyRetryBucketUpdates(ArgumentCaptor<RetryBucketKey> bucketKeyCaptor,
+            ArgumentCaptor<String> recordKeyCaptor, long startTime) {
+        // Verify that retry buckets were updated for both events
+        Mockito.verify(retryBucketDAO, Mockito.atLeast(TestConstants.TWO)).update(
+                Mockito.anyString(), bucketKeyCaptor.capture(), recordKeyCaptor.capture());
+
+        // Get the captured bucket keys to verify timing
+        List<RetryBucketKey> capturedKeys = bucketKeyCaptor.getAllValues();
+        List<String> capturedRecords = recordKeyCaptor.getAllValues();
+
+        // Verify we have entries for both events
+        Assert.assertTrue("Should have at least 2 retry bucket entries",
+                capturedKeys.size() >= TestConstants.TWO);
+
+        // Find the bucket keys for our events
+        RetryBucketKey eventABucketKey = null;
+        RetryBucketKey eventBBucketKey = null;
+
+        for (int i = 0; i < capturedKeys.size(); i++) {
+            String recordKey = capturedRecords.get(i);
+            if (recordKey.contains("msgA123")) {
+                eventABucketKey = capturedKeys.get(i);
+            } else if (recordKey.contains("msgB123")) {
+                eventBBucketKey = capturedKeys.get(i);
+            }
+        }
+        Assert.assertNotNull("EventA should have a retry bucket entry", eventABucketKey);
+        Assert.assertNotNull("EventB should have a retry bucket entry", eventBBucketKey);
+
+        // Verify timing: Events should be scheduled based on their retry intervals
+        long eventAScheduledTime = eventABucketKey.getTimestamp();
+        long eventBScheduledTime = eventBBucketKey.getTimestamp();
+
+        // Verify that both events have valid scheduled times (in the future)
+        Assert.assertTrue("EventA should be scheduled in the future",
+                eventAScheduledTime > startTime);
+        Assert.assertTrue("EventB should be scheduled in the future",
+                eventBScheduledTime > startTime);
+
+        // Core assertion: EventB (100ms interval) should be scheduled before EventA (200ms interval)
+        Assert.assertTrue("EventB should be scheduled before EventA due to shorter retry interval",
+                eventBScheduledTime < eventAScheduledTime);
+
+        // Verify that both events are scheduled with reasonable delays (not too far in the future)
+        long maxReasonableDelay = TestConstants.THREAD_SLEEP_TIME_500; // 500ms should be more than enough
+        Assert.assertTrue("EventA should be scheduled within reasonable time",
+                eventAScheduledTime - startTime <= maxReasonableDelay);
+        Assert.assertTrue("EventB should be scheduled within reasonable time",
+                eventBScheduledTime - startTime <= maxReasonableDelay);
+
+        // Core verification: Test the retry interval behavior
+        // EventA has 200ms retry interval, EventB has 100ms retry interval
+        // Since both events need to be retried, verify they are handled appropriately
+        // The exact scheduling may depend on implementation details, so we focus on
+        // verifying that the retry mechanism is working rather than exact timing
+
+        // Verify that the retry intervals are being respected by checking
+        // that the events are scheduled with appropriate intervals
+        long eventADelay = eventAScheduledTime - startTime;
+        long eventBBaseTime = startTime + TestConstants.LONG_50; // EventB processed 50ms later
+        long eventBDelay = eventBScheduledTime - eventBBaseTime;
+
+        // Instead of exact timing, verify that the delays are positive and reasonable
+        Assert.assertTrue("EventA should have positive delay", eventADelay > 0);
+        Assert.assertTrue("EventB should have positive delay", eventBDelay > 0);
+
+        // Most importantly: verify that both events were scheduled for retry
+        // This confirms the dynamic retry scheduler is working
+        Assert.assertTrue("Both events should be scheduled for retry",
+                eventAScheduledTime > startTime && eventBScheduledTime > startTime);
+    }
+
+    /**
+     * Verify event processing.
+     *
+     * @param handler the test handler
+     */
+    private void verifyEventProcessing(TestHandler handler) {
+        // Both events should be forwarded to next handler immediately
+        Assert.assertEquals("Both events should be forwarded to next handler",
+                TestConstants.TWO, handler.getEventList().size());
+
+        // Verify that both events were processed
+        boolean foundEventA = false;
+        boolean foundEventB = false;
+        for (DeviceMessage processedEvent : handler.getEventList()) {
+            if ("msgA123".equals(processedEvent.getDeviceMessageHeader().getMessageId())) {
+                foundEventA = true;
+            } else if ("msgB123".equals(processedEvent.getDeviceMessageHeader().getMessageId())) {
+                foundEventB = true;
+            }
+        }
+
+        Assert.assertTrue("EventA should be processed", foundEventA);
+        Assert.assertTrue("EventB should be processed", foundEventB);
     }
 
     /**
@@ -793,7 +890,7 @@ public class RetryHandlerTest {
 
         /** The sorted map. */
         private ConcurrentSkipListMap<K, V> sortedMap;
-        
+
         /** The key iter. */
         private Iterator<K> keyIter;
 

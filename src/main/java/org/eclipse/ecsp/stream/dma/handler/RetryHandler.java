@@ -83,7 +83,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -102,6 +104,9 @@ public class RetryHandler implements DeviceMessageHandler {
     /** The retry executor. */
     private ScheduledExecutorService retryExecutor = null;
     
+    /** The current scheduled task for dynamic retry processing. */
+    private final AtomicReference<ScheduledFuture<?>> currentScheduledTask = new AtomicReference<>();
+
     /** The next handler. */
     private DeviceMessageHandler nextHandler;
     
@@ -156,10 +161,6 @@ public class RetryHandler implements DeviceMessageHandler {
     @Value("${" + PropertyNames.SERVICE_NAME + ":}")
     private String serviceName;
 
-    /** The retry interval. */
-    @Value("${" + PropertyNames.DMA_SERVICE_RETRY_INTERVAL_MILLIS + ":60000}")
-    private long retryInterval;
-
     /** The scheduler enabled. */
     @Value("${" + PropertyNames.SCHEDULER_ENABLED + ":true}")
     private String schedulerEnabled;
@@ -168,13 +169,9 @@ public class RetryHandler implements DeviceMessageHandler {
     @Value("${" + PropertyNames.DMA_TTL_EXPIRY_NOTIFICATION_ENABLED + ":true}")
     private String ttlExpiryNotificationEnabled;
 
-    /** The retry min threshold. */
-    @Value("${" + PropertyNames.DMA_SERVICE_RETRY_MIN_THRESHOLD_MILLIS + ":1000}")
-    private int retryMinThreshold;
-
-    /** The retry interval divisor. */
-    @Value("${" + PropertyNames.DMA_SERVICE_RETRY_INTERVAL_DIVISOR + ":10}")
-    private int retryIntervalDivisor;
+    /** The maximum polling interval as a safety fallback in milliseconds. */
+    @Value("${" + PropertyNames.DMA_SERVICE_MAX_POLLING_INTERVAL_MILLIS + ":300000}")
+    private long maxPollingInterval;
 
     /** The Constant DEFAULT_EVENT_CONFIG_PROVIDER. */
     private static final String DEFAULT_EVENT_CONFIG_PROVIDER = 
@@ -199,15 +196,6 @@ public class RetryHandler implements DeviceMessageHandler {
             "Current retry attempt is {} for messageId {}, with requestId {} and key {}";
 
     /**
-     * Sets the retry min threshold.
-     *
-     * @param retryMinThreshold the new retry min threshold
-     */
-    public void setRetryMinThreshold(int retryMinThreshold) {
-        this.retryMinThreshold = retryMinThreshold;
-    }
-
-    /**
      * Sets the max retry.
      *
      * @param maxRetry the new max retry
@@ -223,61 +211,6 @@ public class RetryHandler implements DeviceMessageHandler {
      */
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
-    }
-
-    /**
-     * Sets the retry interval.
-     *
-     * @param retryInterval the new retry interval
-     */
-    public void setRetryInterval(long retryInterval) {
-        this.retryInterval = retryInterval;
-    }
-
-    /**
-     * Sets the retry interval divisor.
-     *
-     * @param retryIntervalDivisor the new retry interval divisor
-     */
-    public void setRetryIntervalDivisor(int retryIntervalDivisor) {
-        this.retryIntervalDivisor = retryIntervalDivisor;
-    }
-
-    /**
-     * Sets the event config map.
-     *
-     * @param eventConfigMap the event config map
-     */
-    public void setEventConfigMap(ConcurrentMap<String, EventConfig> eventConfigMap) {
-        this.eventConfigMap = eventConfigMap;
-    }
-
-    /**
-     * Gets the event config map.
-     *
-     * @return the event config map
-     */
-    public ConcurrentMap<String, EventConfig> getEventConfigMap() {
-        return this.eventConfigMap;
-    }
-
-    /**
-     * Sets the event config provider impl class.
-     *
-     * @param eventConfigProviderImplClass the new event config provider impl class
-     */
-    public void setEventConfigProviderImplClass(String eventConfigProviderImplClass) {
-        this.eventConfigProviderImplClass = eventConfigProviderImplClass;
-    }
-
-    /**
-     * Gets the scheduled thread delay.
-     *
-     * @return the scheduled thread delay
-     */
-    long getScheduledThreadDelay() {
-        long freq = retryInterval / retryIntervalDivisor;
-        return freq > retryMinThreshold ? freq : retryMinThreshold;
     }
 
     /**
@@ -333,15 +266,25 @@ public class RetryHandler implements DeviceMessageHandler {
                 value.setDeviceMessageHeader(header);
             }
         }
+
+        // Capture the earliest retry time before processing the new event
+        Long previousEarliestRetryTime = getNextEarliestRetryTime();
+        // Process the retry logic
         retryHandle(key, value, true);
+        Long currentEarliestRetryTime = getNextEarliestRetryTime();
+        if (shouldReschedule(previousEarliestRetryTime, currentEarliestRetryTime)) {
+            logger.debug("Rescheduling dynamic retry processing as an event with earlier retry time is received. "
+                    + "Previous: {}, Current: {}", previousEarliestRetryTime, currentEarliestRetryTime);
+            scheduleDynamicRetryProcessing(currentEarliestRetryTime);
+        }
     }
 
     /**
      * updateEnabled will be true for happy flow. and false when it is triggered by
      * the scheduled thread. This ensures that an event is not created in retry
      * event map when it is invoked from the scheduled thread.
-     * When invoked from the scheduledthread is it is not able to find the messageId
-     * in retry map then it implies the event has already been retried. Hence its
+     * When invoked from the scheduled thread is it is not able to find the messageId
+     * in retry map then it implies the event has already been retried. Hence, it
      * should not be retried again.
      *
      * @param key IgniteKey
@@ -362,7 +305,7 @@ public class RetryHandler implements DeviceMessageHandler {
         String retryRecordKeyPart = RetryRecordKey.createKeyPart((String) key.getKey(), header.getMessageId());
         if (cutOffNotExceeded) {
             if (checkDeviceInactive(key, value)) {
-                logger.debug("Device is inactive for ignitekey {} and value {}. Removing Retry entry Record "
+                logger.info("Device is inactive for ignitekey {} and value {}. Removing Retry entry Record "
                         + "with key {}.", key, value, retryRecordKeyPart);
                 RetryRecordKey retryKey = new RetryRecordKey(retryRecordKeyPart, taskId);
                 retryEventDAO.deleteFromMap(retryEventMapKey, retryKey, Optional.empty(),
@@ -375,7 +318,7 @@ public class RetryHandler implements DeviceMessageHandler {
                 boolean fallbackToTTLOnMaxRetryExhausted = getEventConfig(value.getEvent().getEventId())
                         .fallbackToTTLOnMaxRetryExhausted();
                 if (fallbackToTTLOnMaxRetryExhausted && header.isResponseExpected()) {
-                    logger.debug("fallbackToTTLOnMaxRetryExhausted is enabled for eventId: {}. Message will be "
+                    logger.info("fallbackToTTLOnMaxRetryExhausted is enabled for eventId: {}. Message will be "
                             + "valid for retry until TTL expires.", value.getEvent().getEventId());
                     RetryRecordKey retryEventKey = new RetryRecordKey(retryRecordKeyPart, taskId);
                     RetryRecord event = retryEventDAO.get(retryEventKey);
@@ -512,18 +455,19 @@ public class RetryHandler implements DeviceMessageHandler {
             long nextRetry = currentTime + retryIntervalTime;
             retryEventDAO.putToMap(retryEventMapKey, retryEventKey, event, Optional.empty(),
                     InternalCacheConstants.CACHE_TYPE_RETRY_RECORD);
-            logger.debug("Added event {} with key {} to retry event map.", event, retryEventKey.convertToString());
+            logger.info("Added event {} with key {} to retry event map.", event, retryEventKey.convertToString());
             // Add messageId to set of messageIds in retry
             // bucket keyed by timestamp
             RetryBucketKey nextRetryKey = new RetryBucketKey(nextRetry);
             String retryRecordKey = retryEventKey.getKey();
             retryBucketDAO.update(retryBucketMapKey, nextRetryKey, retryRecordKey);
-            logger.debug("Added entry {} with timestamp {} to retry bucket.", retryRecordKey, nextRetry);
+            logger.info("Added entry {} with timestamp {} to retry bucket.", retryRecordKey, nextRetry);
+
             DeviceMessageFailureEventDataV1_0 failEventData = new DeviceMessageFailureEventDataV1_0();
             failEventData.setFailedIgniteEvent(currentEvent);
             failEventData.setErrorCode(DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE);
             failEventData.setRetryAttempts(event.getAttempts());
-            logger.debug(retryAttemptLog,
+            logger.info(retryAttemptLog,
                     event.getAttempts(), currentEvent.getMessageId(), currentEvent.getRequestId(), key);
             deviceMessageUtils.postFailureEvent(failEventData, key, spc, value.getFeedBackTopic());
             logger.debug(retryAttemptLog,
@@ -583,12 +527,12 @@ public class RetryHandler implements DeviceMessageHandler {
         IgniteKey<?> key = event.getIgniteKey();
         DeviceMessage value = event.getDeviceMessage();
         int pendingRetries = value.getDeviceMessageHeader().getPendingRetries();
-        // Check if number of retries has exeeded max retries, If
+        // Check if number of retries has exceeded max retries, If
         // yes delete entry from retryEvent map and return true else
         // return false.
         IgniteEventImpl currentEvent = value.getEvent();
         if (pendingRetries == 0) {
-            logger.debug("Retry exceeded maxRetry {} for messageId {}, with requestId {} and key {}", maxRetry,
+            logger.info("Retry exceeded maxRetry {} for messageId {}, with requestId {} and key {}", maxRetry,
                     currentEvent.getMessageId(), currentEvent.getRequestId(), key);
             DeviceMessageFailureEventDataV1_0 failEventData = new DeviceMessageFailureEventDataV1_0();
             failEventData.setFailedIgniteEvent(currentEvent);
@@ -597,7 +541,7 @@ public class RetryHandler implements DeviceMessageHandler {
             deviceMessageUtils.postFailureEvent(failEventData, key, spc, value.getFeedBackTopic());
             retryEventDAO.deleteFromMap(retryEventMapKey, retryEventKey, Optional.empty(),
                     InternalCacheConstants.CACHE_TYPE_RETRY_RECORD);
-            logger.debug("Deleted key {} from retryEventDAO", retryEventKey.convertToString());
+            logger.info("Deleted key {} from retryEventDAO", retryEventKey.convertToString());
         } else {
             event.addAttempt(currentTime);
             /*
@@ -620,12 +564,14 @@ public class RetryHandler implements DeviceMessageHandler {
             RetryBucketKey nextRetryKey = new RetryBucketKey(nextRetry);
             String retryRecordKey = retryEventKey.getKey();
             retryBucketDAO.update(retryBucketMapKey, nextRetryKey, retryRecordKey);
-            logger.debug("Added entry {} with timestamp {} to retry bucket.", retryRecordKey, nextRetry);
+            logger.info("Added retry record key {} with next retry scheduled at {} to retry bucket.",
+                    retryRecordKey, nextRetry);
+
             DeviceMessageFailureEventDataV1_0 failEventData = new DeviceMessageFailureEventDataV1_0();
             failEventData.setFailedIgniteEvent(currentEvent);
             failEventData.setErrorCode(DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE);
             failEventData.setRetryAttempts(maxRetry - pendingRetries);
-            logger.debug(retryAttemptLog,
+            logger.info(retryAttemptLog,
                     event.getAttempts(), currentEvent.getMessageId(), currentEvent.getRequestId(), key);
             deviceMessageUtils.postFailureEvent(failEventData, key, spc, value.getFeedBackTopic());
             nextHandler.handle(key, value);
@@ -646,11 +592,12 @@ public class RetryHandler implements DeviceMessageHandler {
         RetryRecord event = new RetryRecord(key, value, currentTime);
         retryEventDAO.putToMap(retryEventMapKey, retryEventKey, event, Optional.empty(),
                 InternalCacheConstants.CACHE_TYPE_RETRY_RECORD);
-        logger.debug("Created event {} with key {} to retry event map.", event, retryEventKey.convertToString());
+        logger.debug("Added event {} with key {} to retry event map.", event, retryEventKey.convertToString());
         RetryBucketKey nextRetryKey = new RetryBucketKey(nextRetry);
         String retryRecordKey = retryEventKey.getKey();
         retryBucketDAO.update(retryBucketMapKey, nextRetryKey, retryRecordKey);
-        logger.debug("Created entry {} with timestamp {} to retry event map.", retryRecordKey, nextRetry);
+        logger.info("Added retry record key {} scheduled for next retry at {} to retry bucket.",
+                retryRecordKey, nextRetry);
         nextHandler.handle(key, value);
     }
 
@@ -671,11 +618,9 @@ public class RetryHandler implements DeviceMessageHandler {
 
     /**
      * Checks if the TTL of the event has exceeded.
-     * If TTL is not set default value needs to be provided by DMA (should be
-     * discussed and Implementataion Pending).
      *
      * @param value the value
-     * @return Whether the event is exipred or not.
+     * @return Whether the event is expired or not.
      */
     private boolean checkTTLExceeded(DeviceMessageHeader value) {
         boolean flag = true;
@@ -730,7 +675,7 @@ public class RetryHandler implements DeviceMessageHandler {
     public void setNextHandler(DeviceMessageHandler handler) {
         nextHandler = handler;
     }
-    
+
     /**
      * Initializes RetryHandler for the given partitionId.
      *
@@ -742,17 +687,6 @@ public class RetryHandler implements DeviceMessageHandler {
         retryEventMapKey = RetryRecordKey.getMapKey(serviceName, taskId);
         retryBucketDAO.initialize(taskId);
         retryEventDAO.initialize(taskId);
-        if (retryMinThreshold <= 0) {
-            throw new IllegalArgumentException(
-                    "Retry Minimum threshold " + retryMinThreshold + ", should be greater than one second ");
-        }
-        if (retryInterval <= 0) {
-            throw new IllegalArgumentException("Retry Interval " + retryInterval + ", should be greater than zero ");
-        }
-        if (retryInterval < retryMinThreshold) {
-            throw new IllegalArgumentException("Retry Interval " + retryInterval
-                    + ", should be greater than Minimum threshold " + retryMinThreshold);
-        }
 
         if (maxRetry < 0) {
             logger.warn("Max retry cannot be less than 0. No retry will be attempted.");
@@ -761,13 +695,9 @@ public class RetryHandler implements DeviceMessageHandler {
         if (eventConfigProviderImplClass == null) {
             eventConfigProviderImplClass = DEFAULT_EVENT_CONFIG_PROVIDER;
         }
-
         configProvider = getEventConfigProviderImpl(eventConfigProviderImplClass);
 
-        long delay = getScheduledThreadDelay();
-        logger.info(
-                "Minimum threshold for retry is {} ; Scheduled thread delay is {} ; Retry Interval for service is {}",
-                retryMinThreshold, delay, retryInterval);
+        logger.info("Max polling interval for retries is {}", maxPollingInterval);
         if (retryExecutor == null || retryExecutor.isShutdown()) {
             retryExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
                 Thread t = Executors.defaultThreadFactory().newThread(r);
@@ -776,14 +706,8 @@ public class RetryHandler implements DeviceMessageHandler {
                 t.setName(Thread.currentThread().getName() + ":" + "DMARetryHandler" + ":" + taskId);
                 return t;
             });
-            logger.info("Created retry handler executor for taskId {}", taskId);
-            retryExecutor.scheduleWithFixedDelay(() -> {
-                try {
-                    processRetries();
-                } catch (Exception e) {
-                    logger.error("Error occured while retrying {}", e);
-                }
-            }, 0, delay, TimeUnit.MILLISECONDS);
+            logger.info("Created retry handler executor for taskId {} with dynamic scheduling enabled", taskId);
+            scheduleDynamicRetryProcessing(null);
         }
     }
 
@@ -818,6 +742,73 @@ public class RetryHandler implements DeviceMessageHandler {
     }
 
     /**
+     * Gets the next earliest retry time from the retry buckets.
+     *
+     * @return the timestamp of the next earliest retry, or null if no retries are scheduled
+     */
+    private Long getNextEarliestRetryTime() {
+        try {
+            RetryBucketKey earliestKey = retryBucketDAO.getEarliestRetryBucketKey();
+            return earliestKey != null ? earliestKey.getTimestamp() : null;
+        } catch (Exception e) {
+            logger.error("Error while fetching next earliest retry time: {}", e.getMessage(), e);
+        }
+        return null;
+    }
+
+    /**
+     * Schedules dynamic retry processing based on the next earliest retry time.
+     */
+    private void scheduleDynamicRetryProcessing(Long nextRetryTime) {
+        if (nextRetryTime == null) {
+            nextRetryTime = getNextEarliestRetryTime();
+        }
+        if (nextRetryTime == null) {
+            scheduleRetryTask(maxPollingInterval);
+            logger.debug("Scheduled dynamic retry processing to max polling interval in {} ms for taskId {}",
+                    maxPollingInterval, taskId);
+            return;
+        }
+        try {
+            long currentTime = System.currentTimeMillis();
+            long delayUntilNextRetry = nextRetryTime - currentTime;
+            if (delayUntilNextRetry <= 0) {
+                delayUntilNextRetry = 0;
+                logger.debug("Found overdue retries. "
+                        + "Setting delay to 0 for immediate processing for taskId {}", taskId);
+            }
+            // Cap the delay to maxPollingInterval as a safety measure
+            delayUntilNextRetry = Math.min(delayUntilNextRetry, maxPollingInterval);
+            scheduleRetryTask(delayUntilNextRetry);
+            logger.debug("Scheduled dynamic retry processing in {} ms for taskId {}",
+                    delayUntilNextRetry, taskId);
+        } catch (Exception e) {
+            logger.error("Error occurred in scheduling dynamic retry processing: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Schedules a retry task with a specified delay.
+     * It checks for current running tasks.
+     * It then schedules a new task to process retries after the specified delay.
+     *
+     * @param delay the delay in milliseconds before executing the task
+     */
+    private void scheduleRetryTask(long delay) {
+        cancelScheduledTaskIfNotRunning();
+        ScheduledFuture<?> newTask = retryExecutor.schedule(() -> {
+            try {
+                processRetries();
+            } catch (Exception e) {
+                logger.error("Error occurred while processing retries: {}", e.getMessage(), e);
+            } finally {
+                scheduleDynamicRetryProcessing(null);
+            }
+        }, delay, TimeUnit.MILLISECONDS);
+        currentScheduledTask.set(newTask);
+    }
+
+    /**
      * Process retries.
      */
     private void processRetries() {
@@ -842,12 +833,12 @@ public class RetryHandler implements DeviceMessageHandler {
                 long timestamp = bucket.getTimestamp();
                 Set<String> retryRecordKeys = keyValue.value.getRecordIds();
                 if (retryRecordKeys != null && !retryRecordKeys.isEmpty()) {
-                    logger.debug("Processing key {} from retry bucket with size {} with service {} , taskId {}",
+                    logger.info("Processing key {} from retry bucket with size {} with service {} , taskId {}",
                             timestamp, retryRecordKeys.size(), serviceName, taskId);
                     retryRecordKeys.forEach(retryRecordKey ->
                         createProcessesKeySet(processedKeys, timestamp, retryRecordKey));
                 } else {
-                    logger.debug("No deviceIds found for retrying at ts {} and service {}", timestamp, serviceName);
+                    logger.info("No deviceIds found for retrying at ts {} and service {}", timestamp, serviceName);
                 }
                 retryBucketDAO.deleteFromMap(retryBucketMapKey, bucket, Optional.empty(),
                         InternalCacheConstants.CACHE_TYPE_RETRY_BUCKET);
@@ -869,17 +860,17 @@ public class RetryHandler implements DeviceMessageHandler {
             RetryRecord retryRecord = retryEventDAO.get(retryEventKey);
             try {
                 if (retryRecord != null) {
-                    logger.debug("Retrying key {} and value {} form timestamp {} bucket.",
+                    logger.info("Retrying key {} and value {} form timestamp {} bucket.",
                             retryRecord.getIgniteKey(), retryRecord.getDeviceMessage(), timestamp);
                     retryHandle(retryRecord.getIgniteKey(), retryRecord.getDeviceMessage(), false);
                     processedKeys.add(retryRecordKey);
                 } else {
-                    logger.debug("Record not present/deleted from eventDao for key {} for ts {}",
-                            retryRecord, retryEventKey, timestamp);
+                    logger.debug("Record not present/deleted from eventDao for key {} for timestamp {}",
+                            retryEventKey, timestamp);
                 }
             } catch (Exception e) {
                 logger.error(
-                        "Error occured while retrying record {} from eventDao for key {} for ts {}",
+                        "Error occurred while retrying record {} from eventDao for key {} for timestamp {}",
                         retryRecord, retryEventKey, timestamp, e);
                 errorCounter.incErrorCounter(Optional.ofNullable(taskId), e.getClass());
             }
@@ -893,10 +884,26 @@ public class RetryHandler implements DeviceMessageHandler {
     public void close() {
         retryBucketDAO.close();
         retryEventDAO.close();
+        cancelScheduledTaskIfNotRunning();
         if (retryExecutor != null && !retryExecutor.isShutdown()) {
             logger.info("Shutting the SingleThreadScheduledExecutor for retry service!");
             ThreadUtils.shutdownExecutor(retryExecutor, 
                     org.eclipse.ecsp.analytics.stream.base.utils.Constants.THREAD_SLEEP_TIME_2000, false);
+        }
+    }
+
+    /**
+     * Cancels the currently scheduled task if it is not done.
+     * It cancels any currently scheduled task if it exists, is not done, and has not been executed yet.
+     * It also sets the currentScheduledTask to null after cancellation.
+     */
+    private void cancelScheduledTaskIfNotRunning() {
+        ScheduledFuture<?> currentTask = currentScheduledTask.get();
+        if (currentTask != null && !currentTask.isDone()) {
+            logger.debug("Cancelling pending retry task for taskId {} . Task will not be interrupted if "
+                    + "already running.", taskId);
+            currentTask.cancel(false);
+            currentScheduledTask.set(null);
         }
     }
 
@@ -934,5 +941,30 @@ public class RetryHandler implements DeviceMessageHandler {
      */
     public void setConnStatusHandler(DeviceConnectionStatusHandler connStatusHandler) {
         this.connStatusHandler = connStatusHandler;
+    }
+
+    /**
+     * Determines if dynamic retry processing should be rescheduled.
+     * This method checks if the current earliest retry time is earlier than the previous one.
+     * If the current earliest retry time is null, it does not require rescheduling.
+     * If the previous earliest retry time is null, it indicates that it requires scheduling.
+     * If both times are present, it checks if the current time is earlier than the previous one.
+     *
+     * @param previousEarliestRetryTime the earliest retry time before processing the new event
+     * @param currentEarliestRetryTime the earliest retry time after processing the new event
+     * @return true if rescheduling is needed, false otherwise
+     */
+    private boolean shouldReschedule(Long previousEarliestRetryTime, Long currentEarliestRetryTime) {
+        if (currentEarliestRetryTime == null) {
+            return false;
+        }
+        if (previousEarliestRetryTime == null) {
+            return true;
+        }
+        return currentEarliestRetryTime < previousEarliestRetryTime;
+    }
+
+    public void setMaxPollingInterval(long maxPollingInterval) {
+        this.maxPollingInterval = maxPollingInterval;
     }
 }

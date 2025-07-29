@@ -251,6 +251,9 @@ public class TestConstants {
     /** The Constant LONG_50. */
     public static final long LONG_50 = 50L;
 
+    /** The Constant LONG_300000. */
+    public static final long LONG_300000 = 300000L;
+
     /**
      * Instantiates a new test constants.
      */

@@ -76,4 +76,11 @@ public interface DmaRetryBucketDao  extends MutableKeyValueStore<RetryBucketKey,
      */
     public void initialize(String taskId);
 
+    /**
+     * Gets the earliest retry bucket key with the smallest timestamp.
+     *
+     * @return the earliest retry bucket key, or null if no retries are scheduled
+     */
+    public RetryBucketKey getEarliestRetryBucketKey();
+
 }
