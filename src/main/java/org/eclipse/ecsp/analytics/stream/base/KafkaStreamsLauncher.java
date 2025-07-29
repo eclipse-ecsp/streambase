@@ -641,7 +641,6 @@ public class KafkaStreamsLauncher<KIn, VIn, KOut, VOut> extends AbstractLauncher
         logger.info("Number of stream processors: {}", processors.size());
         Topology topology = buildKafkaStreamsTopology((List<StreamProcessor<?, ?, ?, ?>>) processors, props);
         streams = new KafkaStreams(topology, props);
-        kafkaStateListener.setStreams(streams);
         streams.setStateListener(kafkaStateListener);
         streams.setGlobalStateRestoreListener(new LoggingStateRestoreListener());
         threadStatusPrinter.init(streams);

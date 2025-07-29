@@ -166,15 +166,16 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
         ksProps.put(PropertyNames.APPLICATION_ID, "test-sp" + System.currentTimeMillis());
         launchApplication();
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
+        String testVehicleId = "test_vehicle123";
 
         String deviceConnStatusEvent = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
                 + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12345\"}";
+                + "\"VehicleId\": \"test_vehicle123\",\"SourceDeviceId\": \"Device12345\"}";
 
-        String deviceIdKey = vehicleId;
+        String deviceIdKey = testVehicleId;
         Assert.assertNull(deviceService.get(deviceIdKey, Optional.empty()));
 
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, testVehicleId.getBytes(),
                 deviceConnStatusEvent.getBytes());
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
 
@@ -185,8 +186,8 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
 
         String terminateDeviceConnStatusEvent = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
                 + "\"Data\": {\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12345\"}";
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
+                + "\"VehicleId\": \"test_vehicle123\",\"SourceDeviceId\": \"Device12345\"}";
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, testVehicleId.getBytes(),
                 terminateDeviceConnStatusEvent.getBytes());
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
 
