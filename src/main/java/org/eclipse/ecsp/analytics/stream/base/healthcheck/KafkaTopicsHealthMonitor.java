@@ -171,6 +171,7 @@ public class KafkaTopicsHealthMonitor implements HealthMonitor {
                 topicPartitionInfoList = topicDescription.get().partitions();
             } catch (InterruptedException | ExecutionException e) {
                 logger.error("Kafka topics monitor  error : Unable to fetch partitions {}", e);
+                Thread.currentThread().interrupt();
                 return false;
             }
             expectedPartitionSize = Integer.parseInt(topicConfigured[1]);

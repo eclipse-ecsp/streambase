@@ -161,6 +161,16 @@ public class GenericSortedMapStateStore<K, V> extends GenericMapStateStoreBase<K
     }
 
     /**
+     * Gets the first entry in the sorted map.
+     *
+     * @return the first entry key
+     */
+    @Override
+    public K getFirstEntry() {
+        return mapStore.firstKey();
+    }
+
+    /**
      * The Class ConcurrentSkipListMapIterator.
      */
     private class ConcurrentSkipListMapIterator implements KeyValueIterator<K, V> {
