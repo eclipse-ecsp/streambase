@@ -455,7 +455,8 @@ public class RetryHandler implements DeviceMessageHandler {
             long nextRetry = currentTime + retryIntervalTime;
             retryEventDAO.putToMap(retryEventMapKey, retryEventKey, event, Optional.empty(),
                     InternalCacheConstants.CACHE_TYPE_RETRY_RECORD);
-            logger.info("Added event {} with key {} to retry event map.", event, retryEventKey.convertToString());
+            logger.info("Added event {} with key {} to retry event map with retries pending.",
+                    event, retryEventKey.convertToString());
             // Add messageId to set of messageIds in retry
             // bucket keyed by timestamp
             RetryBucketKey nextRetryKey = new RetryBucketKey(nextRetry);
@@ -551,14 +552,15 @@ public class RetryHandler implements DeviceMessageHandler {
              * event.(As per RTC 285555)
              */
             pendingRetries--;
-            logger.debug("Retries left for this event are {}", pendingRetries);
+            logger.info("Retries left for event with key {} are {}", key, pendingRetries);
             value.setDeviceMessageHeader(value.getDeviceMessageHeader().withPendingRetries(pendingRetries));
             event.setDeviceMessage(value);
             long retryIntervalTime = getNextRetryInterval(value, key);
             long nextRetry = currentTime + retryIntervalTime;
             retryEventDAO.putToMap(retryEventMapKey, retryEventKey, event, Optional.empty(),
                     InternalCacheConstants.CACHE_TYPE_RETRY_RECORD);
-            logger.debug("Added event {} with key {} to retry event map.", event, retryEventKey.convertToString());
+            logger.debug("Added event {} with key {} to retry event map after attempting a retry.",
+                    event, retryEventKey.convertToString());
             // Add messageId to set of messageIds in retry
             // bucket keyed by timestamp
             RetryBucketKey nextRetryKey = new RetryBucketKey(nextRetry);
@@ -765,7 +767,7 @@ public class RetryHandler implements DeviceMessageHandler {
         }
         if (nextRetryTime == null) {
             scheduleRetryTask(maxPollingInterval);
-            logger.debug("Scheduled dynamic retry processing to max polling interval in {} ms for taskId {}",
+            logger.info("Scheduled dynamic retry processing to max polling interval in {} ms for taskId {}",
                     maxPollingInterval, taskId);
             return;
         }
@@ -774,13 +776,13 @@ public class RetryHandler implements DeviceMessageHandler {
             long delayUntilNextRetry = nextRetryTime - currentTime;
             if (delayUntilNextRetry <= 0) {
                 delayUntilNextRetry = 0;
-                logger.debug("Found overdue retries. "
+                logger.info("Found overdue retries. "
                         + "Setting delay to 0 for immediate processing for taskId {}", taskId);
             }
             // Cap the delay to maxPollingInterval as a safety measure
             delayUntilNextRetry = Math.min(delayUntilNextRetry, maxPollingInterval);
             scheduleRetryTask(delayUntilNextRetry);
-            logger.debug("Scheduled dynamic retry processing in {} ms for taskId {}",
+            logger.info("Scheduled dynamic retry processing in {} ms for taskId {}",
                     delayUntilNextRetry, taskId);
         } catch (Exception e) {
             logger.error("Error occurred in scheduling dynamic retry processing: {}", e.getMessage(), e);

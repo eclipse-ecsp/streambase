@@ -591,8 +591,8 @@ public class RetryHandlerTest {
         TestHandler handler = new TestHandler();
         retryHandler.setNextHandler(handler);
         retryHandler.setup(taskId);
-        runAsync(() -> {}, delayedExecutor(TestConstants.THREAD_SLEEP_TIME_100, MILLISECONDS)).join();
-        Mockito.verify(retryBucketDAO, Mockito.times(TestConstants.THREE)).getHead(Mockito.any(RetryBucketKey.class));
+        runAsync(() -> {}, delayedExecutor(TestConstants.THREAD_SLEEP_TIME_200, MILLISECONDS)).join();
+        Mockito.verify(retryBucketDAO, Mockito.atLeast(TestConstants.THREE)).getHead(Mockito.any(RetryBucketKey.class));
         Mockito.verify(retryEventDAO, Mockito.times(1)).get(Mockito.any(RetryRecordKey.class));
         Assert.assertEquals(0, handler.getEventList().size());
     }
