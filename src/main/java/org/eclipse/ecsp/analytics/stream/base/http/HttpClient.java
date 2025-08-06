@@ -88,9 +88,6 @@ public class HttpClient {
     /** The {@link ObjectMapper} instance for serialization /deserialization. */
     private ObjectMapper responseMapper;
     
-    /** The {@link Response} instance. */
-    private Response response;
-
     /**
      * Gets the request builder.
      *
@@ -226,10 +223,6 @@ public class HttpClient {
         } catch (Exception e) {
             logger.error("Error while executing URL={}, headers={}, parameters={}, "
                     + "response={}, error={}", httpUrl, headers, parameters, e.getMessage());
-        } finally {
-            if (response != null) {
-                response.close();
-            }
         }
         return responseData;
     }
@@ -246,8 +239,7 @@ public class HttpClient {
      */
     private JsonNode sendRequest(Request request, Map<String, Object> responseData, String httpUrl,
             Map<String, String> headers, Map<String, Object> parameters) {
-        try {
-            response = okHttpClient.newCall(request).execute();
+        try (Response response = okHttpClient.newCall(request).execute()) {
 
             int respStatusCode = response.code();
 
