@@ -69,6 +69,7 @@ public class ObjectStateStore extends HarmanPersistentKVStore<String, Object> {
         Kryo k = new Kryo();
         k.setDefaultSerializer(CompatibleFieldSerializer.class);
         k.register(DateTime.class, new JodaDateTimeSerializer());
+        k.setRegistrationRequired(false);
         k.setCopyReferences(false);
         return k;
     });
