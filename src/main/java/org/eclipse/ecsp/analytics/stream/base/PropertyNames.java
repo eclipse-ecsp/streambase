@@ -587,23 +587,19 @@ public class PropertyNames {
     /** The Constant DMA_SERVICE_MAX_RETRY. */
     public static final String DMA_SERVICE_MAX_RETRY =
             "dma.service.max.retry";
+
+    /** The Constant DMA_SERVICE_MAX_RETRY. */
+    public static final String DMA_SERVICE_DEFAULT_EVENT_RETRY_INTERVAL =
+            "dma.service.default.event.retry.interval";
     
-    /** The Constant DMA_SERVICE_RETRY_INTERVAL_MILLIS. */
-    public static final String DMA_SERVICE_RETRY_INTERVAL_MILLIS =
-            "dma.service.retry.interval.millis";
-    
-    /** The Constant DMA_SERVICE_RETRY_MIN_THRESHOLD_MILLIS. */
-    public static final String DMA_SERVICE_RETRY_MIN_THRESHOLD_MILLIS =
-            "dma.service.retry.min.threshold.millis";
-    
-    /** The Constant DMA_SERVICE_RETRY_INTERVAL_DIVISOR. */
-    public static final String DMA_SERVICE_RETRY_INTERVAL_DIVISOR =
-            "dma.service.retry.interval.divisor";
-    
+    /** The Constant DMA_SERVICE_MAX_POLLING_INTERVAL_MILLIS. */
+    public static final String DMA_SERVICE_MAX_POLLING_INTERVAL_MILLIS =
+            "dma.service.max.polling.interval.millis";
+
     /** The Constant DMA_SHOULDER_TAP_INVOKER_IMPL_CLASS. */
     public static final String DMA_SHOULDER_TAP_INVOKER_IMPL_CLASS =
             "dma.shoulder.tap.invoker.impl.class";
-    
+
     /** The Constant DMA_SHOULDER_TAP_INVOKER_WAM_SEND_SMS_URL. */
     public static final String DMA_SHOULDER_TAP_INVOKER_WAM_SEND_SMS_URL =
             "dma.shoulder.tap.invoker.wam.send.sms.url";

@@ -366,4 +366,94 @@ public class DMARetryBucketDAOCacheBackedInMemoryImplTest {
         Assert.assertEquals(retryMsgIds2, sortedDao.get(new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_223)));
     }
 
+    /**
+     * Test getEarliestRetryBucketKey when retry buckets exist.
+     * Should return the bucket with the smallest timestamp.
+     */
+    @Test
+    public void testGetEarliestRetryBucketKeyWithExistingBuckets() {
+        // Given: Multiple retry buckets with different timestamps
+        // key1 = 3000ms, key2 = 1000ms, key3 = 5000ms, key4 = 1500ms
+        // Expected: key2 (1000ms) should be the earliest
+
+        RetryBucketKey earliestKey = sortedDao.getEarliestRetryBucketKey();
+
+        Assert.assertNotNull("Expected to find an earliest retry bucket key", earliestKey);
+        Assert.assertEquals("Expected key2 (1000ms) to be the earliest", key2, earliestKey);
+        Assert.assertEquals("Earliest key should have timestamp 1000ms",
+                TestConstants.THREAD_SLEEP_TIME_1000, earliestKey.getTimestamp());
+    }
+
+    /**
+     * Test getEarliestRetryBucketKey after deleting the earliest bucket.
+     * Should return the next earliest bucket.
+     */
+    @Test
+    public void testGetEarliestRetryBucketKeyAfterDeletingEarliest() {
+        // Given: Initially key2 (1000ms) is the earliest
+        RetryBucketKey initialEarliest = sortedDao.getEarliestRetryBucketKey();
+        Assert.assertEquals("Initial earliest should be key2", key2, initialEarliest);
+
+        // When: Delete the earliest bucket
+        sortedDao.deleteFromMap(mapKey, key2, Optional.empty(),
+                InternalCacheConstants.CACHE_TYPE_RETRY_BUCKET);
+
+        // Then: Next earliest should be key4 (1500ms)
+        RetryBucketKey newEarliest = sortedDao.getEarliestRetryBucketKey();
+        Assert.assertNotNull("Expected to find a new earliest retry bucket key", newEarliest);
+        Assert.assertEquals("New earliest should be key4 (1500ms)", key4, newEarliest);
+        Assert.assertEquals("New earliest key should have timestamp 1500ms",
+                TestConstants.THREAD_SLEEP_TIME_1500, newEarliest.getTimestamp());
+    }
+
+    /**
+     * Test getEarliestRetryBucketKey when no retry buckets exist.
+     * Should return null when the map is empty.
+     */
+    @Test
+    public void testGetEarliestRetryBucketKeyWithEmptyMap() {
+        // Given: Clear all existing buckets from the current DAO to simulate empty map
+        sortedDao.deleteFromMap(mapKey, key1, Optional.empty(), InternalCacheConstants.CACHE_TYPE_RETRY_BUCKET);
+        sortedDao.deleteFromMap(mapKey, key2, Optional.empty(), InternalCacheConstants.CACHE_TYPE_RETRY_BUCKET);
+        sortedDao.deleteFromMap(mapKey, key3, Optional.empty(), InternalCacheConstants.CACHE_TYPE_RETRY_BUCKET);
+        sortedDao.deleteFromMap(mapKey, key4, Optional.empty(), InternalCacheConstants.CACHE_TYPE_RETRY_BUCKET);
+
+        // When: Getting earliest retry bucket key from empty map
+        RetryBucketKey earliestKey = sortedDao.getEarliestRetryBucketKey();
+
+        // Then: Should return null
+        Assert.assertNull("Expected null when no retry buckets exist", earliestKey);
+    }
+
+    /**
+     * Test getEarliestRetryBucketKey with single bucket.
+     * Should return that single bucket.
+     */
+    @Test
+    public void testGetEarliestRetryBucketKeyWithSingleBucket() {
+        // Given: Clear all existing buckets and add only one
+        sortedDao.deleteFromMap(mapKey, key1, Optional.empty(), InternalCacheConstants.CACHE_TYPE_RETRY_BUCKET);
+        sortedDao.deleteFromMap(mapKey, key2, Optional.empty(), InternalCacheConstants.CACHE_TYPE_RETRY_BUCKET);
+        sortedDao.deleteFromMap(mapKey, key3, Optional.empty(), InternalCacheConstants.CACHE_TYPE_RETRY_BUCKET);
+        sortedDao.deleteFromMap(mapKey, key4, Optional.empty(), InternalCacheConstants.CACHE_TYPE_RETRY_BUCKET);
+
+        // Add a single bucket
+        RetryBucketKey singleKey = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_2000);
+        ConcurrentHashSet<String> singleMessageSet = new ConcurrentHashSet<String>();
+        singleMessageSet.add("singleMessage");
+        RetryRecordIds singleRetryIds = new RetryRecordIds(Version.V1_0, singleMessageSet);
+
+        sortedDao.putToMap(mapKey, singleKey, singleRetryIds, Optional.empty(),
+                InternalCacheConstants.CACHE_TYPE_RETRY_BUCKET);
+
+        // When: Getting earliest retry bucket key
+        RetryBucketKey earliestKey = sortedDao.getEarliestRetryBucketKey();
+
+        // Then: Should return the single bucket
+        Assert.assertNotNull("Expected to find the single retry bucket key", earliestKey);
+        Assert.assertEquals("Earliest should be the single key", singleKey, earliestKey);
+        Assert.assertEquals("Single key should have expected timestamp",
+                TestConstants.THREAD_SLEEP_TIME_2000, earliestKey.getTimestamp());
+    }
+
 }

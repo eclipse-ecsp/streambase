@@ -53,6 +53,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Repository;
 import java.util.Comparator;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 
@@ -149,6 +150,23 @@ public class DMARetryBucketDAOCacheBackedInMemoryImpl extends CachedSortedMapSta
     public void setup() {
         Comparator<RetryBucketKey> comparator = Comparator.comparingLong(RetryBucketKey::getTimestamp);
         createStoreWithComparator(comparator);
+    }
+
+    /**
+     * Gets the earliest retry bucket key with the smallest timestamp.
+     *
+     * @return the earliest retry bucket key, or null if no retries are scheduled
+     */
+    @Override
+    public RetryBucketKey getEarliestRetryBucketKey() {
+        try {
+            RetryBucketKey retryBucketKey = getFirstEntry();
+            logger.info("Found earliest retry bucket key : {}", retryBucketKey);
+            return retryBucketKey;
+        } catch (NoSuchElementException e) {
+            logger.info("No retry buckets found.");
+            return null;
+        }
     }
 
 }

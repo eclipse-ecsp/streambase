@@ -46,8 +46,8 @@ import org.springframework.stereotype.Component;
 
 
 /**
- * Default implementation of DefaultDMAConfigResolver. By default dma.service.retry.interval.millis set in stream-base's
- *         properties file will be returned i.e. 60000.
+ * Default implementation of DefaultDMAConfigResolver. By default, dma.service.default.event.retry.interval
+ *         set in stream-base's properties file will be returned i.e. 60000.
  *
  * @author poorvi
  */
@@ -55,7 +55,7 @@ import org.springframework.stereotype.Component;
 public class DefaultDMAConfigResolver implements DMAConfigResolver {
 
     /** The retry interval. */
-    @Value("${" + PropertyNames.DMA_SERVICE_RETRY_INTERVAL_MILLIS + ":60000}")
+    @Value("${" + PropertyNames.DMA_SERVICE_DEFAULT_EVENT_RETRY_INTERVAL + ":60000}")
     private long retryInterval;
 
     /**

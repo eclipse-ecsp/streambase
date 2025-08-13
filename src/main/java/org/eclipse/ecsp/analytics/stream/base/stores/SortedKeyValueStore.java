@@ -77,4 +77,14 @@ public interface SortedKeyValueStore<K, V> extends KeyValueStore<K, V> {
         return null;
     }
 
+    /**
+     * Returns the first key in the store, or null if unavailable.
+     *
+     * @return the first key entry
+     */
+    public default K getFirstEntry() {
+        LOGGER.error("Implementation of Method getFirstEntry unavailable");
+        return null;
+    }
+
 }

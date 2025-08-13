@@ -352,7 +352,7 @@ public class CacheBypass<K extends CacheKeyConverter<K>, V extends IgniteEntity>
             deleteRequest.withMutationId(String.valueOf(mutationId.get()));
         }
         cache.delete(deleteRequest);
-        logger.debug("Delete operation complete for key {} and value {} ", 
+        logger.info("Delete operation complete for key {} and value {} ",
             entity.getKey().convertToString(), entity.getValue());
     }
 
@@ -373,7 +373,7 @@ public class CacheBypass<K extends CacheKeyConverter<K>, V extends IgniteEntity>
             deleteMapRequest.withMutationId(String.valueOf(mutationId.get()));
         }
         cache.deleteMapOfEntities(deleteMapRequest);
-        logger.debug("DeleteMapOfEntities operation complete for key {} and value {} ",
+        logger.info("DeleteMapOfEntities operation complete for key {} and value {} ",
             entity.getKey().convertToString(), entity.getValue());
     }
 
