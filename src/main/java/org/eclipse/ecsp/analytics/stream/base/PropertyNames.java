@@ -293,12 +293,6 @@ public class PropertyNames {
     
     /** The Constant REDIS_READ_MODE. */
     public static final String REDIS_READ_MODE = "redis.read.mode";
-    
-    /** The Constant KAFKA_REBALANCE_TIME_MINS. */
-    public static final String KAFKA_REBALANCE_TIME_MINS = "kafka.rebalance.time.mins";
-    
-    /** The Constant KAFKA_CLOSE_TIMEOUT_SECS. */
-    public static final String KAFKA_CLOSE_TIMEOUT_SECS = "kafka.close.timeout.secs";
 
     /** The Constant KAFKA_SSL_ENABLE. */
     public static final String KAFKA_SSL_ENABLE = "kafka.ssl.enable";
