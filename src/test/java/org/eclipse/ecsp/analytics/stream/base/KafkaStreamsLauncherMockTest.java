@@ -100,7 +100,6 @@ public class KafkaStreamsLauncherMockTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         List<String> ignoredMonitorNames = new ArrayList<String>();
-        ignoredMonitorNames.add("KAFKA_CONSUMER_GROUP_HEALTH_MONITOR");
         ignoredMonitorNames.add("DEVICE_STATUS_BACKDOOR_HEALTH_MONITOR");
         launcher.setBootstrapIgnoredMonitors(ignoredMonitorNames);
         launcher.setHealthService(healthService);

@@ -483,14 +483,6 @@ public class KafkaStreamsLauncher<KIn, VIn, KOut, VOut> extends AbstractLauncher
             props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                     Serdes.ByteArray().deserializer().getClass().getName());
         }
-        String kafkaRebalanceTime = props.getProperty(PropertyNames.KAFKA_REBALANCE_TIME_MINS);
-        if (StringUtils.isEmpty(kafkaRebalanceTime)) {
-            props.put(PropertyNames.KAFKA_REBALANCE_TIME_MINS, "10");
-        }
-        String kafkaCloseTimeout = props.getProperty(PropertyNames.KAFKA_CLOSE_TIMEOUT_SECS);
-        if (StringUtils.isEmpty(kafkaCloseTimeout)) {
-            props.put(PropertyNames.KAFKA_CLOSE_TIMEOUT_SECS, "30");
-        }
         props.put(StreamsConfig.METRICS_RECORDING_LEVEL_CONFIG, RecordingLevel.DEBUG.toString());
         KafkaSslUtils.checkAndApplySslProperties(props);
         logger.info("Initializing with properties:");
