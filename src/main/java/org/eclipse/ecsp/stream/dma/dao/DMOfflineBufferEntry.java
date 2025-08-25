@@ -62,8 +62,10 @@ import java.util.UUID;
 @Entity()
 @Indexes(value = { @Index(fields = @Field(value = "eventTs"),
         options = @IndexOptions(expireAfterSeconds = 31536000, background = true)),
-                   @Index(fields = { @Field(value = "vehicleId"), 
-                     @Field(value = "priority", type = IndexType.DESC) }, options = @IndexOptions(background = true)),
+                   @Index(fields = { 
+                     @Field(value = "vehicleId"), 
+                     @Field(value = "priority", type = IndexType.DESC) }, 
+                     options = @IndexOptions(name = "vehicle_priority", background = true)),
                    @Index(fields = { @Field(value = "ttlExpirationTime"), 
                      @Field(value = "isTtlNotifProcessed") }, options = @IndexOptions(background = true)) })
 public class DMOfflineBufferEntry extends AbstractIgniteEntity implements AuditableIgniteEntity {
