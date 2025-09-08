@@ -83,9 +83,7 @@ public final class CumulativeLogger {
     }
 
     /**
-     * Instantiates a new cumulative logger.
-     *
-     * @param logEveryXminute the log every xminute
+     * Instantiates a new cumulative logger to log every xminute.
      */
     private CumulativeLogger() {
         ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor(

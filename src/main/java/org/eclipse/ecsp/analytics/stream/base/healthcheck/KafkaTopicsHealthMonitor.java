@@ -76,9 +76,6 @@ import static org.eclipse.ecsp.analytics.stream.base.utils.Constants.FOR_PARTITI
  */
 @Service
 public class KafkaTopicsHealthMonitor implements HealthMonitor {
-
-    /** The Constant PROPS. */
-    private static final Properties PROPS = new Properties();
     
     /** The bootstrap server URLs to connect to Kafka broker. */
     @Value("${" + PropertyNames.BOOTSTRAP_SERVERS + ":}")
@@ -124,14 +121,14 @@ public class KafkaTopicsHealthMonitor implements HealthMonitor {
      */
     @PostConstruct
     public void init() {
-        PROPS.put(PropertyNames.BOOTSTRAP_SERVERS, bootstrapServer);
-        PROPS.put(ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG, connectionsMaxIdleMs);
+        properties.put(PropertyNames.BOOTSTRAP_SERVERS, bootstrapServer);
+        properties.put(ConsumerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG, connectionsMaxIdleMs);
         kafkaSslConfig.setSslPropsIfEnabled(properties);
-        logger.debug("Admin client config for topics health monitor {}", PROPS);
+        logger.debug("Admin client config for topics health monitor {}", properties);
         topicConfig = getTopicsConfig();
         topics = topicConfig.keySet();
         logger.info("Creating admin client with properties : {}", properties);
-        admin = AdminClient.create(PROPS);
+        admin = AdminClient.create(properties);
         logger.info("admin client created - {}", admin.getClass());
         logger.info("Get topic descriptions for topics {}", topics);
     }

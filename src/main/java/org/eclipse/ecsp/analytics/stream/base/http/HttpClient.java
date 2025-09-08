@@ -119,10 +119,10 @@ public class HttpClient {
         
         /** The put. */
         PUT, 
- /** The post. */
- POST, 
- /** The get. */
- GET;
+        /** The post. */
+        POST, 
+        /** The get. */
+        GET;
     }
 
     /**

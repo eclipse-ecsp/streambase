@@ -160,50 +160,6 @@ public abstract class BackdoorKafkaConsumer implements HealthMonitor {
     @Value("${" + PropertyNames.BOOTSTRAP_SERVERS + ":}")
     private String kafkaBootstrapServers;
     
-    /** The kafka ssl enable. */
-    @Value("${" + PropertyNames.KAFKA_SSL_ENABLE + ":false}")
-    private boolean kafkaSslEnable;
-    
-    /** The kafka one way tls enable. */
-    @Value("${" + PropertyNames.KAFKA_ONE_WAY_TLS_ENABLE + ":false}")
-    private boolean kafkaOneWayTlsEnable;
-    
-    /** The keystore. */
-    @Value("${" + PropertyNames.KAFKA_CLIENT_KEYSTORE + ":}")
-    private String keystore;
-    
-    /** The keystore pwd. */
-    @Value("${" + PropertyNames.KAFKA_CLIENT_KEYSTORE_PASSWORD + ":}")
-    private String keystorePwd;
-    
-    /** The key pwd. */
-    @Value("${" + PropertyNames.KAFKA_CLIENT_KEY_PASSWORD + ":}")
-    private String keyPwd;
-    
-    /** The truststore. */
-    @Value("${" + PropertyNames.KAFKA_CLIENT_TRUSTSTORE + ":}")
-    private String truststore;
-    
-    /** The sasl mechanism. */
-    @Value("${" + PropertyNames.KAFKA_SASL_MECHANISM + ":}")
-    private String saslMechanism;
-    
-    /** The sasl jaas config. */
-    @Value("${" + PropertyNames.KAFKA_SASL_JAAS_CONFIG + ":}")
-    private String saslJaasConfig;
-    
-    /** The ssl endpoint algo. */
-    @Value("${" + PropertyNames.KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM + ":}")
-    private String sslEndpointAlgo;
-    
-    /** The truststore pwd. */
-    @Value("${" + PropertyNames.KAFKA_CLIENT_TRUSTSTORE_PASSWORD + ":}")
-    private String truststorePwd;
-    
-    /** The ssl client auth. */
-    @Value("${" + PropertyNames.KAFKA_SSL_CLIENT_AUTH + ":}")
-    private String sslClientAuth;
-    
     /** The convert topic to lower case. */
     @Value("${" + PropertyNames.CONVERT_BACKDOOR_KAFKA_TOPIC_TO_LOWERCASE + ":true}")
     private boolean convertTopicToLowerCase;
