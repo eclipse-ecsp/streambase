@@ -92,8 +92,8 @@ public class DMARetryBucketDAOCacheBackedInMemoryImpl extends CachedSortedMapSta
      */
     @Override
     public void update(String mapKey, RetryBucketKey key, String messageId) {
-        putToMapIfAbsent(mapKey, key, new RetryRecordIds(Version.V1_0), Optional.empty(),
-                InternalCacheConstants.CACHE_TYPE_RETRY_BUCKET);
+        logger.debug("Going to update the RetryBucketDAO. Received mapKey: {}, "
+                + "retryBucketKey: {}, messageId: {}", mapKey, key.convertToString(), messageId);
         RetryRecordIds retryMessageIds = get(key);
         if (retryMessageIds == null) {
             retryMessageIds = new RetryRecordIds(Version.V1_0);

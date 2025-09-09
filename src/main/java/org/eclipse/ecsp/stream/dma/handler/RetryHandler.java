@@ -594,7 +594,7 @@ public class RetryHandler implements DeviceMessageHandler {
         RetryRecord event = new RetryRecord(key, value, currentTime);
         retryEventDAO.putToMap(retryEventMapKey, retryEventKey, event, Optional.empty(),
                 InternalCacheConstants.CACHE_TYPE_RETRY_RECORD);
-        logger.debug("Added event {} with key {} to retry event map.", event, retryEventKey.convertToString());
+        logger.info("Added event {} with key {} to retry event map.", event, retryEventKey.convertToString());
         RetryBucketKey nextRetryKey = new RetryBucketKey(nextRetry);
         String retryRecordKey = retryEventKey.getKey();
         retryBucketDAO.update(retryBucketMapKey, nextRetryKey, retryRecordKey);
