@@ -103,7 +103,6 @@ public class VehicleProfileClientApiUtil {
                 url, null, null, 0, 0);
         long timeTaken = (System.currentTimeMillis() - startTime) / Constants.THOUSAND;
         logger.debug("Time taken to fetch the VP details for  deviceId : {} is: {} second(s)", deviceId, timeTaken);
-        logger.info("Received VP data: {} from the API {} for deviceId : {}", responseData, url, deviceId);
         Gson gson =  new Gson();
         if (responseData == null) {
             logger.error("Response returned by vehicle profile API for deviceId : {} is null");
