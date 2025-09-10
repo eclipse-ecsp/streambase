@@ -1,6 +1,19 @@
-# Java Coding Guidelines Instructions
+---
+description: 'Unified Java coding guidelines for building Java applications'
+applyTo: '**/*.java'
+---
 
-This file contains coding standards and guidelines that should be followed when generating or modifying Java code in this project. These guidelines are based on the project's checkstyle configuration.
+# Unified Java Coding Guidelines Instructions
+
+This file contains comprehensive coding standards and guidelines that should be followed when generating or modifying Java code in this project. These guidelines are based on the project's checkstyle configuration, integrated with modern Java best practices and static analysis recommendations.
+
+## General Instructions
+
+- First, prompt the user if they want to integrate static analysis tools (SonarQube, PMD, Checkstyle) into their project setup. If yes, provide guidance on tool selection and configuration.
+- If the user declines static analysis tools or wants to proceed without them, continue with implementing the best practices, bug patterns and code smell prevention guidelines outlined below.
+- Address code smells proactively during development rather than accumulating technical debt.
+- Focus on readability, maintainability, and performance when refactoring identified issues.
+- Use IDE / Code editor reported warnings and suggestions to catch common patterns early in development.
 
 ## File and Character Encoding
 - Use UTF-8 encoding for all files
@@ -35,17 +48,19 @@ This file contains coding standards and guidelines that should be followed when 
 - **Example**: `com.example.mypackage`
 
 ### Classes, Interfaces, Enums, Records, Annotations
-- **Format**: PascalCase
+- **Format**: PascalCase (UpperCamelCase)
 - **Pattern**: Standard Java naming (uppercase first letter)
 - **Example**: `MyClassName`, `UserService`
+- Use nouns for classes (`UserService`) and verbs for methods (`getUserById`)
+- Avoid abbreviations and Hungarian notation
 
 ### Methods
-- **Format**: camelCase
+- **Format**: camelCase (lowerCamelCase)
 - **Pattern**: `^[a-z][a-z0-9]\w*$`
 - **Example**: `getUserData()`, `processRequest()`
 
 ### Variables (Members, Parameters, Local Variables)
-- **Format**: camelCase
+- **Format**: camelCase (lowerCamelCase)
 - **Pattern**: `^[a-z]([a-z0-9][a-zA-Z0-9]*)?$`
 - **Example**: `userName`, `userId`, `data`
 
@@ -57,6 +72,23 @@ This file contains coding standards and guidelines that should be followed when 
 - **Format**: Single uppercase letter or ending with 'T'
 - **Pattern**: `(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)`
 - **Example**: `T`, `E`, `K`, `V`, `ResponseT`
+
+## Modern Java Best Practices
+
+### Records and Data Classes
+- **Records**: For classes primarily intended to store data (e.g., DTOs, immutable data structures), **Java Records should be used instead of traditional classes**.
+
+### Pattern Matching and Type Inference
+- **Pattern Matching**: Utilize pattern matching for `instanceof` and `switch` expression to simplify conditional logic and type casting.
+- **Type Inference**: Use `var` for local variable declarations to improve readability, but only when the type is explicitly clear from the right-hand side of the expression.
+- **Note**: Checkstyle configuration prohibits `var` keyword - follow checkstyle rules in strict environments.
+
+### Immutability and Collections
+- **Immutability**: Favor immutable objects. Make classes and fields `final` where possible. Use collections from `List.of()`/`Map.of()` for fixed data. Use `Stream.toList()` to create immutable lists.
+- **Streams and Lambdas**: Use the Streams API and lambda expressions for collection processing. Employ method references (e.g., `stream.map(Foo::toBar)`).
+
+### Null Handling
+- **Null Handling**: Avoid returning or accepting `null`. Use `Optional<T>` for possibly-absent values and `Objects` utility methods like `equals()` and `requireNonNull()`.
 
 ## Code Structure and Blocks
 
@@ -151,7 +183,7 @@ This file contains coding standards and guidelines that should be followed when 
 - No utility class public constructors (hide them)
 - No abbreviations as words in names (except length 0)
 - No magic numbers (except 0 and 1)
-- No `var` keyword for local variables
+- No `var` keyword for local variables (checkstyle restriction)
 - No star imports
 
 ### Required Practices
@@ -160,6 +192,29 @@ This file contains coding standards and guidelines that should be followed when 
 - Proper exception variable naming in catch blocks
 - Handle fall-through in switch statements
 - Include default cases in switch statements
+
+## Bug Patterns (SonarQube Rules)
+
+| Rule ID | Description                                                 | Example / Notes                                                                                  |
+| ------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `S2095` | Resources should be closed                                  | Use try-with-resources when working with streams, files, sockets, etc.                           |
+| `S1698` | Objects should be compared with `.equals()` instead of `==` | Especially important for Strings and boxed primitives.                                           |
+| `S1905` | Redundant casts should be removed                           | Clean up unnecessary or unsafe casts.                                                            |
+| `S3518` | Conditions should not always evaluate to true or false      | Watch for infinite loops or if-conditions that never change.                                     |
+| `S108`  | Unreachable code should be removed                          | Code after `return`, `throw`, etc., must be cleaned up.                                          |
+
+## Code Smells (SonarQube Rules)
+
+| Rule ID | Description                                            | Example / Notes                                                               |
+| ------- | ------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `S107`  | Methods should not have too many parameters            | Refactor into helper classes or use builder pattern.                          |
+| `S121`  | Duplicated blocks of code should be removed            | Consolidate logic into shared methods.                                        |
+| `S138`  | Methods should not be too long                         | Break complex logic into smaller, testable units.                             |
+| `S3776` | Cognitive complexity should be reduced                 | Simplify nested logic, extract methods, avoid deep `if` trees.                |
+| `S1192` | String literals should not be duplicated               | Replace with constants or enums.                                              |
+| `S1854` | Unused assignments should be removed                   | Avoid dead variables—remove or refactor.                                      |
+| `S109`  | Magic numbers should be replaced with constants        | Improves readability and maintainability.                                     |
+| `S1188` | Catch blocks should not be empty                       | Always log or handle exceptions meaningfully.                                 |
 
 ## Comments
 - Use proper indentation for single-line and block comments
@@ -176,6 +231,12 @@ This file contains coding standards and guidelines that should be followed when 
 - Allow no empty line between fields
 - Empty line separation for major code blocks
 - Proper separation between different types of declarations
+
+## Build and Verification
+- After adding or modifying code, verify the project continues to build successfully.
+- If the project uses Maven, run `mvn clean install`.
+- If the project uses Gradle, run `./gradlew build` (or `gradlew.bat build` on Windows).
+- Ensure all tests pass as part of the build.
 
 ## Example Code Structure
 
@@ -237,4 +298,13 @@ public class UserService {
 - Support `@SuppressWarnings` annotations
 - Document reasons for suppressions
 
-These guidelines ensure consistent, readable, and maintainable Java code across the project. Always apply these standards when generating or modifying code.
+## Summary
+
+These unified guidelines ensure consistent, readable, and maintainable Java code across the project by combining:
+
+1. **Checkstyle Configuration Standards** (primary authority)
+2. **Modern Java Best Practices** (Records, Pattern Matching, Streams)
+3. **Static Analysis Rules** (SonarQube bug patterns and code smells)
+4. **Build Integration** (Maven/Gradle verification)
+
+Always apply these standards when generating or modifying code. In case of conflicts between modern practices and checkstyle rules, follow the checkstyle configuration (e.g., avoid `var` when checkstyle prohibits it).
