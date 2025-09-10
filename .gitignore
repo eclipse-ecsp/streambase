@@ -1,0 +1,47 @@
+# Maven build output
+target/
+
+# IDE settings
+.vscode/
+.idea/
+*.iml
+
+# Software Bill of Materials (auto-generated)
+sbom/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Maven wrapper (optional - uncomment if you don't want to version control)
+# .mvn/
+# mvnw
+# mvnw.cmd
+
+# Eclipse IDE
+.metadata
+.classpath
+.project
+.settings/
+bin/
+
+# NetBeans IDE
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Dependency directories
+node_modules/
