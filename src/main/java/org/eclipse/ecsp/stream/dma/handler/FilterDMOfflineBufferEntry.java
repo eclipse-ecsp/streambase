@@ -46,7 +46,7 @@ import java.util.List;
 
 /**
  * This Interface will be used to filtered offline messages based on
- * different criteria and update offline messages if required.
+ * provided implementation and update offline messages if required.
  *
  * @author JDEHURY
  *
