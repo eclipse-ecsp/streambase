@@ -1088,6 +1088,52 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.openrewrite.maven</groupId>
+                <artifactId>rewrite-maven-plugin</artifactId>
+                <version>5.32.0</version>
+                <configuration>
+                    <activeRecipes>
+                        <recipe>org.openrewrite.java.ChangePackage</recipe>
+                        <recipe>org.openrewrite.text.FindAndReplace</recipe>
+                    </activeRecipes>
+                    <recipes>
+                        <!-- General package refactor -->
+                        <org.openrewrite.java.ChangePackage>
+                            <oldPackage>org.eclipse.ecsp</oldPackage>
+                            <newPackage>com.harman.ignite</newPackage>
+                            <recursive>true</recursive>
+                        </org.openrewrite.java.ChangePackage>
+                        <!-- Specific subpackage refactor -->
+                        <org.openrewrite.java.ChangePackage>
+                            <oldPackage>org.eclipse.ecsp.nosql</oldPackage>
+                            <newPackage>com.harman.ignite.dao</newPackage>
+                            <recursive>true</recursive>
+                        </org.openrewrite.java.ChangePackage>
+                        <!-- Find and replace for comments and properties -->
+                        <org.openrewrite.text.FindAndReplace>
+                            <find>org.eclipse.ecsp</find>
+                            <replace>com.harman.ignite</replace>
+                            <filePattern>**/*.java</filePattern>
+                        </org.openrewrite.text.FindAndReplace>
+                        <org.openrewrite.text.FindAndReplace>
+                            <find>org.eclipse.ecsp.nosql</find>
+                            <replace>com.harman.ignite.dao</replace>
+                            <filePattern>**/*.java</filePattern>
+                        </org.openrewrite.text.FindAndReplace>
+                        <org.openrewrite.text.FindAndReplace>
+                            <find>org.eclipse.ecsp</find>
+                            <replace>com.harman.ignite</replace>
+                            <filePattern>**/*.properties</filePattern>
+                        </org.openrewrite.text.FindAndReplace>
+                        <org.openrewrite.text.FindAndReplace>
+                            <find>org.eclipse.ecsp.nosql</find>
+                            <replace>com.harman.ignite.dao</replace>
+                            <filePattern>**/*.properties</filePattern>
+                        </org.openrewrite.text.FindAndReplace>
+                    </recipes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
