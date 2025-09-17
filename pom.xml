@@ -1091,7 +1091,7 @@
             <plugin>
                 <groupId>org.openrewrite.maven</groupId>
                 <artifactId>rewrite-maven-plugin</artifactId>
-                <version>6.6.6</version>
+                <version>6.18.0</version>
                 <configuration>
                     <activeRecipes>
                         <recipe>org.openrewrite.java.ChangePackage</recipe>
@@ -1138,9 +1138,9 @@
                 </configuration>
                 <dependencies>
                     <dependency>
-                        <groupId>org.openrewrite.recipe</groupId>
+                        <groupId>org.openrewrite</groupId>
                         <artifactId>rewrite-java</artifactId>
-                        <version>1.19.0</version>
+                        <version>8.62.1</version>
                     </dependency>
                 </dependencies>
             </plugin>
