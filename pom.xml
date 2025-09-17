@@ -1091,12 +1091,15 @@
             <plugin>
                 <groupId>org.openrewrite.maven</groupId>
                 <artifactId>rewrite-maven-plugin</artifactId>
-                <version>5.32.0</version>
+                <version>6.6.6</version>
                 <configuration>
                     <activeRecipes>
                         <recipe>org.openrewrite.java.ChangePackage</recipe>
                         <recipe>org.openrewrite.text.FindAndReplace</recipe>
                     </activeRecipes>
+                    <failOnDryRunResults>false</failOnDryRunResults>
+                    <excludeSourceFiles>false</excludeSourceFiles>
+                    <sourcesOnly>true</sourcesOnly>
                     <recipes>
                         <!-- General package refactor -->
                         <org.openrewrite.java.ChangePackage>
@@ -1133,6 +1136,13 @@
                         </org.openrewrite.text.FindAndReplace>
                     </recipes>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.openrewrite.recipe</groupId>
+                        <artifactId>rewrite-java</artifactId>
+                        <version>1.19.0</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
