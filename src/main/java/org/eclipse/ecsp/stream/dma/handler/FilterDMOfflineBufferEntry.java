@@ -48,10 +48,6 @@ import java.util.List;
  * This Interface will be used to filtered offline messages based on
  * provided implementation and update offline messages if required.
  *
- * @author JDEHURY
- *
- *
- *
  */
 public interface FilterDMOfflineBufferEntry {
     
