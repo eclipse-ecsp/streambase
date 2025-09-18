@@ -58,7 +58,7 @@ public interface FilterDMOfflineBufferEntry {
     /**
      * Filter and update dm offline buffer entries.
      *
-     * @param bufferedEntries the buffered entries
+     * @param bufferedEntries list of entries from dm offline buffer
      * @return the list
      */
     public List<DMOfflineBufferEntry> filterAndUpdateDmOfflineBufferEntries(List<DMOfflineBufferEntry> 
