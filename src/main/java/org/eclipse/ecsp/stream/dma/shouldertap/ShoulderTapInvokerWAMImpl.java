@@ -1,38 +1,38 @@
 /*
  *
  *
- *   ******************************************************************************
+ * ******************************************************************************
  *
- *    Copyright (c) 2023-24 Harman International
- *
- *
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *
- *    you may not use this file except in compliance with the License.
- *
- *    You may obtain a copy of the License at
+ * Copyright (c) 2023-24 Harman International
  *
  *
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *
+ * you may not use this file except in compliance with the License.
  *
- *    Unless required by applicable law or agreed to in writing, software
- *
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
- *    See the License for the specific language governing permissions and
- *
- *    limitations under the License.
+ * You may obtain a copy of the License at
  *
  *
  *
- *    SPDX-License-Identifier: Apache-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    *******************************************************************************
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ *
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ *
+ * limitations under the License.
+ *
+ *
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * *******************************************************************************
  *
  *
  */
@@ -77,59 +77,60 @@ import static org.eclipse.ecsp.stream.dma.dao.DMAConstants.BIZ_TRANSACTION_ID;
 class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
 
     /** The logger. */
-    private static IgniteLogger logger = IgniteLoggerFactory.getLogger(ShoulderTapInvokerWAMImpl.class);
+    private static IgniteLogger logger =
+            IgniteLoggerFactory.getLogger(ShoulderTapInvokerWAMImpl.class);
 
     /** The api header key session id. */
     // API header
     private static String apiHeaderKeySessionId = "SessionId";
-    
+
     /** The api header key client request id. */
     private static String apiHeaderKeyClientRequestId = "ClientRequestId";
 
     /** The api param key vehicle id. */
     // API params
     private static String apiParamKeyVehicleId = "vehicleId";
-    
+
     /** The api param key sms type. */
     private static String apiParamKeySmsType = "smsType";
-    
+
     /** The api param value shoulder tap sms type. */
     private static String apiParamValueShoulderTapSmsType = "SHOULDER_TAP";
-    
+
     /** The api param key additional. */
     private static String apiParamKeyAdditional = "additionalParameters";
-    
+
     /** The api nested param name key. */
     private static String apiNestedParamNameKey = "key";
-    
+
     /** The api nested param name value. */
     private static String apiNestedParamNameValue = "value";
-    
+
     /** The api nested param value priority. */
     private static String apiNestedParamValuePriority = "priority";
-    
+
     /** The api nested param value validity hours. */
     private static String apiNestedParamValueValidityHours = "validityHours";
 
     /** The api response data key. */
     // API response
     private static String apiResponseDataKey = "data";
-    
+
     /** The api response message key. */
     private static String apiResponseMessageKey = "message";
-    
+
     /** The api response message value success. */
     private static String apiResponseMessageValueSuccess = "SUCCESS";
-    
+
     /** The api response value transid. */
     private static String apiResponseValueTransid = "transactionId";
-    
+
     /** The api response status key. */
     private static String apiResponseStatusKey = "status";
 
     /** The send sms api http resp code. */
     private static String sendSmsApiHttpRespCode = "202";
-    
+
     /** The trans status api http resp code. */
     private static String transStatusApiHttpRespCode = "200";
 
@@ -137,15 +138,15 @@ class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
      * The Enum SmsTransactionStatus.
      */
     private enum SmsTransactionStatus {
-        
+
         /** The new. */
-        NEW, 
- /** The pending. */
- PENDING, 
- /** The error. */
- ERROR, 
- /** The success. */
- SUCCESS;
+        NEW,
+        /** The pending. */
+        PENDING,
+        /** The error. */
+        ERROR,
+        /** The success. */
+        SUCCESS;
     }
 
     /** The shoulder tap sms transaction id. */
@@ -154,31 +155,31 @@ class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
     /** The wam send SMS url. */
     @Value("${" + DMA_SHOULDER_TAP_INVOKER_WAM_SEND_SMS_URL + "}")
     private String wamSendSMSUrl;
-    
+
     /** The wam transaction status url. */
     @Value("${" + DMA_SHOULDER_TAP_INVOKER_WAM_SMS_TRANSACTION_STATUS_URL + "}")
     private String wamTransactionStatusUrl;
-    
+
     /** The shoulder tap SMS priority. */
     @Value("${" + DMA_SHOULDER_TAP_WAM_SMS_PRIORITY + "}")
     private String shoulderTapSMSPriority;
-    
+
     /** The shoulder tap SMS validity hours. */
     @Value("${" + DMA_SHOULDER_TAP_WAM_SMS_VALIDITY_HOURS + "}")
     private String shoulderTapSMSValidityHours;
-    
+
     /** The wam send SMS skip status check. */
     @Value("${" + DMA_SHOULDER_TAP_WAM_SEND_SMS_SKIP_STATUS_CHECK + "}")
     private boolean wamSendSMSSkipStatusCheck;
-    
+
     /** The wam API max retry count. */
     @Value("${" + DMA_SHOULDER_TAP_WAM_API_MAX_RETRY_COUNT + "}")
     private int wamAPIMaxRetryCount;
-    
+
     /** The wam API max retry interval ms. */
     @Value("${" + DMA_SHOULDER_TAP_WAM_API_MAX_RETRY_INTERVAL_MS + "}")
     private long wamAPIMaxRetryIntervalMs;
-    
+
     /** The http client. */
     @Autowired
     private HttpClient httpClient;
@@ -189,46 +190,50 @@ class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
     @PostConstruct
     public void init() {
         if (StringUtils.isEmpty(wamSendSMSUrl) || StringUtils.isEmpty(wamTransactionStatusUrl)) {
-            String msg = String.format("Failed to initialize ShoulderTapInvokerWAMImpl."
+            String msg = String.format(
+                    "Failed to initialize ShoulderTapInvokerWAMImpl."
                             + " Missing property configuration: %s, %s.",
-                    DMA_SHOULDER_TAP_INVOKER_WAM_SEND_SMS_URL, DMA_SHOULDER_TAP_INVOKER_WAM_SMS_TRANSACTION_STATUS_URL);
+                    DMA_SHOULDER_TAP_INVOKER_WAM_SEND_SMS_URL,
+                    DMA_SHOULDER_TAP_INVOKER_WAM_SMS_TRANSACTION_STATUS_URL);
             logger.error(msg);
             throw new IllegalArgumentException(msg);
         }
     }
 
     /**
-     * Send shoulder tap SMS request to wake up device. This saves the
-     * transactionId of the request in extraParameters, which is used to get
-     * the SMS delivery status. Send SMS is invoked if the transaction
-     * status of the previous request is invalid or error, or if SMS is
-     * delivered but device status is still inactive.
+     * Send shoulder tap SMS request to wake up device. This saves the transactionId of the request
+     * in extraParameters, which is used to get the SMS delivery status. Send SMS is invoked if the
+     * transaction status of the previous request is invalid or error, or if SMS is delivered but
+     * device status is still inactive.
      *
      * @param requestId requestId
      * @param vehicleId vehicleId
-     * @param extraParameters extraParameters
-     *         both in and out parameters
+     * @param extraParameters extraParameters both in and out parameters
      * @param spc the spc
      * @return true, if successful
      */
-    
+
     @Override
-    public boolean sendWakeUpMessage(String requestId, String vehicleId, 
-            Map<String, Object> extraParameters, StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc) {
-        logger.info("Calling WAM Send SMS endpoint: requestId={} vehicleId={} extraParameters={}", 
+    public boolean sendWakeUpMessage(String requestId, String vehicleId,
+            Map<String, Object> extraParameters,
+            StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc) {
+        logger.info("Calling WAM Send SMS endpoint: requestId={} vehicleId={} extraParameters={}",
                 requestId, vehicleId, extraParameters);
         boolean wakeUpStatus = false;
         try {
             boolean invokeSendSMS = true;
-            if (!wamSendSMSSkipStatusCheck && extraParameters.containsKey(shoulderTapSmsTransactionId)) {
+            if (!wamSendSMSSkipStatusCheck
+                    && extraParameters.containsKey(shoulderTapSmsTransactionId)) {
                 String transactionId = extraParameters.get(shoulderTapSmsTransactionId).toString();
 
-                logger.debug("Calling WAM endpoint to get the transaction status of already sent shouldertap SMS: "
-                        + "wamTransactionStatusUrl={} requestId={} vehicleId={} transactionId={} extraParameters={}", 
-                        wamTransactionStatusUrl, requestId, vehicleId, transactionId, extraParameters);
+                logger.debug("Calling WAM endpoint to get the transaction status "
+                        + " of already sent shouldertap SMS: "
+                        + "wamTransactionStatusUrl={} requestId={} vehicleId={} transactionId={} extraParameters={}",
+                        wamTransactionStatusUrl, requestId, vehicleId, transactionId,
+                        extraParameters);
 
-                SmsTransactionStatus smsTransStatus = 
-                        getSMSTransactionStatus(requestId, vehicleId, transactionId, extraParameters);
+                SmsTransactionStatus smsTransStatus = getSMSTransactionStatus(requestId, vehicleId,
+                        transactionId, extraParameters);
 
                 // Don't send SMS if the transaction status is PENDING.
                 // Send SMS again for possible cases:
@@ -244,43 +249,51 @@ class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
             }
 
             if (invokeSendSMS) {
-                logger.debug("Calling WAM Send SMS endpoint to for shouldertap request: wamSendSMSUrl={} requestId={} "
-                        + "-vehicleId={} extraParameters={}", wamSendSMSUrl, requestId, vehicleId, extraParameters);
+                logger.debug(
+                        "Calling WAM Send SMS endpoint to for shouldertap request: wamSendSMSUrl={} requestId={} "
+                                + "-vehicleId={} extraParameters={}",
+                        wamSendSMSUrl, requestId, vehicleId, extraParameters);
                 Map<String, String> requestHeaders = getRequestHeaders(requestId, extraParameters);
                 Map<String, Object> requestParams = getRequestParams(vehicleId);
                 Map<String, String> additionalParamPriority = getAddtionalParamPriority();
-                
+
                 getAdditionalParamValidityHours(requestParams, additionalParamPriority);
                 // Invoke SMS send request
                 Map<String, Object> responseData = httpClient.invokeJsonResource(
-                        HttpClient.HttpReqMethod.PUT, wamSendSMSUrl,
-                        requestHeaders, requestParams, wamAPIMaxRetryCount, wamAPIMaxRetryIntervalMs);
+                        HttpClient.HttpReqMethod.PUT, wamSendSMSUrl, requestHeaders, requestParams,
+                        wamAPIMaxRetryCount, wamAPIMaxRetryIntervalMs);
                 String responseCode = (String) responseData.get(HttpClient.RESPONSE_CODE);
                 JsonNode responseJson = (JsonNode) responseData.get(HttpClient.RESPONSE_JSON);
 
                 if (sendSmsApiHttpRespCode.equals(responseCode) && responseJson != null) {
-                    logger.info("Received WAM Send SMS endpoint response: wamSendSMSUrl={} requestHeaders={} "
-                            + "requestParams={} responseJson={}", wamSendSMSUrl, requestHeaders, requestParams, 
-                            responseJson);
+                    logger.info(
+                            "Received WAM Send SMS endpoint response: wamSendSMSUrl={} requestHeaders={} "
+                                    + "requestParams={} responseJson={}",
+                            wamSendSMSUrl, requestHeaders, requestParams, responseJson);
                     String responseMsg = responseJson.findValue(apiResponseMessageKey).asText();
                     String transactionId = null;
                     if (apiResponseMessageValueSuccess.equalsIgnoreCase(responseMsg)) {
                         JsonNode dataNode = responseJson.findPath(apiResponseDataKey);
-                        wakeUpStatus = addParamForShoulderTapTxn(dataNode, wakeUpStatus, extraParameters);
+                        wakeUpStatus =
+                                addParamForShoulderTapTxn(dataNode, wakeUpStatus, extraParameters);
                     }
-                    logger.debug("WAM Send SMS endpoint called: wamSendSMSUrl={} requestId={} vehicleId={} "
-                            + "extraParameters={} responseData={} transactionId={} wakeUpStatus={}", wamSendSMSUrl, 
-                            requestId, vehicleId, extraParameters, responseData, transactionId, wakeUpStatus);
+                    logger.debug(
+                            "WAM Send SMS endpoint called: wamSendSMSUrl={} requestId={} vehicleId={} "
+                                    + "extraParameters={} responseData={} transactionId={} wakeUpStatus={}",
+                            wamSendSMSUrl, requestId, vehicleId, extraParameters, responseData,
+                            transactionId, wakeUpStatus);
                 } else {
                     logger.error(
                             "WAM Send SMS request has failed: wamSendSMSUrl={} requestId={} vehicleId={} "
-                            + "extraParameters={} responseData={} wakeUpStatus={}", 
-                            wamSendSMSUrl, requestId, vehicleId, extraParameters, responseData, wakeUpStatus);
+                                    + "extraParameters={} responseData={} wakeUpStatus={}",
+                            wamSendSMSUrl, requestId, vehicleId, extraParameters, responseData,
+                            wakeUpStatus);
                 }
             }
         } catch (Exception e) {
-            logger.error("ShoulderTapInvokerWAMImpl has encountered an error while sending wake up message: "
-                    + "requestId={} vehicleId={} extraParameters={}  error={}",
+            logger.error(
+                    "ShoulderTapInvokerWAMImpl has encountered an error while sending wake up message: "
+                            + "requestId={} vehicleId={} extraParameters={}  error={}",
                     requestId, vehicleId, extraParameters, e.getMessage());
         }
         return wakeUpStatus;
@@ -300,10 +313,10 @@ class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
         // VALDITY HOURS -> 72 hours
         additionalParamValidityHours.put(apiNestedParamNameValue, shoulderTapSMSValidityHours);
 
-        requestParams.put(apiParamKeyAdditional, Arrays.asList(additionalParamPriority,
-                additionalParamValidityHours));
+        requestParams.put(apiParamKeyAdditional,
+                Arrays.asList(additionalParamPriority, additionalParamValidityHours));
     }
-    
+
     /**
      * Gets the addtional param priority.
      *
@@ -316,7 +329,7 @@ class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
         additionalParamPriority.put(apiNestedParamNameValue, shoulderTapSMSPriority);
         return additionalParamPriority;
     }
-    
+
     /**
      * Gets the request params.
      *
@@ -330,7 +343,7 @@ class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
         requestParams.put(apiParamKeySmsType, apiParamValueShoulderTapSmsType);
         return requestParams;
     }
-    
+
     /**
      * Gets the request headers.
      *
@@ -338,12 +351,14 @@ class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
      * @param extraParameters the extra parameters
      * @return the request headers
      */
-    private Map<String, String> getRequestHeaders(String requestId, Map<String, Object> extraParameters) {
+    private Map<String, String> getRequestHeaders(String requestId,
+            Map<String, Object> extraParameters) {
         Map<String, String> requestHeaders = new HashMap<>();
         // ClientRequestId -> requestId
         requestHeaders.put(apiHeaderKeyClientRequestId, requestId);
         // SessionId -> bizTransactionId
-        requestHeaders.put(apiHeaderKeySessionId, extraParameters.get(BIZ_TRANSACTION_ID).toString());
+        requestHeaders.put(apiHeaderKeySessionId,
+                extraParameters.get(BIZ_TRANSACTION_ID).toString());
         return requestHeaders;
     }
 
@@ -355,7 +370,7 @@ class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
      * @param extraParameters the extra parameters
      * @return true, if successful
      */
-    private boolean addParamForShoulderTapTxn(JsonNode dataNode, boolean wakeUpStatus, 
+    private boolean addParamForShoulderTapTxn(JsonNode dataNode, boolean wakeUpStatus,
             Map<String, Object> extraParameters) {
         if (dataNode != null) {
             JsonNode transIdNode = dataNode.findValue(apiResponseValueTransid);
@@ -378,10 +393,12 @@ class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
      * @param extraParameters extraParameters
      * @return the SMS transaction status
      */
-    private SmsTransactionStatus getSMSTransactionStatus(String requestId, String vehicleId, String transactionId,
-            Map<String, Object> extraParameters) {
-        logger.info("Calling WAM SMS Transaction Status endpoint: requestId={} vehicleId={} transactionId={} "
-                + "extraParameters={}", requestId, vehicleId, transactionId, extraParameters);
+    private SmsTransactionStatus getSMSTransactionStatus(String requestId, String vehicleId,
+            String transactionId, Map<String, Object> extraParameters) {
+        logger.info(
+                "Calling WAM SMS Transaction Status endpoint: requestId={} vehicleId={} transactionId={} "
+                        + "extraParameters={}",
+                requestId, vehicleId, transactionId, extraParameters);
 
         SmsTransactionStatus transactionStatus = null;
         try {
@@ -392,19 +409,22 @@ class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
             // ClientRequestId -> requestId
             requestHeaders.put(apiHeaderKeyClientRequestId, requestId);
             // SessionId -> bizTransactionId
-            requestHeaders.put(apiHeaderKeySessionId, extraParameters.get(DMAConstants.BIZ_TRANSACTION_ID).toString());
+            requestHeaders.put(apiHeaderKeySessionId,
+                    extraParameters.get(DMAConstants.BIZ_TRANSACTION_ID).toString());
 
             Map<String, Object> requestBody = new HashMap<>();
             // Invoke SMS Transaction Status request
             Map<String, Object> responseData = httpClient.invokeJsonResource(
-                    HttpClient.HttpReqMethod.GET, transStatusUrl, requestHeaders,
-                    requestBody, wamAPIMaxRetryCount, wamAPIMaxRetryIntervalMs);
+                    HttpClient.HttpReqMethod.GET, transStatusUrl, requestHeaders, requestBody,
+                    wamAPIMaxRetryCount, wamAPIMaxRetryIntervalMs);
 
             String responseCode = (String) responseData.get(HttpClient.RESPONSE_CODE);
             JsonNode responseJson = (JsonNode) responseData.get(HttpClient.RESPONSE_JSON);
             if (transStatusApiHttpRespCode.equals(responseCode) && responseJson != null) {
-                logger.info("Received WAM Transaction Status endpoint response: transStatusUrl={} requestHeaders={} "
-                        + "requestBody={} responseJson={}", transStatusUrl, requestHeaders, requestBody, responseJson);
+                logger.info(
+                        "Received WAM Transaction Status endpoint response: transStatusUrl={} requestHeaders={} "
+                                + "requestBody={} responseJson={}",
+                        transStatusUrl, requestHeaders, requestBody, responseJson);
 
                 String responseMsg = responseJson.findValue(apiResponseMessageKey).asText();
 
@@ -419,25 +439,27 @@ class ShoulderTapInvokerWAMImpl implements DeviceShoulderTapInvoker {
                         }
                     }
                 }
-                
+
 
                 logger.debug(
                         "WAM SMS Transaction Status endpoint called: transStatusUrl={} requestId={} vehicleId={} "
-                        + "extraParameters={} responseMsg={} transactionId={} transactionStatus={}", transStatusUrl, 
-                        requestId, vehicleId, extraParameters, responseMsg, transactionId, transactionStatus);
+                                + "extraParameters={} responseMsg={} transactionId={} transactionStatus={}",
+                        transStatusUrl, requestId, vehicleId, extraParameters, responseMsg,
+                        transactionId, transactionStatus);
             } else {
                 transactionStatus = SmsTransactionStatus.ERROR;
-                logger.error("WAM Transaction Status request has failed: transStatusUrl={} requestId={} vehicleId={} "
-                        + "extraParameters={} transactionStatus={}", transStatusUrl, requestId, 
-                        vehicleId, extraParameters, transactionStatus);
+                logger.error(
+                        "WAM Transaction Status request has failed: transStatusUrl={} requestId={} vehicleId={} "
+                                + "extraParameters={} transactionStatus={}",
+                        transStatusUrl, requestId, vehicleId, extraParameters, transactionStatus);
             }
 
         } catch (Exception e) {
             transactionStatus = SmsTransactionStatus.ERROR;
             logger.error(
                     "ShoulderTapInvokerWAMImpl has encountered an error while retrieving SMS transaction status: "
-                    + "requestId={} vehicleId={} transactionId={} extraParameters={} error={}", requestId, vehicleId, 
-                    transactionId, extraParameters, e.getMessage());
+                            + "requestId={} vehicleId={} transactionId={} extraParameters={} error={}",
+                    requestId, vehicleId, transactionId, extraParameters, e.getMessage());
         }
         return transactionStatus;
     }

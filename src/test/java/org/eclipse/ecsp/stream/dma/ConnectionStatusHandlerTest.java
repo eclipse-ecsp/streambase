@@ -40,6 +40,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -53,32 +54,30 @@ import java.util.function.Function;
 
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
-
-
 /**
  * Integration test case for {@link DeviceConnectionStatusHandler} in Device Messaging module.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { Launcher.class })
+@ContextConfiguration(classes = {Launcher.class})
 @EnableRuleMigrationSupport
 @TestPropertySource("/dma-connectionstatus-handler-test.properties")
 public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase {
-    
+
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusHandlerTest.class);
-    
+
     /** The conn status topic. */
     private static String connStatusTopic;
-    
+
     /** The source topic name. */
     private static String sourceTopicName;
-    
+
     /** The i. */
     private static int i = 0;
-    
+
     /** The vehicle id. */
     private String vehicleId = "Vehicle12345";
-    
+
     /** The device id. */
     private String deviceId = "Device12345";
 
@@ -88,10 +87,11 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
     /** The default mqtt topic name generator impl. */
     @Autowired
     private DefaultMqttTopicNameGeneratorImpl defaultMqttTopicNameGeneratorImpl;
-    
+
     /** The device service. */
+    @Qualifier("deviceStatusServiceImpl")
     @Autowired
-    private DeviceStatusService deviceService;
+    private DeviceStatusService<ConcurrentHashSet<String>> deviceService;
 
     /** The paho mqtt dispatcher. */
     @Autowired
@@ -100,11 +100,11 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
     /** The dma record test consumer. */
     @Autowired
     private DmaRecordTestConsumer consumer;
-    
+
     /** The device status back door kafka consumer. */
     @Autowired
     DeviceStatusBackDoorKafkaConsumer deviceStatusBackDoorKafkaConsumer;
-    
+
     /** The device connection status handler. */
     @Autowired
     DeviceConnectionStatusHandler deviceConnectionStatusHandler;
@@ -130,10 +130,10 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
     }
-    
+
     /**
-     * Sets up the environment for this test class before each test case run. 
-     * Like creation of necessary kafka topics.
+     * Sets up the environment for this test class before each test case run. Like creation of
+     * necessary kafka topics.
      *
      * @throws Exception the exception
      */
@@ -146,23 +146,90 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
         createTopics(connStatusTopic, sourceTopicName, "dff-dfn-updates");
         ksProps.put(PropertyNames.SOURCE_TOPIC_NAME, sourceTopicName);
 
-        producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, 
-             Serdes.ByteArray().serializer().getClass().getName());
-        producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, 
-             Serdes.ByteArray().serializer().getClass().getName());
-        
+        producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                Serdes.ByteArray().serializer().getClass().getName());
+        producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                Serdes.ByteArray().serializer().getClass().getName());
+
         Properties kafkaConsumerProps = deviceStatusBackDoorKafkaConsumer.getKafkaConsumerProps();
-        kafkaConsumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.bootstrapServers());
-        deviceStatusBackDoorKafkaConsumer.addCallback(deviceConnectionStatusHandler.new DeviceStatusCallBack(), 0);
+        kafkaConsumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                KAFKA_CLUSTER.bootstrapServers());
+        deviceStatusBackDoorKafkaConsumer
+                .addCallback(deviceConnectionStatusHandler.new DeviceStatusCallBack(), 0);
         deviceStatusBackDoorKafkaConsumer.startBackDoorKafkaConsumer();
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
+    }
+
+    @Test
+    public void testDmaBasedOnInactiveConnStatus() throws Exception {
+        ksProps.put(PropertyNames.SERVICE_STREAM_PROCESSORS,
+                DMATestServiceProcessor.class.getName());
+        ksProps.put(PropertyNames.APPLICATION_ID, "test-sp" + System.currentTimeMillis());
+        launchApplication();
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
+
+        String deviceConnStatusEvent =
+                "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": {\"connStatus\":\"INACTIVE\","
+                        + "\"serviceName\":\"eCall\"},\"MessageId\": \"1234\",\"VehicleId\": \"Vehicle123457\","
+                        + "\"SourceDeviceId\": \"Device12345\"}";
+
+        String deviceIdKey = "Vehicle123457";
+        Assert.assertNull(deviceService.get(deviceIdKey, Optional.empty()));
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, "Vehicle123457".getBytes(),
+                deviceConnStatusEvent.getBytes());
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
+
+        List<IgniteDeviceStatusRecord> recordList = consumer.getMessages();
+        Assert.assertNotNull(recordList);
+
+        for (IgniteDeviceStatusRecord deviceStatusRecord : recordList) {
+            if (deviceStatusRecord.getKey().getKey().equals("Vehicle123457")) {
+                DeviceConnStatusV1_0 deviceStatus =
+                        (DeviceConnStatusV1_0) deviceStatusRecord.getEvent().getEventData();
+                Assert.assertEquals(DeviceConnStatusV1_0.ConnectionStatus.INACTIVE,
+                        deviceStatus.getConnStatus());
+            }
+        }
+    }
+
+    @Test
+    public void testDmaBasedOnActiveConnStatus() throws Exception {
+        ksProps.put(PropertyNames.SERVICE_STREAM_PROCESSORS,
+                DMATestServiceProcessor.class.getName());
+        ksProps.put(PropertyNames.APPLICATION_ID, "test-sp" + System.currentTimeMillis());
+        launchApplication();
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
+
+        String deviceConnStatusEvent =
+                "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": {\"connStatus\":\"ACTIVE\","
+                        + "\"serviceName\":\"eCall\"},\"MessageId\": \"1234\",\"VehicleId\": \"Vehicle1234579\","
+                        + "\"SourceDeviceId\": \"Device12345\"}";
+
+        String deviceIdKey = "Vehicle1234579";
+        Assert.assertNull(deviceService.get(deviceIdKey, Optional.empty()));
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, "Vehicle1234579".getBytes(),
+                deviceConnStatusEvent.getBytes());
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
+
+        List<IgniteDeviceStatusRecord> recordList = consumer.getMessages();
+        Assert.assertNotNull(recordList);
+
+        for (IgniteDeviceStatusRecord deviceStatusRecord : recordList) {
+            if (deviceStatusRecord.getKey().getKey().equals("Vehicle1234579")) {
+                DeviceConnStatusV1_0 deviceStatus =
+                        (DeviceConnStatusV1_0) deviceStatusRecord.getEvent().getEventData();
+                Assert.assertEquals(DeviceConnStatusV1_0.ConnectionStatus.ACTIVE,
+                        deviceStatus.getConnStatus());
+            }
+        }
     }
 
     @Test
     public void testDmaDeviceStatusForwardEvent() throws Exception {
         ConcurrentHashSet<String> expectedValue = new ConcurrentHashSet<>();
         expectedValue.add(deviceId);
-        ksProps.put(PropertyNames.SERVICE_STREAM_PROCESSORS, DMATestServiceProcessor.class.getName());
+        ksProps.put(PropertyNames.SERVICE_STREAM_PROCESSORS,
+                DMATestServiceProcessor.class.getName());
         ksProps.put(PropertyNames.APPLICATION_ID, "test-sp" + System.currentTimeMillis());
         launchApplication();
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
@@ -181,20 +248,25 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
 
         List<IgniteDeviceStatusRecord> recordList = consumer.getMessages();
         Assert.assertNotNull(recordList);
-        DeviceConnStatusV1_0 deviceStatus = (DeviceConnStatusV1_0) recordList.get(0).getEvent().getEventData();
-        Assert.assertEquals(DeviceConnStatusV1_0.ConnectionStatus.ACTIVE, deviceStatus.getConnStatus());
+        DeviceConnStatusV1_0 deviceStatus =
+                (DeviceConnStatusV1_0) recordList.get(0).getEvent().getEventData();
+        Assert.assertEquals(DeviceConnStatusV1_0.ConnectionStatus.ACTIVE,
+                deviceStatus.getConnStatus());
 
-        String terminateDeviceConnStatusEvent = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
-                + "\"Data\": {\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
-                + "\"VehicleId\": \"test_vehicle123\",\"SourceDeviceId\": \"Device12345\"}";
+        String terminateDeviceConnStatusEvent =
+                "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": {\"connStatus\":\"INACTIVE\","
+                        + "\"serviceName\":\"eCall\"},\"MessageId\": \"1234\",\"VehicleId\": \"test_vehicle123\","
+                        + "\"SourceDeviceId\": \"Device12345\"}";
         KafkaTestUtils.sendMessages(connStatusTopic, producerProps, testVehicleId.getBytes(),
                 terminateDeviceConnStatusEvent.getBytes());
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
 
         recordList = consumer.getMessages();
         Assert.assertNotNull(recordList);
-        DeviceConnStatusV1_0 deviceStatus2 = (DeviceConnStatusV1_0) recordList.get(1).getEvent().getEventData();
-        Assert.assertEquals(DeviceConnStatusV1_0.ConnectionStatus.INACTIVE, deviceStatus2.getConnStatus());
+        DeviceConnStatusV1_0 deviceStatus2 =
+                (DeviceConnStatusV1_0) recordList.get(1).getEvent().getEventData();
+        Assert.assertEquals(DeviceConnStatusV1_0.ConnectionStatus.INACTIVE,
+                deviceStatus2.getConnStatus());
     }
 
     /**
@@ -206,22 +278,24 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
     public void testDMABasedOnDeviceStatus() throws Exception {
         ConcurrentHashSet<String> expectedValue = new ConcurrentHashSet<>();
         expectedValue.add(deviceId);
-        ksProps.put(PropertyNames.SERVICE_STREAM_PROCESSORS, DMATestServiceProcessor.class.getName());
+        ksProps.put(PropertyNames.SERVICE_STREAM_PROCESSORS,
+                DMATestServiceProcessor.class.getName());
         ksProps.put(PropertyNames.APPLICATION_ID, "test-sp" + System.currentTimeMillis());
         launchApplication();
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
-        
+
         String deviceConnStatusEvent = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
-            + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
+                + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
                 + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12345\"}";
 
         String deviceIdKey = vehicleId;
         Assert.assertNull(deviceService.get(deviceIdKey, Optional.empty()));
-        
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(), 
-             deviceConnStatusEvent.getBytes());
 
-        Function<Void, ConcurrentHashSet<String>> getStatus = x -> deviceService.get(deviceIdKey, Optional.empty());
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
+                deviceConnStatusEvent.getBytes());
+
+        Function<Void, ConcurrentHashSet<String>> getStatus =
+                x -> deviceService.get(deviceIdKey, Optional.empty());
 
         ConcurrentHashSet<String> actual = retryWithException(TestConstants.TWENTY, getStatus);
         /*
@@ -232,18 +306,19 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
          * Once a status ACTIVE has been sent it should reflect in LocalCache.
          */
         Assert.assertEquals(expectedValue, actual);
-        
+
         String speedEventWithVehicleId = "{\"EventID\": \"Speed\",\"Version\": \"1.0\","
-             + "\"Data\": {\"value\":20.0},\"MessageId\": \"1234\",\"CorrelationId\": \"1234\","
-                 + "\"BizTransactionId\": \"Biz1234\",\"VehicleId\": \"Vehicle12345\"}";
+                + "\"Data\": {\"value\":20.0},\"MessageId\": \"1234\",\"CorrelationId\": \"1234\","
+                + "\"BizTransactionId\": \"Biz1234\",\"VehicleId\": \"Vehicle12345\"}";
 
         /*
          * Send Data to source Topic.
          */
-        testClient = new MqttClientTest(new TestKey(), new DeviceMessageHeader().withTargetDeviceId("Device12345"));
-        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(), 
-               speedEventWithVehicleId.getBytes());
-        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);       
+        testClient = new MqttClientTest(new TestKey(),
+                new DeviceMessageHeader().withTargetDeviceId("Device12345"));
+        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(),
+                speedEventWithVehicleId.getBytes());
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
         /*
          * Data send in source topic should come to mqtt
          */
@@ -255,82 +330,88 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
         /*
          * Disconnect Device after sending connStatus=INACTIVE.
          */
-        String terminateDeviceConnStatusEvent = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
-              + "\"Data\": {\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
-                   + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12345\"}";
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(), 
-             terminateDeviceConnStatusEvent.getBytes());
+        String terminateDeviceConnStatusEvent =
+                "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": {\"connStatus\":\"INACTIVE\","
+                        + "\"serviceName\":\"eCall\"},\"MessageId\": \"1234\",\"VehicleId\": \"Vehicle12345\","
+                        + "\"SourceDeviceId\": \"Device12345\"}";
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
+                terminateDeviceConnStatusEvent.getBytes());
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
         Assert.assertNull(deviceService.get(deviceIdKey, Optional.empty()));
         /*
-         * Data send in source topic should NOT come to mqtt as current status
-         * of device is INACTIVE.
+         * Data send in source topic should NOT come to mqtt as current status of device is
+         * INACTIVE.
          */
-        testClient = new MqttClientTest(new TestKey(), new DeviceMessageHeader().withTargetDeviceId("Device12345"));
-        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(), 
-            speedEventWithVehicleId.getBytes());
+        testClient = new MqttClientTest(new TestKey(),
+                new DeviceMessageHeader().withTargetDeviceId("Device12345"));
+        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(),
+                speedEventWithVehicleId.getBytes());
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
         Assert.assertNull(testClient.getMsgReceived());
         /*
-         * Test if sourceDeviceId notPresent in DeviceConnStatus will the status
-         * be set in cache.
+         * Test if sourceDeviceId notPresent in DeviceConnStatus will the status be set in cache.
          */
-        String deviceConnStatusEventWithoutSourceDeviceId = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
-              + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},"
-                   + "\"MessageId\": \"1234\"}";
+        String deviceConnStatusEventWithoutSourceDeviceId =
+                "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
+                        + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},"
+                        + "\"MessageId\": \"1234\"}";
         KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
                 deviceConnStatusEventWithoutSourceDeviceId.getBytes());
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
         Assert.assertNull(deviceService.get(deviceIdKey, Optional.empty()));
         /*
-         * Test if eventId for DeviceConnStatus event is incorrect will the
-         * status be set in cache
+         * Test if eventId for DeviceConnStatus event is incorrect will the status be set in cache
          */
-        String deviceConnStatusEventWithIncorrectEventId = "{\"EventID\": \"DeviceConn\",\"Version\": \"1.0\","
-               + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},"
-                 + "\"MessageId\": \"1234\"}";
+        String deviceConnStatusEventWithIncorrectEventId =
+                "{\"EventID\": \"DeviceConn\",\"Version\": \"1.0\","
+                        + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},"
+                        + "\"MessageId\": \"1234\"}";
         KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
 
                 deviceConnStatusEventWithIncorrectEventId.getBytes());
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
         Assert.assertNull(deviceService.get(deviceIdKey, Optional.empty()));
         /*
-         * Test if vehicleId notPresent in Speed event being pushed to
-         * sourceTopic of SP if data will be pushed to MQTT.
+         * Test if vehicleId notPresent in Speed event being pushed to sourceTopic of SP if data
+         * will be pushed to MQTT.
          */
         KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
                 deviceConnStatusEvent.getBytes());
         actual = retryWithException(TestConstants.TWENTY, getStatus);
 
         Assert.assertEquals(expectedValue, actual);
-        testClient = new MqttClientTest(new TestKey(), new DeviceMessageHeader().withTargetDeviceId("Device12345"));
+        testClient = new MqttClientTest(new TestKey(),
+                new DeviceMessageHeader().withTargetDeviceId("Device12345"));
 
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
 
         if (testClient.getMsgReceived() != null) {
-            testClient = new MqttClientTest(new TestKey(), new DeviceMessageHeader().withTargetDeviceId("Device12345"));
+            testClient = new MqttClientTest(new TestKey(),
+                    new DeviceMessageHeader().withTargetDeviceId("Device12345"));
         }
 
         String speedEventWithoutVehicleId = "{\"EventID\": \"Speed\",\"Version\": \"1.0\","
-             + "\"Data\": {\"value\":20.0},\"MessageId\": \"1234\",\"CorrelationId\": \"1234\","
-                 + "\"BizTransactionId\": \"Biz1234\"}";
-        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(), 
-             speedEventWithoutVehicleId.getBytes());
+                + "\"Data\": {\"value\":20.0},\"MessageId\": \"1234\",\"CorrelationId\": \"1234\","
+                + "\"BizTransactionId\": \"Biz1234\"}";
+        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(),
+                speedEventWithoutVehicleId.getBytes());
 
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_2000);
         Assert.assertNull(testClient.getMsgReceived());
 
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(), 
-             terminateDeviceConnStatusEvent.getBytes());
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
+                terminateDeviceConnStatusEvent.getBytes());
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_3000);
         /*
          * When correct sourceDeviceId is set will data be forwarded to MQTT
          */
-        testClient = new MqttClientTest(new TestKey(), new DeviceMessageHeader().withTargetDeviceId("Device12345"));
-        String speedEventWithVehicleIdAndSourceDeviceId = "{\"EventID\": \"Speed\",\"Version\": \"1.0\","
-                + "\"Data\": {\"value\":20.0},\"MessageId\": \"1237\","
-                 + "\"BizTransactionId\": \"Biz1237\",\"VehicleId\": \"Vehicle12345\","
-                   + "\"SourceDeviceId\": \"Device12345\"}";
+        testClient = new MqttClientTest(new TestKey(),
+                new DeviceMessageHeader().withTargetDeviceId("Device12345"));
+        String speedEventWithVehicleIdAndSourceDeviceId =
+                "{\"EventID\": \"Speed\",\"Version\": \"1.0\","
+                        + "\"Data\": {\"value\":20.0},\"MessageId\": \"1237\","
+                        + "\"BizTransactionId\": \"Biz1237\",\"VehicleId\": \"Vehicle12345\","
+                        + "\"SourceDeviceId\": \"Device12345\"}";
         KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
                 deviceConnStatusEvent.getBytes());
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_3000);
@@ -345,19 +426,20 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
         Assert.assertTrue(msgRec.contains("\"BizTransactionId\":\"Biz1237\""));
         Assert.assertTrue(msgRec.contains("\"SourceDeviceId\":\"Device12345\""));
 
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(), 
-              terminateDeviceConnStatusEvent.getBytes());
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
+                terminateDeviceConnStatusEvent.getBytes());
         await().atMost(TestConstants.THREAD_SLEEP_TIME_3000, TimeUnit.MILLISECONDS);
 
         /*
          * When incorrect sourceDeviceId is set will data be forwarded to MQTT
          */
-        testClient = new MqttClientTest(new TestKey(), 
+        testClient = new MqttClientTest(new TestKey(),
                 new DeviceMessageHeader().withTargetDeviceId("IncorrectDevice12345"));
-        String speedEventWithVehicleIdAndIncorrectSourceDeviceId = "{\"EventID\": \"Speed\",\"Version\": \"1.0\","
-                 + "\"Data\": {\"value\":20.0},\"MessageId\": \"1234\",\"CorrelationId\": \"1234\","
-                  + "\"BizTransactionId\": \"Biz1234\",\"VehicleId\": \"Vehicle12345\","
-                  + "\"SourceDeviceId\": \"IncorrectDevice12345\"}";
+        String speedEventWithVehicleIdAndIncorrectSourceDeviceId =
+                "{\"EventID\": \"Speed\",\"Version\": \"1.0\","
+                        + "\"Data\": {\"value\":20.0},\"MessageId\": \"1234\",\"CorrelationId\": \"1234\","
+                        + "\"BizTransactionId\": \"Biz1234\",\"VehicleId\": \"Vehicle12345\","
+                        + "\"SourceDeviceId\": \"IncorrectDevice12345\"}";
         KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
                 deviceConnStatusEvent.getBytes());
         await().atMost(TestConstants.THREAD_SLEEP_TIME_3000, TimeUnit.MILLISECONDS);
@@ -365,40 +447,45 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
                 speedEventWithVehicleIdAndIncorrectSourceDeviceId.getBytes());
         await().atMost(TestConstants.THREAD_SLEEP_TIME_2000, TimeUnit.MILLISECONDS);
         Assert.assertNull(testClient.getMsgReceived());
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(), 
-               terminateDeviceConnStatusEvent.getBytes());
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
+                terminateDeviceConnStatusEvent.getBytes());
         await().atMost(TestConstants.THREAD_SLEEP_TIME_2000, TimeUnit.MILLISECONDS);
 
         /*
-         * When multiple deviceIds are present for a vehcileId, will data be
-         * forwarded to MQTT if sourceDeviceIdis not present
+         * When multiple deviceIds are present for a vehcileId, will data be forwarded to MQTT if
+         * sourceDeviceIdis not present
          */
-        testClient = new MqttClientTest(new TestKey(), new DeviceMessageHeader().withTargetDeviceId("Device12345"));
-        String deviceConnStatusEventDevice12346 = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
-                + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
-                  + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12346\"}";
-        String deviceConnStatusEventDevice12347 = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
-                + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
-                  + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12347\"}";
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(), 
+        testClient = new MqttClientTest(new TestKey(),
+                new DeviceMessageHeader().withTargetDeviceId("Device12345"));
+        String deviceConnStatusEventDevice12346 =
+                "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
+                        + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
+                        + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12346\"}";
+        String deviceConnStatusEventDevice12347 =
+                "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
+                        + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
+                        + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12347\"}";
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
                 deviceConnStatusEventDevice12346.getBytes());
         await().atMost(TestConstants.THREAD_SLEEP_TIME_2000, TimeUnit.MILLISECONDS);
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(), 
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
                 deviceConnStatusEventDevice12347.getBytes());
         await().atMost(TestConstants.THREAD_SLEEP_TIME_2000, TimeUnit.MILLISECONDS);
-        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(), 
+        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(),
                 speedEventWithVehicleId.getBytes());
         await().atMost(TestConstants.THREAD_SLEEP_TIME_3000, TimeUnit.MILLISECONDS);
         Assert.assertNull(testClient.getMsgReceived());
 
         /*
-         * When multiple deviceIds are present for a vehcileId, will data be
-         * forwarded to MQTT if sourceId is present
+         * When multiple deviceIds are present for a vehcileId, will data be forwarded to MQTT if
+         * sourceId is present
          */
-        testClient = new MqttClientTest(new TestKey(), new DeviceMessageHeader().withTargetDeviceId("Device12347"));
-        String speedEventWithVehicleIdAndSourceDeviceIdDevice12347 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\","
-                + "\"Data\": {\"value\":20.0},\"MessageId\": \"9001\",\"BizTransactionId\": \"Biz9001\","
-                 + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12347\"}";
+        testClient = new MqttClientTest(new TestKey(),
+                new DeviceMessageHeader().withTargetDeviceId("Device12347"));
+        String speedEventWithVehicleIdAndSourceDeviceIdDevice12347 =
+                "{\"EventID\": \"Speed\",\"Version\": \"1.0\","
+                        + "\"Data\": {\"value\":20.0},\"MessageId\": \"9001\",\"BizTransactionId\": \"Biz9001\","
+                        + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12347\"}";
         KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(),
                 speedEventWithVehicleIdAndSourceDeviceIdDevice12347.getBytes());
         retryWithException(TestConstants.TWENTY, x -> testClient.getMsgReceived());
@@ -409,12 +496,14 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
         Assert.assertTrue(msgRec.contains("\"BizTransactionId\":\"Biz9001\""));
         Assert.assertTrue(msgRec.contains("\"SourceDeviceId\":\"Device12347\""));
 
-        String terminateDeviceConnStatusEventDevice12346 = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
-                + "\"Data\": {\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12346\"}";
-        String terminateDeviceConnStatusEventDevice12347 = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
-                + "\"Data\": {\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
-                   + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12347\"}";
+        String terminateDeviceConnStatusEventDevice12346 =
+                "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
+                        + "\"Data\": {\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
+                        + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12346\"}";
+        String terminateDeviceConnStatusEventDevice12347 =
+                "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
+                        + "\"Data\": {\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
+                        + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"Device12347\"}";
         KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
                 terminateDeviceConnStatusEventDevice12346.getBytes());
         await().atMost(TestConstants.THREAD_SLEEP_TIME_2000, TimeUnit.MILLISECONDS);
@@ -423,7 +512,7 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
         await().atMost(TestConstants.THREAD_SLEEP_TIME_2000, TimeUnit.MILLISECONDS);
 
     }
-    
+
     /**
      * Tear down.
      */
@@ -449,12 +538,12 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
         }
 
     }
-    
+
     /**
      * Test stream processor class for this integration test class.
      */
     public static final class DMATestServiceProcessor implements IgniteEventStreamProcessor {
-        
+
         /** The spc. */
         private StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc;
 
@@ -498,7 +587,7 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public void punctuate(long timestamp) {
-            // default implementation 
+            // default implementation
 
         }
 
@@ -539,7 +628,7 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
          */
         @Override
         public String[] sources() {
-            return new String[] { sourceTopicName };
+            return new String[] {sourceTopicName};
         }
 
         /**
@@ -605,7 +694,7 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
          */
 
         private String mqttTopicToSubscribe;
-        
+
         /** The msg received. */
         private String msgReceived;
 
@@ -625,7 +714,8 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
          * @param header DeviceMessageHeader
          */
         public MqttClientTest(IgniteKey key, DeviceMessageHeader header) {
-            mqttTopicToSubscribe = defaultMqttTopicNameGeneratorImpl.getMqttTopicName(key, header, null).get();
+            mqttTopicToSubscribe =
+                    defaultMqttTopicNameGeneratorImpl.getMqttTopicName(key, header, null).get();
             try {
                 createClient();
             } catch (MqttException e) {
@@ -639,7 +729,8 @@ public class ConnectionStatusHandlerTest extends KafkaStreamsApplicationTestBase
          * @throws MqttException MqttException
          */
         public void createClient() throws MqttException {
-            MqttClient client = pahoMqttDispatcher.getMqttClient(PropertyNames.DEFAULT_PLATFORMID).get();
+            MqttClient client =
+                    pahoMqttDispatcher.getMqttClient(PropertyNames.DEFAULT_PLATFORMID).get();
             client.subscribe(mqttTopicToSubscribe);
             client.setCallback(new MqttCallback() {
 

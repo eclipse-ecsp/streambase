@@ -1,38 +1,38 @@
 /*
  *
  *
- *   ******************************************************************************
+ * ******************************************************************************
  *
- *    Copyright (c) 2023-24 Harman International
- *
- *
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *
- *    you may not use this file except in compliance with the License.
- *
- *    You may obtain a copy of the License at
+ * Copyright (c) 2023-24 Harman International
  *
  *
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *
+ * you may not use this file except in compliance with the License.
  *
- *    Unless required by applicable law or agreed to in writing, software
- *
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
- *    See the License for the specific language governing permissions and
- *
- *    limitations under the License.
+ * You may obtain a copy of the License at
  *
  *
  *
- *    SPDX-License-Identifier: Apache-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    *******************************************************************************
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ *
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ *
+ * limitations under the License.
+ *
+ *
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * *******************************************************************************
  *
  *
  */
@@ -69,6 +69,7 @@ import org.eclipse.ecsp.stream.dma.dao.DeviceStatusService;
 import org.eclipse.ecsp.stream.dma.handler.DeviceConnectionStatusHandler;
 import org.eclipse.ecsp.stream.dma.handler.DeviceStatusBackDoorKafkaConsumer;
 import org.eclipse.ecsp.transform.GenericIgniteEventTransformer;
+import org.eclipse.ecsp.utils.ConcurrentHashSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -78,6 +79,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -88,73 +90,73 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-
+import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-
 
 /**
  * class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { Launcher.class })
+@ContextConfiguration(classes = {Launcher.class})
 @EnableRuleMigrationSupport
 @TestPropertySource("/dma-shouldertap-test.properties")
 public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsApplicationTestBase {
-    
+
     /** The Constant LOGGER. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeviceShoulderTapRetryHandlerIntegrationTest.class);
-    
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(DeviceShoulderTapRetryHandlerIntegrationTest.class);
+
     /** The conn status topic. */
     private static String connStatusTopic;
-    
+
     /** The source topic name. */
     private static String sourceTopicName;
-    
+
     /** The i. */
     private static int i = 0;
-    
+
     /** The service name. */
     @Value("${" + PropertyNames.SERVICE_NAME + ":}")
     private String serviceName;
-    
+
     /** The max retry. */
     @Value("${" + PropertyNames.SHOULDER_TAP_MAX_RETRY + ":3}")
     private int maxRetry;
-    
+
     /** The retry interval. */
     @Value("${" + PropertyNames.SHOULDER_TAP_RETRY_INTERVAL_MILLIS + ":60000}")
     private long retryInterval;
-    
+
     /** The retry min threshold. */
     @Value("${" + PropertyNames.SHOULDER_TAP_RETRY_MIN_THRESHOLD_MILLIS + ":60000}")
     private long retryMinThreshold;
-    
+
     /** The vehicle id. */
     private String vehicleId = "Vehicle12345";
-    
+
     /** The device service. */
+    @Qualifier("deviceStatusServiceImpl")
     @Autowired
-    private DeviceStatusService deviceService;
-    
+    private DeviceStatusService<ConcurrentHashSet<String>> deviceService;
+
     /** The shoulder tap invoker WAM impl. */
     @Autowired
     private ShoulderTapInvokerWAMImpl shoulderTapInvokerWAMImpl;
-    
+
     /** The device status back door kafka consumer. */
     @Autowired
     DeviceStatusBackDoorKafkaConsumer deviceStatusBackDoorKafkaConsumer;
-    
+
     /** The device connection status handler. */
     @Autowired
     DeviceConnectionStatusHandler deviceConnectionStatusHandler;
-    
+
     /** The web server. */
     @Rule
     public MockWebServer webServer = new MockWebServer();
-    
+
     /** The thread delay. */
     long threadDelay;
 
@@ -177,23 +179,29 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
                 Serdes.ByteArray().serializer().getClass().getName());
 
-        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
-        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
-        consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.bootstrapServers());
+        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                ByteArrayDeserializer.class);
+        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                ByteArrayDeserializer.class);
+        consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                KAFKA_CLUSTER.bootstrapServers());
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, "test-sp-consumer-group");
         Properties kafkaConsumerProps = deviceStatusBackDoorKafkaConsumer.getKafkaConsumerProps();
-        kafkaConsumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.bootstrapServers());
-        deviceStatusBackDoorKafkaConsumer.addCallback(deviceConnectionStatusHandler.new DeviceStatusCallBack(), 0);
+        kafkaConsumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                KAFKA_CLUSTER.bootstrapServers());
+        deviceStatusBackDoorKafkaConsumer
+                .addCallback(deviceConnectionStatusHandler.new DeviceStatusCallBack(), 0);
         deviceStatusBackDoorKafkaConsumer.startBackDoorKafkaConsumer();
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
-        
-        ksProps.put(PropertyNames.SERVICE_STREAM_PROCESSORS, DMAShoulderTapServiceProcessor.class.getName());
+
+        ksProps.put(PropertyNames.SERVICE_STREAM_PROCESSORS,
+                DMAShoulderTapServiceProcessor.class.getName());
         ksProps.put(PropertyNames.APPLICATION_ID, "test-sp" + System.currentTimeMillis());
         launchApplication();
         Thread.sleep(Constants.THREAD_SLEEP_TIME_10000);
         threadDelay = getScheduledThreadDelay();
     }
-    
+
     /**
      * Tear down.
      */
@@ -209,49 +217,35 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
      */
     @Test
     public void testIfShoulderTapMsgDeliveredAndDeviceComesActiveThenRetryStops() throws Exception {
-        ReflectionTestUtils.setField(shoulderTapInvokerWAMImpl, "wamSendSMSUrl", "http://localhost:" + webServer.getPort() + "/");
+        ReflectionTestUtils.setField(shoulderTapInvokerWAMImpl, "wamSendSMSUrl",
+                "http://localhost:" + webServer.getPort() + "/");
         String transactionId = "f71e2395-eda2-4de9-ad0a-72e930111736";
-        String shoulderTapSendSMSJsonResponse = "{\"message\": \"SUCCESS\",\"failureReasonCode\": null,"
-                + "\"failureReason\": null,\"data\": {\"transactionId\": \""
-                + transactionId + "\"}}";
+        String shoulderTapSendSMSJsonResponse =
+                "{\"message\": \"SUCCESS\",\"failureReasonCode\": null,"
+                        + "\"failureReason\": null,\"data\": {\"transactionId\": \"" + transactionId
+                        + "\"}}";
         MockResponse mockShoulderTapResponse = getMockResponse(shoulderTapSendSMSJsonResponse);
 
         for (int index = 0; index < maxRetry + 1; index++) {
             webServer.enqueue(mockShoulderTapResponse);
         }
 
-        String deviceConnInActiveStatusEvent = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": "
-                + "{\"connStatus\":\"INACTIVE\",\"serviceName\":\"ECall\"},\"MessageId\": \"1234\",\"VehicleId\": \""
-                + vehicleId + "\",\"SourceDeviceId\": \"Device12345\"}";
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps,
-                vehicleId.getBytes(), deviceConnInActiveStatusEvent.getBytes());
-        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
+        sendDeviceConnInactiveStatusEvent();
         assertNull(deviceService.get(vehicleId, Optional.empty()));
 
         String messageId = "Message12345";
         String value = "20.0";
-        String speedEvent = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":" + value
-                + "},\"RequestId\":\"Request123\", \"MessageId\":\"" + messageId
-                + "\",\"BizTransactionId\": \"Biz1237\",\"VehicleId\": \""
-                + vehicleId + "\",\"SourceDeviceId\": \"Device12345\"}";
-        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(), speedEvent.getBytes());
+        sendSpeedEvent(messageId, value);
 
-        Thread.sleep(Constants.INT_45000);
-
-        String deviceConnActiveStatusEvent = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": "
-                + "{\"connStatus\":\"ACTIVE\",\"serviceName\":\"ECall\"},\"MessageId\": \"1234\",\"VehicleId\": \""
-                + vehicleId + "\",\"SourceDeviceId\": \"Device12345\"}";
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps,
-                vehicleId.getBytes(), deviceConnActiveStatusEvent.getBytes());
-        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
+        sendDeviceConnActiveStatusEvent();
         assertNotNull(deviceService.get(vehicleId, Optional.empty()));
 
         // additional buffer of 120000 delay to cover up any time lag due to
         // kafka/retry thread.
         Thread.sleep(Constants.INT_120000 + (maxRetry * threadDelay));
         // Receive DeviceMessageFailureEventData
-        List<KeyValue<byte[], byte[]>> receivedRecords =
-                getKeyValueRecords(sourceTopicName, consumerProps, Constants.FOUR, Constants.THREAD_SLEEP_TIME_60000);
+        List<KeyValue<byte[], byte[]>> receivedRecords = getKeyValueRecords(sourceTopicName,
+                consumerProps, Constants.FOUR, Constants.THREAD_SLEEP_TIME_60000);
 
         // Assert no. of DeviceMessageFailureEventData:
         // 1) 1 speed event
@@ -272,7 +266,8 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
 
         DeviceMessageFailureEventDataV1_0 firstFailEventData =
                 (DeviceMessageFailureEventDataV1_0) firstDeviceMessageFailureEvent.getEventData();
-        assertEquals(DeviceMessageErrorCode.DEVICE_STATUS_INACTIVE, firstFailEventData.getErrorCode());
+        assertEquals(DeviceMessageErrorCode.DEVICE_STATUS_INACTIVE,
+                firstFailEventData.getErrorCode());
         assertEquals(0, firstFailEventData.getShoudlerTapRetryAttempts());
         assertEquals(true, firstFailEventData.isDeviceStatusInactive());
 
@@ -283,12 +278,14 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
         assertEquals(EventID.SPEED, failedIgniteEvent.getEventId());
 
         // Assert 4th DeviceMessageFailureEventData
-        IgniteEvent fourthDeviceMessageFailureEvent = getIgniteEvent(receivedRecords.get(Constants.THREE).value);
+        IgniteEvent fourthDeviceMessageFailureEvent =
+                getIgniteEvent(receivedRecords.get(Constants.THREE).value);
         assertEquals(EventID.DEVICEMESSAGEFAILURE, fourthDeviceMessageFailureEvent.getEventId());
-        
+
         DeviceMessageFailureEventDataV1_0 fourthFailEventData =
                 (DeviceMessageFailureEventDataV1_0) fourthDeviceMessageFailureEvent.getEventData();
-        assertEquals(DeviceMessageErrorCode.RETRYING_SHOULDER_TAP, fourthFailEventData.getErrorCode());
+        assertEquals(DeviceMessageErrorCode.RETRYING_SHOULDER_TAP,
+                fourthFailEventData.getErrorCode());
         assertEquals(1, fourthFailEventData.getShoudlerTapRetryAttempts());
         assertEquals(true, fourthFailEventData.isDeviceStatusInactive());
     }
@@ -299,12 +296,15 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
      * @throws Exception the exception
      */
     @Test
-    public void testIfShoulderTapMsgDeliveredAndDeviceRemainsInActiveThenMaxRetryIsAttempted() throws Exception {
-        ReflectionTestUtils.setField(shoulderTapInvokerWAMImpl, "wamSendSMSUrl", "http://localhost:" + webServer.getPort() + "/");
+    public void testIfShoulderTapMsgDeliveredAndDeviceRemainsInActiveThenMaxRetryIsAttempted()
+            throws Exception {
+        ReflectionTestUtils.setField(shoulderTapInvokerWAMImpl, "wamSendSMSUrl",
+                "http://localhost:" + webServer.getPort() + "/");
         String transactionId = "f71e2395-eda2-4de9-ad0a-72e930111736";
-        String shoulderTapSendSMSJsonResponse = "{\"message\": \"SUCCESS\",\"failureReasonCode\": null,"
-                + "\"failureReason\": null,\"data\": {\"transactionId\": \""
-                + transactionId + "\"}}";
+        String shoulderTapSendSMSJsonResponse =
+                "{\"message\": \"SUCCESS\",\"failureReasonCode\": null,"
+                        + "\"failureReason\": null,\"data\": {\"transactionId\": \"" + transactionId
+                        + "\"}}";
         MockResponse mockShoulderTapResponse = getMockResponse(shoulderTapSendSMSJsonResponse);
 
         for (int index = 0; index < maxRetry + 1; index++) {
@@ -312,21 +312,25 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
             webServer.enqueue(mockShoulderTapResponse);
         }
 
-        String deviceConnStatusEvent = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": "
-                + "{\"connStatus\":\"INACTIVE\",\"serviceName\":\"ECall\"},\"MessageId\": \"1234\",\"VehicleId\": \""
-                + vehicleId + "\",\"SourceDeviceId\": \"Device12345\"}";
-        KafkaTestUtils.sendMessages(connStatusTopic, producerProps,
-                vehicleId.getBytes(), deviceConnStatusEvent.getBytes());
+        String deviceConnStatusEvent =
+                "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": "
+                        + "{\"connStatus\":\"INACTIVE\",\"serviceName\":\"ECall\"},\"MessageId\": \"1234\","
+                        + "\"VehicleId\": \"" + vehicleId
+                        + "\",\"SourceDeviceId\": \"Device12345\"}";
+        KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
+                deviceConnStatusEvent.getBytes());
         Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
-        assertNull(deviceService.get(DMAConstants.VEHICLE_DEVICE_MAPPING + serviceName + vehicleId, Optional.empty()));
+        assertNull(deviceService.get(DMAConstants.VEHICLE_DEVICE_MAPPING + serviceName + vehicleId,
+                Optional.empty()));
 
         String messageId = "Message12345";
         String value = "20.0";
-        String speedEvent = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":" + value
-                + "},\"RequestId\":\"Request123\", \"MessageId\":\""
-                + messageId + "\",\"BizTransactionId\": \"Biz1237\",\"VehicleId\": \""
-                + vehicleId + "\",\"SourceDeviceId\": \"Device12345\"}";
-        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(), speedEvent.getBytes());
+        String speedEvent = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":"
+                + value + "}," + "\"RequestId\":\"Request123\", \"MessageId\":\"" + messageId
+                + "\"," + "\"BizTransactionId\": \"Biz1237\",\"VehicleId\": \"" + vehicleId + "\","
+                + "\"SourceDeviceId\": \"Device12345\"}";
+        KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(),
+                speedEvent.getBytes());
 
         Thread.sleep(Constants.INT_20000);
 
@@ -334,8 +338,8 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
         // kafka/retry thread.
         Thread.sleep(Constants.INT_120000 + (maxRetry * threadDelay));
         // Receive DeviceMessageFailureEventData
-        List<KeyValue<byte[], byte[]>> receivedRecords =
-                getKeyValueRecords(sourceTopicName, consumerProps, Constants.SEVEN, Constants.THREAD_SLEEP_TIME_60000);
+        List<KeyValue<byte[], byte[]>> receivedRecords = getKeyValueRecords(sourceTopicName,
+                consumerProps, Constants.SEVEN, Constants.THREAD_SLEEP_TIME_60000);
 
         // Assert no. of DeviceMessageFailureEventData:
         // 1) 1 speed event
@@ -357,7 +361,8 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
 
         DeviceMessageFailureEventDataV1_0 firstFailEventData =
                 (DeviceMessageFailureEventDataV1_0) firstDeviceMessageFailureEvent.getEventData();
-        assertEquals(DeviceMessageErrorCode.DEVICE_STATUS_INACTIVE, firstFailEventData.getErrorCode());
+        assertEquals(DeviceMessageErrorCode.DEVICE_STATUS_INACTIVE,
+                firstFailEventData.getErrorCode());
         assertEquals(0, firstFailEventData.getShoudlerTapRetryAttempts());
         assertEquals(true, firstFailEventData.isDeviceStatusInactive());
 
@@ -368,22 +373,26 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
         assertEquals(EventID.SPEED, failedIgniteEvent.getEventId());
 
         // Assert 3rd DeviceMessageFailureEventData
-        IgniteEvent thirdDeviceMessageFailureEvent = getIgniteEvent(receivedRecords.get(Constants.THREE).value);
+        IgniteEvent thirdDeviceMessageFailureEvent =
+                getIgniteEvent(receivedRecords.get(Constants.THREE).value);
         assertEquals(EventID.DEVICEMESSAGEFAILURE, thirdDeviceMessageFailureEvent.getEventId());
 
         DeviceMessageFailureEventDataV1_0 thirdFailEventData =
                 (DeviceMessageFailureEventDataV1_0) thirdDeviceMessageFailureEvent.getEventData();
-        assertEquals(DeviceMessageErrorCode.RETRYING_SHOULDER_TAP, thirdFailEventData.getErrorCode());
+        assertEquals(DeviceMessageErrorCode.RETRYING_SHOULDER_TAP,
+                thirdFailEventData.getErrorCode());
         assertEquals(1, thirdFailEventData.getShoudlerTapRetryAttempts());
         assertEquals(true, thirdFailEventData.isDeviceStatusInactive());
 
         // Assert 6th DeviceMessageFailureEventData
-        IgniteEvent sixthDeviceMessageFailureEvent = getIgniteEvent(receivedRecords.get(Constants.SIX).value);
+        IgniteEvent sixthDeviceMessageFailureEvent =
+                getIgniteEvent(receivedRecords.get(Constants.SIX).value);
         assertEquals(EventID.DEVICEMESSAGEFAILURE, sixthDeviceMessageFailureEvent.getEventId());
 
         DeviceMessageFailureEventDataV1_0 sixthFailEventData =
                 (DeviceMessageFailureEventDataV1_0) sixthDeviceMessageFailureEvent.getEventData();
-        assertEquals(DeviceMessageErrorCode.SHOULDER_TAP_RETRY_ATTEMPTS_EXCEEDED, sixthFailEventData.getErrorCode());
+        assertEquals(DeviceMessageErrorCode.SHOULDER_TAP_RETRY_ATTEMPTS_EXCEEDED,
+                sixthFailEventData.getErrorCode());
         assertEquals(maxRetry, sixthFailEventData.getShoudlerTapRetryAttempts());
         assertEquals(true, sixthFailEventData.isDeviceStatusInactive());
     }
@@ -405,7 +414,7 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
      * inner class DMAShoulderTapServiceProcessor implements IgniteEventStreamProcessor.
      */
     public static final class DMAShoulderTapServiceProcessor implements IgniteEventStreamProcessor {
-        
+
         /** The spc. */
         private StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc;
 
@@ -493,7 +502,7 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
          */
         @Override
         public String[] sources() {
-            return new String[] { sourceTopicName };
+            return new String[] {sourceTopicName};
         }
 
         /**
@@ -503,10 +512,10 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
          */
         @Override
         public String[] sinks() {
-            return new String[] { sourceTopicName };
+            return new String[] {sourceTopicName};
         }
     }
-    
+
     /**
      * Gets the ignite event.
      *
@@ -516,7 +525,8 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
      * @throws JsonMappingException the json mapping exception
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    private IgniteEvent getIgniteEvent(byte[] eventData) throws JsonParseException, JsonMappingException, IOException {
+    private IgniteEvent getIgniteEvent(byte[] eventData)
+            throws JsonParseException, JsonMappingException, IOException {
         GenericIgniteEventTransformer eventTransformer = new GenericIgniteEventTransformer();
         IgniteEvent event = eventTransformer.fromBlob(eventData, Optional.empty());
 
@@ -532,5 +542,137 @@ public class DeviceShoulderTapRetryHandlerIntegrationTest extends KafkaStreamsAp
         long freq = retryInterval / Constants.TWO;
         long delay = freq > retryMinThreshold ? freq : retryMinThreshold;
         return delay;
+    }
+
+    // Refactored `testIfShoulderTapMsgDeliveredAndDeviceComesActiveThenRetryStops` into smaller
+    // helper methods
+    private void sendDeviceConnInactiveStatusEvent() throws InterruptedException {
+        String deviceConnInActiveStatusEvent =
+                "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": {\"connStatus\":\"INACTIVE\","
+                        + "\"serviceName\":\"ECall\"},\"MessageId\": \"1234\",\"VehicleId\": \""
+                        + vehicleId + "\"," + "\"SourceDeviceId\": \"Device12345\"}";
+        try {
+            KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
+                    deviceConnInActiveStatusEvent.getBytes());
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
+    }
+
+    private void sendSpeedEvent(String messageId, String value) throws InterruptedException {
+        String speedEvent = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":"
+                + value + "}," + "\"RequestId\":\"Request123\", \"MessageId\":\"" + messageId
+                + "\"," + "\"BizTransactionId\": \"Biz1237\",\"VehicleId\": \"" + vehicleId + "\","
+                + "\"SourceDeviceId\": \"Device12345\"}";
+        try {
+            KafkaTestUtils.sendMessages(sourceTopicName, producerProps, vehicleId.getBytes(),
+                    speedEvent.getBytes());
+        } catch (ExecutionException e) {
+            LOGGER.error("Exception in sending message to topic {}", sourceTopicName, e);
+        } catch (InterruptedException e) {
+            LOGGER.error("Interrupted while sending message to topic {}", sourceTopicName, e);
+        }
+        Thread.sleep(Constants.INT_45000);
+    }
+
+    private void sendDeviceConnActiveStatusEvent() throws InterruptedException {
+        String deviceConnActiveStatusEvent =
+                "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": "
+                        + "{\"connStatus\":\"ACTIVE\",\"serviceName\":\"ECall\"}, "
+                        + "\"MessageId\": \"1234\",\"VehicleId\": \"" + vehicleId
+                        + "\",\"SourceDeviceId\": \"Device12345\"}";
+        try {
+            KafkaTestUtils.sendMessages(connStatusTopic, producerProps, vehicleId.getBytes(),
+                    deviceConnActiveStatusEvent.getBytes());
+        } catch (ExecutionException e) {
+            LOGGER.error("Exception in sending message to topic {}", connStatusTopic, e);
+        } catch (InterruptedException e) {
+            LOGGER.error("Interrupted while sending message to topic {}", connStatusTopic, e);
+        }
+        Thread.sleep(Constants.THREAD_SLEEP_TIME_5000);
+    }
+
+    /**
+     * Test if shoulder tap msg delivered and device comes active then retry stops.
+     *
+     * @throws Exception the exception
+     */
+    @Test
+    public void testIfShoulderTapMsgDeliveredAndDeviceComesActiveThenRetryStopsRefactored()
+            throws Exception {
+        ReflectionTestUtils.setField(shoulderTapInvokerWAMImpl, "wamSendSMSUrl",
+                "http://localhost:" + webServer.getPort() + "/");
+        String transactionId = "f71e2395-eda2-4de9-ad0a-72e930111736";
+        String shoulderTapSendSMSJsonResponse =
+                "{\"message\": \"SUCCESS\",\"failureReasonCode\": null,"
+                        + "\"failureReason\": null,\"data\": {\"transactionId\": \"" + transactionId
+                        + "\"}}";
+        MockResponse mockShoulderTapResponse = getMockResponse(shoulderTapSendSMSJsonResponse);
+
+        for (int index = 0; index < maxRetry + 1; index++) {
+            webServer.enqueue(mockShoulderTapResponse);
+        }
+
+        sendDeviceConnInactiveStatusEvent();
+        assertNull(deviceService.get(vehicleId, Optional.empty()));
+
+        String messageId = "Message12345";
+        String value = "20.0";
+        sendSpeedEvent(messageId, value);
+
+        sendDeviceConnActiveStatusEvent();
+        assertNotNull(deviceService.get(vehicleId, Optional.empty()));
+
+        // additional buffer of 120000 delay to cover up any time lag due to
+        // kafka/retry thread.
+        Thread.sleep(Constants.INT_120000 + (maxRetry * threadDelay));
+        // Receive DeviceMessageFailureEventData
+        List<KeyValue<byte[], byte[]>> receivedRecords = getKeyValueRecords(sourceTopicName,
+                consumerProps, Constants.FOUR, Constants.THREAD_SLEEP_TIME_60000);
+
+        // Assert no. of DeviceMessageFailureEventData:
+        // 1) 1 speed event
+        // 2) 1 failure event for device status inactive
+        // 3) 1 failure event for first shoulder tap attempt
+        // 4) 1 (1 retry attempt) failure event for shoulder tap retry
+        assertEquals(Constants.FOUR, receivedRecords.size());
+
+        // Assert speedEvent that was first sent on sourceTopic
+        IgniteEvent speedIgniteEvent = getIgniteEvent(receivedRecords.get(0).value);
+        assertEquals(messageId, speedIgniteEvent.getMessageId());
+        assertEquals(vehicleId, speedIgniteEvent.getVehicleId());
+        assertEquals(EventID.SPEED, speedIgniteEvent.getEventId());
+
+        // Assert 1st DeviceMessageFailureEventData
+        IgniteEvent firstDeviceMessageFailureEvent = getIgniteEvent(receivedRecords.get(1).value);
+        assertEquals(EventID.DEVICEMESSAGEFAILURE, firstDeviceMessageFailureEvent.getEventId());
+
+        DeviceMessageFailureEventDataV1_0 firstFailEventData =
+                (DeviceMessageFailureEventDataV1_0) firstDeviceMessageFailureEvent.getEventData();
+        assertEquals(DeviceMessageErrorCode.DEVICE_STATUS_INACTIVE,
+                firstFailEventData.getErrorCode());
+        assertEquals(0, firstFailEventData.getShoudlerTapRetryAttempts());
+        assertEquals(true, firstFailEventData.isDeviceStatusInactive());
+
+        // Assert failed DeviceMessage
+        IgniteEvent failedIgniteEvent = firstFailEventData.getFailedIgniteEvent();
+        assertEquals(messageId, failedIgniteEvent.getMessageId());
+        assertEquals(vehicleId, failedIgniteEvent.getVehicleId());
+        assertEquals(EventID.SPEED, failedIgniteEvent.getEventId());
+
+        // Assert 4th DeviceMessageFailureEventData
+        IgniteEvent fourthDeviceMessageFailureEvent =
+                getIgniteEvent(receivedRecords.get(Constants.THREE).value);
+        assertEquals(EventID.DEVICEMESSAGEFAILURE, fourthDeviceMessageFailureEvent.getEventId());
+
+        DeviceMessageFailureEventDataV1_0 fourthFailEventData =
+                (DeviceMessageFailureEventDataV1_0) fourthDeviceMessageFailureEvent.getEventData();
+        assertEquals(DeviceMessageErrorCode.RETRYING_SHOULDER_TAP,
+                fourthFailEventData.getErrorCode());
+        assertEquals(1, fourthFailEventData.getShoudlerTapRetryAttempts());
+        assertEquals(true, fourthFailEventData.isDeviceStatusInactive());
     }
 }

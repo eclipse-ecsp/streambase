@@ -1,38 +1,38 @@
 /*
  *
  *
- *   ******************************************************************************
+ * ******************************************************************************
  *
- *    Copyright (c) 2023-24 Harman International
- *
- *
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *
- *    you may not use this file except in compliance with the License.
- *
- *    You may obtain a copy of the License at
+ * Copyright (c) 2023-24 Harman International
  *
  *
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *
+ * you may not use this file except in compliance with the License.
  *
- *    Unless required by applicable law or agreed to in writing, software
- *
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
- *    See the License for the specific language governing permissions and
- *
- *    limitations under the License.
+ * You may obtain a copy of the License at
  *
  *
  *
- *    SPDX-License-Identifier: Apache-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    *******************************************************************************
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ *
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ *
+ * limitations under the License.
+ *
+ *
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * *******************************************************************************
  *
  *
  */
@@ -45,19 +45,19 @@ import org.eclipse.ecsp.domain.DeviceConnStatusV1_0.ConnectionStatus;
 import org.eclipse.ecsp.domain.Version;
 import org.eclipse.ecsp.entities.dma.VehicleIdDeviceIdStatus;
 import org.eclipse.ecsp.stream.dma.dao.DMAConstants;
-import org.eclipse.ecsp.stream.dma.dao.DeviceStatusAPIInMemoryService;
+import org.eclipse.ecsp.stream.dma.dao.DeviceStatusService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
-
 
 /**
  * class DeviceConnectionStatusRetrieverTest.
@@ -66,7 +66,8 @@ public class DeviceConnectionStatusRetrieverTest {
 
     /** The status retriever. */
     @InjectMocks
-    private DefaultDeviceConnectionStatusRetriever statusRetriever = new DefaultDeviceConnectionStatusRetriever();
+    private DefaultDeviceConnectionStatusRetriever statusRetriever =
+            new DefaultDeviceConnectionStatusRetriever();
 
     /** The http client. */
     @Mock
@@ -78,7 +79,8 @@ public class DeviceConnectionStatusRetrieverTest {
 
     /** The status service. */
     @Mock
-    DeviceStatusAPIInMemoryService statusService;
+    @Qualifier("deviceStatusApiServiceImpl")
+    DeviceStatusService<VehicleIdDeviceIdStatus> statusService;
 
     /** The ctx. */
     @Mock
@@ -91,7 +93,7 @@ public class DeviceConnectionStatusRetrieverTest {
     public void testGetConnectionStatusData() {
         httpClient = Mockito.mock(HttpClient.class);
         parser = Mockito.mock(DeviceConnectionStatusParser.class);
-        statusService = Mockito.mock(DeviceStatusAPIInMemoryService.class);
+        statusService = Mockito.mock(DeviceStatusService.class);
 
         ReflectionTestUtils.setField(statusRetriever, "httpClient", httpClient);
         ReflectionTestUtils.setField(statusRetriever, "parser", parser);
@@ -99,18 +101,21 @@ public class DeviceConnectionStatusRetrieverTest {
         ReflectionTestUtils.setField(statusRetriever, "deviceServiceInMemory", statusService);
 
         Mockito.when(httpClient.invokeJsonResource(Mockito.any(), Mockito.anyString(),
-                Mockito.anyMap(), Mockito.anyMap(), Mockito.anyInt(), Mockito.anyLong())).thenReturn(new HashMap<>());
+                Mockito.anyMap(), Mockito.anyMap(), Mockito.anyInt(), Mockito.anyLong()))
+                .thenReturn(new HashMap<>());
         Mockito.when(parser.getConnectionStatus(Mockito.anyMap())).thenReturn(DMAConstants.ACTIVE);
         ConcurrentHashMap<String, ConnectionStatus> map = new ConcurrentHashMap<>();
         String requestId = "request1";
         String vehicleId = "vin123";
         String deviceId = "device123";
+        String subService = "fleet";
         map.put(deviceId, ConnectionStatus.ACTIVE);
         VehicleIdDeviceIdStatus mapping = new VehicleIdDeviceIdStatus(Version.V1_0, map);
-
-        Mockito.when(statusService.get(vehicleId)).thenReturn(mapping);
-        mapping = statusRetriever.getConnectionStatusData(requestId, vehicleId, deviceId);
-        Assert.assertEquals(DMAConstants.ACTIVE, mapping.getDeviceIds().get(deviceId).getConnectionStatus());
+        Mockito.when(statusService.get(vehicleId, Optional.of(subService))).thenReturn(mapping);
+        mapping = statusRetriever.getConnectionStatusData(requestId, vehicleId, deviceId,
+                Optional.of(subService));
+        Assert.assertEquals(DMAConstants.ACTIVE,
+                mapping.getDeviceIds().get(deviceId).getConnectionStatus());
     }
 
     /**
@@ -123,18 +128,21 @@ public class DeviceConnectionStatusRetrieverTest {
         String actualUrl = "";
         String urlWithForwardSlash = "http://test-url.com/api/devices/";
         ReflectionTestUtils.setField(statusRetriever, "apiUrl", urlWithForwardSlash);
-        actualUrl = (String) ReflectionTestUtils.invokeMethod(statusRetriever, "appendToUrl", vehicleId);
+        actualUrl = (String) ReflectionTestUtils.invokeMethod(statusRetriever, "appendToUrl",
+                vehicleId);
         Assert.assertEquals(expectedUrl, actualUrl);
 
         String vehicleId2 = "vin123";
         expectedUrl = "http://test-url.com/api/devices/" + vehicleId2;
-        actualUrl = (String) ReflectionTestUtils.invokeMethod(statusRetriever, "appendToUrl", vehicleId2);
+        actualUrl = (String) ReflectionTestUtils.invokeMethod(statusRetriever, "appendToUrl",
+                vehicleId2);
         Assert.assertEquals(expectedUrl, actualUrl);
 
         String urlWithoutForwardSlash = "http://test-url.com/api/devices";
         expectedUrl = "http://test-url.com/api/devices/" + vehicleId;
         ReflectionTestUtils.setField(statusRetriever, "apiUrl", urlWithoutForwardSlash);
-        actualUrl = (String) ReflectionTestUtils.invokeMethod(statusRetriever, "appendToUrl", vehicleId);
+        actualUrl = (String) ReflectionTestUtils.invokeMethod(statusRetriever, "appendToUrl",
+                vehicleId);
         Assert.assertEquals(expectedUrl, actualUrl);
     }
 
@@ -144,7 +152,8 @@ public class DeviceConnectionStatusRetrieverTest {
     @Test(expected = IllegalArgumentException.class)
     public void testGetConnectionStatusDataWithEmptyAPIUrl() {
         ReflectionTestUtils.setField(statusRetriever, "apiUrl", "");
-        statusRetriever.getConnectionStatusData("requestId", "vehicleId", "deviceId");
+        statusRetriever.getConnectionStatusData("requestId", "vehicleId", "deviceId",
+                Optional.of("subService"));
     }
 
     /**
@@ -154,7 +163,8 @@ public class DeviceConnectionStatusRetrieverTest {
     public void testValidate() {
         ReflectionTestUtils.setField(statusRetriever, "apiUrl", "test/url");
         ReflectionTestUtils.setField(statusRetriever, "apiMaxRetryCount", Constants.INT_MINUS_TWO);
-        ReflectionTestUtils.setField(statusRetriever, "apiRetryIntervalMs", Constants.INT_MINUS_TWO);
+        ReflectionTestUtils.setField(statusRetriever, "apiRetryIntervalMs",
+                Constants.INT_MINUS_TWO);
         ReflectionTestUtils.invokeMethod(statusRetriever, "setup", new Object[0]);
     }
 
@@ -166,8 +176,8 @@ public class DeviceConnectionStatusRetrieverTest {
         ctx = Mockito.mock(ApplicationContext.class);
         ReflectionTestUtils.setField(statusRetriever, "apiUrl", "test/url");
         ReflectionTestUtils.setField(statusRetriever, "ctx", ctx);
-        ReflectionTestUtils.setField(statusRetriever, "connStatusParserImpl", 
-            "org.eclipse.ecsp.stream.dma.ConnectionStatusParserTestImpl");
+        ReflectionTestUtils.setField(statusRetriever, "connStatusParserImpl",
+                "org.eclipse.ecsp.stream.dma.ConnectionStatusParserTestImpl");
         ReflectionTestUtils.invokeMethod(statusRetriever, "setup", new Object[0]);
         Assert.assertNotNull(ReflectionTestUtils.getField(statusRetriever, "parser"));
     }

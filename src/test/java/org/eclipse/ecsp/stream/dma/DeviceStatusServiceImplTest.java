@@ -41,7 +41,7 @@ package org.eclipse.ecsp.stream.dma;
 
 import org.eclipse.ecsp.domain.Version;
 import org.eclipse.ecsp.entities.dma.VehicleIdDeviceIdMapping;
-import org.eclipse.ecsp.stream.dma.dao.DeviceConnStatusDAO;
+import org.eclipse.ecsp.stream.dma.dao.DeviceConnStatusDao;
 import org.eclipse.ecsp.stream.dma.dao.DeviceStatusServiceImpl;
 import org.eclipse.ecsp.utils.ConcurrentHashSet;
 import org.junit.Before;
@@ -57,24 +57,23 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
-
 /**
- * {@link DeviceStatusServiceImplTest} test class for {@link DeviceStatusServiceImpl}.
+ * {@link DeviceStatusServiceImplTest} test class for
+ * {@link DeviceStatusServiceImpl}.
  */
 public class DeviceStatusServiceImplTest {
 
     /** The device status service impl. */
     @InjectMocks
     private DeviceStatusServiceImpl deviceStatusServiceImpl;
-    
+
     /** The device status DAO. */
     @Mock
-    private DeviceConnStatusDAO deviceStatusDAO;
-    
+    private DeviceConnStatusDao deviceStatusDAO;
+
     /** The key. */
     private String key = "Vehicle12345";
-    
+
     /** The device ids. */
     private ConcurrentHashSet<String> deviceIds;
 
@@ -134,7 +133,8 @@ public class DeviceStatusServiceImplTest {
     }
 
     /**
-     * Test get device id if mapping is not present in memory and not present in redis.
+     * Test get device id if mapping is not present in memory and not present in
+     * redis.
      */
     @Test
     public void testGetDeviceIdIfMappingIsNotPresentInMemoryAndNotPresentInRedis() {

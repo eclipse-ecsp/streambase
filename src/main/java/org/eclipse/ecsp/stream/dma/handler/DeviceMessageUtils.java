@@ -53,7 +53,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-
 /**
  * Util class for {@link org.eclipse.ecsp.entities.dma.DeviceMessage}.
  */
@@ -63,24 +62,24 @@ public class DeviceMessageUtils {
     /** The msg id generator. */
     @Autowired
     private GlobalMessageIdGenerator msgIdGenerator;
-    
+
     /** The service name. */
     @Value("${" + PropertyNames.SERVICE_NAME + ":}")
     private String serviceName;
-    
+
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(DeviceMessageUtils.class);
-    
+
     /**
      * postFailureEvent().
      *
-     * @param data data
-     * @param key key
-     * @param spc spc
+     * @param data          data
+     * @param key           key
+     * @param spc           spc
      * @param feedBackTopic feedBackTopic
      */
 
-    public void postFailureEvent(DeviceMessageFailureEventDataV1_0 data, IgniteKey<?> key, 
+    public void postFailureEvent(DeviceMessageFailureEventDataV1_0 data, IgniteKey<?> key,
             StreamProcessingContext<?, ?> spc, String feedBackTopic) {
         String requestId = data.getFailedIgniteEvent().getRequestId();
         IgniteEventImpl failureEvent = new IgniteEventImpl();
@@ -91,11 +90,12 @@ public class DeviceMessageUtils {
         failureEvent.setTimezone(data.getFailedIgniteEvent().getTimezone());
         failureEvent.setMessageId(msgIdGenerator.generateUniqueMsgId(data.getFailedIgniteEvent().getVehicleId()));
         failureEvent.setVersion(Version.V1_0);
+        failureEvent.setVehicleId(data.getFailedIgniteEvent().getVehicleId());
         failureEvent.setEventData(data);
         spc.forwardDirectly(key, failureEvent, feedBackTopic);
         String payloadMsgId = data.getFailedIgniteEvent().getMessageId();
         logger.debug("{} feedback forwarded to topic {} for key {} with FailedIgniteEvent messageId {} ,requestId {} "
-                + "and FeebBackEvent messageId {} ", data.toString(), feedBackTopic, key, payloadMsgId, 
+                + "and FeebBackEvent messageId {} ", data.toString(), feedBackTopic, key, payloadMsgId,
                 requestId, failureEvent.getMessageId());
     }
 }

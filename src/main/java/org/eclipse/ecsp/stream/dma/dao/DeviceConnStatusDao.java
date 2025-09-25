@@ -42,17 +42,17 @@ package org.eclipse.ecsp.stream.dma.dao;
 import org.eclipse.ecsp.analytics.stream.base.kafka.internal.OffsetMetadata;
 import org.eclipse.ecsp.analytics.stream.base.stores.MutableKeyValueStore;
 import org.eclipse.ecsp.analytics.stream.base.stores.SortedKeyValueStore;
+import org.eclipse.ecsp.entities.IgniteEntity;
 import org.eclipse.ecsp.entities.dma.VehicleIdDeviceIdMapping;
 import org.eclipse.ecsp.stream.dma.dao.key.DeviceStatusKey;
 
 import java.util.Optional;
 
-
 /**
  * interface DeviceConnStatusDAO extends MutableKeyValueStore.
  */
-public interface DeviceConnStatusDAO extends MutableKeyValueStore<DeviceStatusKey, VehicleIdDeviceIdMapping>,
-        SortedKeyValueStore<DeviceStatusKey, VehicleIdDeviceIdMapping> {
+public interface DeviceConnStatusDao<V extends IgniteEntity> extends
+        MutableKeyValueStore<DeviceStatusKey, V>, SortedKeyValueStore<DeviceStatusKey, V> {
 
     /**
      * Gets the offset metadata.

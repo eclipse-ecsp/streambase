@@ -47,20 +47,21 @@ import org.eclipse.ecsp.analytics.stream.base.StreamProcessingContext;
 import org.eclipse.ecsp.analytics.stream.base.kafka.internal.BackdoorKafkaConsumer;
 import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
 import org.eclipse.ecsp.analytics.stream.base.utils.ThreadUtils;
+import org.eclipse.ecsp.entities.dma.VehicleIdDeviceIdMapping;
 import org.eclipse.ecsp.stream.dma.dao.DMAConstants;
-import org.eclipse.ecsp.stream.dma.dao.DeviceConnStatusDAO;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
 
-
 /**
- * This is a singleton implementation responsible soley for starting back door kafka
+ * This is a singleton implementation responsible soley for starting back door
+ * kafka
  * comsumer for DMA consuming from device-status-{@code <}service{@code >}
  * topic.
  *
@@ -72,54 +73,55 @@ public class DeviceStatusBackDoorKafkaConsumer extends BackdoorKafkaConsumer {
 
     /** The Constant DEVICE_STATUS_BACKDOOR_HEALTH_MONITOR. */
     public static final String DEVICE_STATUS_BACKDOOR_HEALTH_MONITOR = "DEVICE_STATUS_BACKDOOR_HEALTH_MONITOR";
-    
+
     /** The Constant DEVICE_STATUS_BACKDOOR_HEALTH_GUAGE. */
     public static final String DEVICE_STATUS_BACKDOOR_HEALTH_GUAGE = "DEVICE_STATUS_BACKDOOR_HEALTH_GUAGE";
-    
+
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(DeviceStatusBackDoorKafkaConsumer.class);
 
     /** The dma consumer poll. */
     @Value("${" + PropertyNames.DMA_KAFKA_CONSUMER_POLL + ":1000}")
     private long dmaConsumerPoll;
-    
+
     /** The dma auto offset reset. */
     @Value("${" + PropertyNames.DMA_AUTO_OFFSET_RESET_CONFIG + ":latest}")
     private String dmaAutoOffsetReset;
-    
+
     /** The service name. */
     @Value("${" + PropertyNames.SERVICE_NAME + ":}")
     private String serviceName;
-    
+
     /** The health monitor enabled. */
     @Value("${" + PropertyNames.HEALTH_DEVICE_STATUS_BACKDOOR_MONITOR_ENABLED + ":false}")
     private boolean healthMonitorEnabled;
-    
+
     /** The needs restart. */
     @Value("${" + PropertyNames.HEALTH_DEVICE_STATUS_BACKDOOR_MONITOR_RESTART_ON_FAILURE + ":true}")
     private boolean needsRestart;
 
     /**
-     * dma.enabled flag is linked with devicestatuskafkaconsumer as both are components of dma.
+     * dma.enabled flag is linked with devicestatuskafkaconsumer as both are
+     * components of dma.
      */
     @Value("${" + PropertyNames.DMA_ENABLED + ":true}")
     private boolean isDmaEnabled;
 
-    /** The connection status dao. */
-    @Autowired
-    private DeviceConnStatusDAO connectionStatusDao;
-
     /**
      * Added as part of 153542: Acknowledge for policy data publish .
-     * This variable is added if a component would like to overwrite the default device status connection topic.
+     * This variable is added if a component would like to overwrite the default
+     * device status connection topic.
      * In DMF(DataMonetizationFeed) component, we have encountered a situation where
      * dmf-control-sp sends policy to vehicle but policy
      * acknowledgement comes to different topic which was being listened t
      * by PolicyDataStreamProcessor (another stream processor). Now if
-     * this PolicyDataStreamProcessor has to send the acknowledgement back to the vehicle,
+     * this PolicyDataStreamProcessor has to send the acknowledgement back to the
+     * vehicle,
      * its device status handler should know the status
-     * of the vehicle(active or inactive), but vehicle was not publishing the status to its default-topic.
-     * Hence in PolicyDataStreamProcessor, we will overwrite its default device-status topic to
+     * of the vehicle(active or inactive), but vehicle was not publishing the status
+     * to its default-topic.
+     * Hence in PolicyDataStreamProcessor, we will overwrite its default
+     * device-status topic to
      * device-status-dmf-control-sp and it can get
      * the vehicle status
      */
@@ -355,9 +357,12 @@ public class DeviceStatusBackDoorKafkaConsumer extends BackdoorKafkaConsumer {
         // are flushed immediately in case of kafka batching.
         callBackMap.forEach((k, v) -> v.close());
 
-        //RTC-394242 - Added to remove only the callbacks for the partitions which went into rebalancing
-        // Moved out this piece of code from the shutdown consumer process cause both process are independent
-        // Callback has to be removed during each rebalance regardless pf the consumer shutodown process
+        // RTC-394242 - Added to remove only the callbacks for the partitions which went
+        // into rebalancing
+        // Moved out this piece of code from the shutdown consumer process cause both
+        // process are independent
+        // Callback has to be removed during each rebalance regardless pf the consumer
+        // shutodown process
         int partition = Integer.parseInt(spc.getTaskID().split("_")[1]);
         callBackMap.remove(partition);
         logger.info("Cleared Callback map for partition: {} and taskID: {}", partition, spc.getTaskID());

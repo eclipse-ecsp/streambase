@@ -70,10 +70,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * <p>
- *     DeviceMessagingGateway is the entry point or gateway for processing messages
+ * DeviceMessagingGateway is the entry point or gateway for processing messages
  * to be sent to Device.
  *
  * Its responsibility includes process chaining among the different Handlers
@@ -87,7 +86,7 @@ import java.util.Map;
 @Scope("prototype")
 @ConditionalOnProperty(name = PropertyNames.DMA_ENABLED, havingValue = "true")
 public class DeviceMessagingHandlerChain {
-    
+
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(DeviceMessagingHandlerChain.class);
 
@@ -129,17 +128,19 @@ public class DeviceMessagingHandlerChain {
     /** The dma config resolver impl class. */
     @Value("${" + PropertyNames.DMA_CONFIG_RESOLVER_CLASS + ":" + DMAConstants.DEFAULT_DMA_CONFIG_RESOLVER + "}")
     private String dmaConfigResolverImplClass;
-    
+
     /** The dma post dispatch handler class. */
     @Value("${" + PropertyNames.DMA_POST_DISPATCH_HANDLER_CLASS + ":"
             + DMAConstants.DMA_DEFAULT_POST_DISPATCH_HANDLER_CLASS + "}")
     private String dmaPostDispatchHandlerClass;
-    
+
     /**
      * <P>
-     * DMA should have the capability to dispatch the DeviceMessage for various ecuTypes to various brokers 
-     * if configured so. 
-     * By default DMA dispatches to MQTT broker but if below property is configured correctly, it will be able to 
+     * DMA should have the capability to dispatch the DeviceMessage for various
+     * ecuTypes to various brokers
+     * if configured so.
+     * By default DMA dispatches to MQTT broker but if below property is configured
+     * correctly, it will be able to
      * dispatch to other brokers as well for respective ecuTypes.
      * 
      * The @Value annotation will give us a list, at every index of which,
@@ -157,10 +158,10 @@ public class DeviceMessagingHandlerChain {
      */
     @Value("#{'${" + PropertyNames.DMA_DISPATCHER_ECU_TYPES + "}'.split(';')}")
     private List<String> ecuTypes;
-    
+
     /** The broker to ecu types mapping. */
     private Map<String, Map<String, String>> brokerToEcuTypesMapping = null;
-    
+
     /** The ecu types list. */
     private List<String> ecuTypesList = null;
 
@@ -169,20 +170,20 @@ public class DeviceMessagingHandlerChain {
 
     /** The config resolver. */
     private DMAConfigResolver configResolver;
-    
+
     /** The dma post dispatch handler. */
     private DeviceMessageHandler dmaPostDispatchHandler;
 
     /**
      * handle().
      *
-     * @param key key
+     * @param key   key
      * @param value value
      */
     public void handle(IgniteKey<?> key, IgniteEvent value) {
-        logger.info("DeviceMessagingGateway processing event with requestId {} and messageId {} ", value.getRequestId(),
-                value.getMessageId());
-
+        logger.debug("DeviceMessagingGateway processing event with requestId {} and messageId {} and value {}",
+                value.getRequestId(),
+                value.getMessageId(), value);
         IgniteEventImpl event = (IgniteEventImpl) value;
         if (value.isDeviceRoutable()) {
             deviceMessageValidator.handle(key, getDeviceRoutableEntity(event));
@@ -219,9 +220,12 @@ public class DeviceMessagingHandlerChain {
                     value, deviceMessageFeedbackTopic, retryIntervalAtEventLevel);
         }
         /*
-         * Since we have brokerToEcuTypesMapping here in this class, hence to avoid processing in
-         * DeviceConnectionStatusHandler, which route to take any DeviceMessage from, one field introduced in
-         * DeviceMessage which will contain the information whether this DeviceMessage has to be published to
+         * Since we have brokerToEcuTypesMapping here in this class, hence to avoid
+         * processing in
+         * DeviceConnectionStatusHandler, which route to take any DeviceMessage from,
+         * one field introduced in
+         * DeviceMessage which will contain the information whether this DeviceMessage
+         * has to be published to
          * some other broker than HiveMQ.
          */
         if (brokerToEcuTypesMapping != null && !brokerToEcuTypesMapping.isEmpty() && value.getEcuType() != null) {
@@ -254,11 +258,11 @@ public class DeviceMessagingHandlerChain {
                 if (classObject == null) {
                     throw new IllegalArgumentException("Could not load the class " + canonicalClassName);
                 }
-                logger.info("Class {} could not be loaded as spring bean. Attempting to create new instance.", 
+                logger.info("Class {} could not be loaded as spring bean. Attempting to create new instance.",
                         canonicalClassName);
                 instance = classObject.getDeclaredConstructor().newInstance();
             } catch (Exception exception) {
-                String msg = String.format("Class %s could not be loaded. Not found on classpath.%n", 
+                String msg = String.format("Class %s could not be loaded. Not found on classpath.%n",
                         canonicalClassName);
                 logger.error(msg + ExceptionUtils.getStackTrace(exception));
                 throw new IllegalArgumentException(msg);
@@ -267,12 +271,11 @@ public class DeviceMessagingHandlerChain {
         return instance;
     }
 
-
     /**
      * Construct process chain.
      *
      * @param taskId the task id
-     * @param spc the spc
+     * @param spc    the spc
      */
     public void constructChain(String taskId, StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc) {
         if (spc == null) {
@@ -303,12 +306,12 @@ public class DeviceMessagingHandlerChain {
     @PostConstruct
     public void setUp() {
         if (StringUtils.isEmpty(deviceMessagingEventTransformer)) {
-            throw new IllegalArgumentException(PropertyNames
-                    .DEVICE_MESSAGING_EVENT_TRANSFORMER + " unavailable in property file");
+            throw new IllegalArgumentException(
+                    PropertyNames.DEVICE_MESSAGING_EVENT_TRANSFORMER + " unavailable in property file");
         }
         dmEventTransformer = (Transformer) getInstanceByClassName(deviceMessagingEventTransformer);
         logger.debug("Device Messaging Event Transformer initialized is {}", deviceMessagingEventTransformer);
-        
+
         if (dmaConfigResolverImplClass == null) {
             dmaConfigResolverImplClass = DMAConstants.DEFAULT_DMA_CONFIG_RESOLVER;
         }
@@ -316,11 +319,13 @@ public class DeviceMessagingHandlerChain {
         dmaPostDispatchHandler = (DeviceMessageHandler) getInstanceByClassName(dmaPostDispatchHandlerClass);
         populateMap();
     }
-    
+
     /**
-     * To understand the below parsing, refer to the comment over {@link #ecuTypes} property.
-     * This map will be passed to the DispatchHandler where the decision as to which dispatcher to hand the 
-     * DeviceMessage to, will be taken. 
+     * To understand the below parsing, refer to the comment over {@link #ecuTypes}
+     * property.
+     * This map will be passed to the DispatchHandler where the decision as to which
+     * dispatcher to hand the
+     * DeviceMessage to, will be taken.
      */
     private void populateMap() {
         if (ecuTypes != null && !ecuTypes.isEmpty()) {
@@ -349,7 +354,7 @@ public class DeviceMessagingHandlerChain {
      * Creates the ecu types list.
      *
      * @param ecuTypeToTopicMappings the ecu type to topic mappings
-     * @param mapping the mapping
+     * @param mapping                the mapping
      */
     private void createEcuTypesList(Map<String, String> ecuTypeToTopicMappings, String mapping) {
         String[] str = mapping.split(Constants.ECU_TYPE_BROKER_TOPIC_DELIMETER);
@@ -364,8 +369,9 @@ public class DeviceMessagingHandlerChain {
         if (ecuTypesList == null) {
             ecuTypesList = new ArrayList<>();
         }
-        //marking this ecuType as a valid ecuType for which DeviceMessages has to be taken through
-        //new route in DeviceConnectionStatusHandler.
+        // marking this ecuType as a valid ecuType for which DeviceMessages has to be
+        // taken through
+        // new route in DeviceConnectionStatusHandler.
         ecuTypesList.add(ecuType);
     }
 

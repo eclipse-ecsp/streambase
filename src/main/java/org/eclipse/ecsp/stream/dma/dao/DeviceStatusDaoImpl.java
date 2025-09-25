@@ -50,26 +50,26 @@ import org.eclipse.ecsp.stream.dma.dao.key.DeviceStatusKey;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
-
 
 /**
  * DeviceStatusCacheBackedInMemoryDAO is an implementation of
  * DeviceStatusDAO where the DAO layer is CacheBackedInMemoryDAOImpl (fusion of
  * In-Memory Map store and Redis).
  * Whenever querying for device status the input deviceId
- * should be of the format DEVICE_STATUS_{@code <}SERVICE{@code >}_{@code <}deviceID{@code >}.
+ * should be of the format
+ * DEVICE_STATUS_{@code <}SERVICE{@code >}_{@code <}deviceID{@code >}.
  *
  * @author avadakkootko
  */
-@Repository
-public class DeviceStatusDaoCacheBackedInMemoryImpl extends
-        CachedMapStateStore<DeviceStatusKey, VehicleIdDeviceIdMapping> implements DeviceConnStatusDAO {
+@Component("deviceStatusDaoImpl")
+public class DeviceStatusDaoImpl extends CachedMapStateStore<DeviceStatusKey, VehicleIdDeviceIdMapping>
+        implements DeviceConnStatusDao<VehicleIdDeviceIdMapping> {
 
-    /** The logger. */
-    private static IgniteLogger logger = IgniteLoggerFactory.getLogger(DeviceStatusDaoCacheBackedInMemoryImpl.class);
+    private static IgniteLogger logger = IgniteLoggerFactory.getLogger(DeviceStatusDaoImpl.class);
 
     /** The latest offset metadata. */
     private OffsetMetadata latestOffsetMetadata;
@@ -136,7 +136,7 @@ public class DeviceStatusDaoCacheBackedInMemoryImpl extends
          */
         @Override
         public void batchCompleted(List<Object> processedRecords) {
-        //  Auto-generated method stub
+            // Auto-generated method stub
         }
 
     }

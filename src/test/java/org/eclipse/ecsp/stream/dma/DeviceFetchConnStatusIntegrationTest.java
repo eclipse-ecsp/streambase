@@ -1,38 +1,38 @@
 /*
  *
  *
- *   ******************************************************************************
+ * ******************************************************************************
  *
- *    Copyright (c) 2023-24 Harman International
- *
- *
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *
- *    you may not use this file except in compliance with the License.
- *
- *    You may obtain a copy of the License at
+ * Copyright (c) 2023-24 Harman International
  *
  *
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *
+ * you may not use this file except in compliance with the License.
  *
- *    Unless required by applicable law or agreed to in writing, software
- *
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
- *    See the License for the specific language governing permissions and
- *
- *    limitations under the License.
+ * You may obtain a copy of the License at
  *
  *
  *
- *    SPDX-License-Identifier: Apache-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    *******************************************************************************
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ *
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ *
+ * limitations under the License.
+ *
+ *
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * *******************************************************************************
  *
  *
  */
@@ -65,6 +65,7 @@ import org.eclipse.ecsp.stream.dma.dao.DeviceStatusService;
 import org.eclipse.ecsp.stream.dma.handler.DeviceConnectionStatusHandler;
 import org.eclipse.ecsp.stream.dma.handler.DeviceStatusBackDoorKafkaConsumer;
 import org.eclipse.ecsp.transform.GenericIgniteEventTransformer;
+import org.eclipse.ecsp.utils.ConcurrentHashSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -72,6 +73,7 @@ import org.junit.Test;
 import org.junit.jupiter.migrationsupport.rules.EnableRuleMigrationSupport;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -87,16 +89,14 @@ import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertNull;
 
-
-
 /**
- * Integration test case for "Fetching connection status of a device using presence-manager through kafka topic"
- * use case in stream-base.
+ * Integration test case for "Fetching connection status of a device using presence-manager through
+ * kafka topic" use case in stream-base.
  *
  * @author karora
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { Launcher.class })
+@ContextConfiguration(classes = {Launcher.class})
 @EnableRuleMigrationSupport
 @TestPropertySource("/dma-handler-fetch-conn-status-test.properties")
 public class DeviceFetchConnStatusIntegrationTest extends KafkaStreamsApplicationTestBase {
@@ -108,41 +108,42 @@ public class DeviceFetchConnStatusIntegrationTest extends KafkaStreamsApplicatio
     /** The source topic. */
     @Value("${source.topic.name}")
     private String sourceTopic;
-    
+
     /** The mqtt prefix. */
     @Value("${mqtt.service.topic.name.prefix}")
     private String mqttPrefix;
-    
+
     /** The to device. */
     @Value("${" + PropertyNames.MQTT_TOPIC_TO_DEVICE_INFIX + ":" + Constants.TO_DEVICE + "}")
     private String toDevice;
-    
+
     /** The mqtt topic. */
     @Value("${mqtt.service.topic.name}")
     private String mqttTopic;
-    
+
     /** The fetch conn status topic. */
     @Value("${fetch.connection.status.topic.name}")
     private String fetchConnStatusTopic;
-    
+
     /** The device service. */
+    @Qualifier("deviceStatusServiceImpl")
     @Autowired
-    private DeviceStatusService deviceService;
-    
+    private DeviceStatusService<ConcurrentHashSet<String>> deviceService;
+
     /** The device status back door kafka consumer. */
     @Autowired
     DeviceStatusBackDoorKafkaConsumer deviceStatusBackDoorKafkaConsumer;
-    
+
     /** The device connection status handler. */
     @Autowired
     DeviceConnectionStatusHandler deviceConnectionStatusHandler;
-    
+
     /** The device status topic name. */
     private String deviceStatusTopicName;
-    
+
     /** The vehicle id. */
     private String vehicleId = "Vehicle12345";
-    
+
     /**
      * Setup for this test case.
      *
@@ -152,21 +153,26 @@ public class DeviceFetchConnStatusIntegrationTest extends KafkaStreamsApplicatio
     public void setUp() throws Exception {
         super.setup();
         deviceStatusTopicName = DMAConstants.DEVICE_STATUS_TOPIC_PREFIX + serviceName.toLowerCase();
-        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
-        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
-        consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.bootstrapServers());
+        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                ByteArrayDeserializer.class);
+        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                ByteArrayDeserializer.class);
+        consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                KAFKA_CLUSTER.bootstrapServers());
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, "test-sp-consumer-group");
         createTopics(sourceTopic, deviceStatusTopicName, fetchConnStatusTopic);
         Properties kafkaConsumerProps = deviceStatusBackDoorKafkaConsumer.getKafkaConsumerProps();
-        kafkaConsumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.bootstrapServers());
-        deviceStatusBackDoorKafkaConsumer.addCallback(deviceConnectionStatusHandler.new DeviceStatusCallBack(), 0);
+        kafkaConsumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                KAFKA_CLUSTER.bootstrapServers());
+        deviceStatusBackDoorKafkaConsumer
+                .addCallback(deviceConnectionStatusHandler.new DeviceStatusCallBack(), 0);
         deviceStatusBackDoorKafkaConsumer.startBackDoorKafkaConsumer();
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
         launchApplication();
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
         subscibeToMqttTopic(mqttPrefix + "12345" + toDevice + "/" + mqttTopic);
     }
-    
+
     /**
      * Test fetch connection status event.
      *
@@ -178,43 +184,46 @@ public class DeviceFetchConnStatusIntegrationTest extends KafkaStreamsApplicatio
      * @throws IOException Signals that an I/O exception has occurred.
      */
     @Test
-    public void testFetchConnectionStatusEvent() throws ExecutionException, InterruptedException, 
-        TimeoutException, JsonParseException, JsonMappingException, IOException {
+    public void testFetchConnectionStatusEvent() throws ExecutionException, InterruptedException,
+            TimeoutException, JsonParseException, JsonMappingException, IOException {
         Properties producerProps = new Properties();
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
-        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.bootstrapServers());
-        
+        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                KAFKA_CLUSTER.bootstrapServers());
+
         String deviceInactive = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
                 + "\"Data\": {\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
                 + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
-        sendMessages(deviceStatusTopicName, producerProps, Arrays.asList(vehicleId.getBytes(), 
-                deviceInactive.getBytes()));
+        sendMessages(deviceStatusTopicName, producerProps,
+                Arrays.asList(vehicleId.getBytes(), deviceInactive.getBytes()));
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
         assertNull(deviceService.get(vehicleId, Optional.empty()));
-        String speedEvent = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":20.0},"
-                + "\"MessageId\": \"1234\",\"CorrelationId\": \"1234\",\"BizTransactionId\": \"Biz1234\","
-                + "\"Timezone\": \"60\",\"PlatformId\": \"Platform1\",\"VehicleId\": \"Vehicle12345\","
-                + "\"SourceDeviceId\": \"12345\"}";
-        sendMessages(sourceTopic, producerProps, Arrays.asList(vehicleId.getBytes(), speedEvent.getBytes()));
+        String speedEvent =
+                "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":20.0},"
+                        + "\"MessageId\": \"1234\",\"CorrelationId\": \"1234\",\"BizTransactionId\": \"Biz1234\","
+                        + "\"Timezone\": \"60\",\"PlatformId\": \"Platform1\",\"VehicleId\": \"Vehicle12345\","
+                        + "\"SourceDeviceId\": \"12345\"}";
+        sendMessages(sourceTopic, producerProps,
+                Arrays.asList(vehicleId.getBytes(), speedEvent.getBytes()));
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
-        
-        List<KeyValue<byte[], byte[]>> receivedRecords = getKeyValueRecords(fetchConnStatusTopic, 
+
+        List<KeyValue<byte[], byte[]>> receivedRecords = getKeyValueRecords(fetchConnStatusTopic,
                 consumerProps, TestConstants.SEVEN, TestConstants.INT_60000);
         IgniteEvent speedIgniteEvent = getIgniteEvent(receivedRecords.get(0).value);
         Assert.assertNotNull(speedIgniteEvent);
-        Assert.assertEquals("Timezone in event received is not as expected", (short) TestConstants.INT_60, 
-                speedIgniteEvent.getTimezone());
-        Assert.assertEquals("EventID in event received is not as expected", EventID.FETCH_CONN_STATUS, 
-                speedIgniteEvent.getEventId());
-        FetchConnectionStatusEventData fetchConnStatusData = 
+        Assert.assertEquals("Timezone in event received is not as expected",
+                (short) TestConstants.INT_60, speedIgniteEvent.getTimezone());
+        Assert.assertEquals("EventID in event received is not as expected",
+                EventID.FETCH_CONN_STATUS, speedIgniteEvent.getEventId());
+        FetchConnectionStatusEventData fetchConnStatusData =
                 (FetchConnectionStatusEventData) speedIgniteEvent.getEventData();
-        Assert.assertEquals("PlatformID in FetchConnectionStatusEventData is not as expected", "Platform1", 
-                fetchConnStatusData.getPlatformId());
-        Assert.assertEquals("VehicleID in FetchConnectionStatusEventData is not as expected", "Vehicle12345", 
-                fetchConnStatusData.getVehicleId());
+        Assert.assertEquals("PlatformID in FetchConnectionStatusEventData is not as expected",
+                "Platform1", fetchConnStatusData.getPlatformId());
+        Assert.assertEquals("VehicleID in FetchConnectionStatusEventData is not as expected",
+                "Vehicle12345", fetchConnStatusData.getVehicleId());
     }
-    
+
     /**
      * Tear down.
      */
@@ -222,7 +231,7 @@ public class DeviceFetchConnStatusIntegrationTest extends KafkaStreamsApplicatio
     public void tearDown() {
         deviceStatusBackDoorKafkaConsumer.shutdown();
     }
-    
+
     /**
      * Gets the ignite event.
      *
@@ -232,16 +241,17 @@ public class DeviceFetchConnStatusIntegrationTest extends KafkaStreamsApplicatio
      * @throws JsonMappingException the json mapping exception
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    private IgniteEvent getIgniteEvent(byte[] eventData) throws JsonParseException, JsonMappingException, IOException {
+    private IgniteEvent getIgniteEvent(byte[] eventData)
+            throws JsonParseException, JsonMappingException, IOException {
         GenericIgniteEventTransformer eventTransformer = new GenericIgniteEventTransformer();
         return eventTransformer.fromBlob(eventData, Optional.empty());
     }
-    
+
     /**
      * Test stream processor class.
      */
     public static class FetchConnStatusTestStreamProcessor implements IgniteEventStreamProcessor {
-        
+
         /** The spc. */
         private StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc;
 

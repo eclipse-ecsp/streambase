@@ -45,65 +45,78 @@ import org.eclipse.ecsp.utils.ConcurrentHashSet;
 
 import java.util.Optional;
 
-
 /**
- * {@link DeviceStatusService}.
+ * Service interface for managing device connection statuses.
+ *
+ * @param <T> The type of the device connection status object.
  */
-public interface DeviceStatusService {
+public interface DeviceStatusService<T> {
 
     /**
-     * Gets the.
+     * Retrieves the connection status data for a given vehicle ID.
      *
-     * @param vehicleId the vehicle id
-     * @param subService the sub service
-     * @return the concurrent hash set
+     * @param key        The key representing the vehicle ID.
+     * @param subService Optional sub-service identifier.
+     * @return The connection status data for the vehicle.
      */
-    public ConcurrentHashSet<String> get(String vehicleId, Optional<String> subService);
+    public T get(String key, Optional<String> subService);
 
     /**
-     * Put.
+     * Stores or updates connection status data in the in-memory cache.
      *
-     * @param vehicleId the vehicle id
-     * @param deviceIds the device ids
-     * @param mutationId the mutation id
-     * @param subService the sub service
+     * @param vehicleId  The vehicle ID.
+     * @param deviceIds  The deviceIds associated with this vehicleId.
+     * @param mutationId Optional mutation identifier.
+     * @param subService Optional sub-service identifier.
      */
-    public void put(String vehicleId, ConcurrentHashSet<String> deviceIds,
-            Optional<MutationId> mutationId, Optional<String> subService);
+    public void put(String vehicleId, T deviceIds, Optional<MutationId> mutationId, Optional<String> subService);
 
     /**
-     * Delete.
+     * Deletes connection status data for a specific device from the in-memory
+     * cache.
      *
-     * @param vehicleId the vehicle id
-     * @param deviceId the device id
-     * @param mutationId the mutation id
-     * @param subService the sub service
+     * @param vehicleId  The vehicle ID.
+     * @param deviceId   The device ID to delete.
+     * @param mutationId Optional mutation identifier.
+     * @param subService Optional sub-service identifier.
      */
     public void delete(String vehicleId, String deviceId, Optional<MutationId> mutationId, Optional<String> subService);
 
     /**
-     * Delete key.
+     * Deletes all connection status data for a given vehicle ID from the in-memory
+     * cache.
      *
-     * @param vehicleId the vehicle id
-     * @param mutationId the mutation id
+     * @param vehicleId  The vehicle ID.
+     * @param mutationId Optional mutation identifier.
      */
     public void deleteKey(String vehicleId, Optional<MutationId> mutationId);
 
     /**
-     * Gets the offset metadata.
+     * Retrieves the latest offset metadata for a given service name.
      *
-     * @param serviceName the service name
-     * @return the offset metadata
+     * @param serviceName The name of the service.
+     * @return An {@link Optional} containing the latest offset metadata, if
+     *         available.
      */
     public Optional<OffsetMetadata> getOffsetMetadata(String serviceName);
 
     /**
-     * Bypass in-memory key store and read from cache.
+     * Retrieves connection status data directly from the cache, bypassing the
+     * in-memory store.
      *
-     * @param vehicleId vehicleId
-     * @param subService the sub service
-     * @return ConcurrentHashSet
+     * @param subService Optional sub-service identifier.
+     * @param vehicleId  The vehicle ID.
+     * @return The connection status data for the vehicle.
      */
-    public ConcurrentHashSet<String> forceGet(String vehicleId, Optional<String> subService);
+    public T forceGet(Optional<String> subService, String vehicleId);
+
+    /**
+     * Updates the connection status of a specific device for a given vehicle ID.
+     *
+     * @param vehicleId        The vehicle ID.
+     * @param targetDeviceId   The target device ID.
+     * @param connectionStatus The new connection status of the device.
+     */
+    public void update(String vehicleId, String targetDeviceId, String connectionStatus);
 
 }
