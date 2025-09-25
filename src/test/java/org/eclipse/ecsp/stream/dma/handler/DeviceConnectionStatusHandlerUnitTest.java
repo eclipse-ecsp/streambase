@@ -1004,6 +1004,44 @@ public class DeviceConnectionStatusHandlerUnitTest {
         bufferEntry.setVehicleId(vehicleId);
         bufferedEntries.add(bufferEntry);
 
-        // Add more entries as needed...
+        DMOfflineBufferEntry bufferEntry2 = new DMOfflineBufferEntry();
+        bufferEntry2.setDeviceId("vehicle2");
+        DeviceMessage event2 = new DeviceMessage();
+        IgniteEventImpl eventImpl2 = new IgniteEventImpl();
+        String eventId2 = "eventId2";
+        eventImpl2.setEventId(eventId2);
+        DeviceMessageHeader deviceMessageHeader2 = new DeviceMessageHeader();
+        deviceMessageHeader2.withRequestId("reqId2").withVehicleId(vehicleId);
+        event2.setDeviceMessageHeader(deviceMessageHeader2);
+        event2.setEvent(eventImpl2);
+        bufferEntry2.setEvent(event2);
+        LocalDateTime eventTs2 = LocalDateTime.now();
+        bufferEntry2.setEventTs(eventTs2);
+        IgniteStringKey igniteKey2 = new IgniteStringKey();
+        igniteKey.setKey("Vehicle12345");
+        bufferEntry2.setIgniteKey(igniteKey2);
+        bufferEntry2.setVehicleId(vehicleId);
+        bufferedEntries.add(bufferEntry2);
+
+        DMOfflineBufferEntry bufferEntry3 = new DMOfflineBufferEntry();
+        bufferEntry3.setDeviceId("vehicle3");
+        IgniteEventImpl eventImpl3 = new IgniteEventImpl();
+        String eventId3 = "eventId3";
+        eventImpl3.setEventId(eventId3);
+        eventImpl3.setVehicleId(vehicleId);
+        eventImpl3.setSourceDeviceId("Device12345");
+        DeviceMessageHeader deviceMessageHeader3 = new DeviceMessageHeader();
+        deviceMessageHeader3.withRequestId("reqId3").withVehicleId(vehicleId);
+        DeviceMessage event3 = new DeviceMessage();
+        event3.setDeviceMessageHeader(deviceMessageHeader3);
+        event3.setEvent(eventImpl3);
+        bufferEntry3.setEvent(event3);
+        LocalDateTime eventTs3 = LocalDateTime.now();
+        bufferEntry3.setEventTs(eventTs3);
+        IgniteStringKey igniteKey3 = new IgniteStringKey();
+        igniteKey.setKey("Vehicle12345");
+        bufferEntry3.setIgniteKey(igniteKey3);
+        bufferEntry3.setVehicleId(vehicleId);
+        bufferedEntries.add(bufferEntry3);
     }
 }

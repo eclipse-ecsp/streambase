@@ -165,7 +165,7 @@ public class DefaultDeviceConnectionStatusRetriever implements ConnectionStatusR
         }
         long startTime = System.currentTimeMillis();
 
-        String url = appendToURL(vehicleId);
+        String url = appendToUrl(vehicleId);
         logger.info("Invoking the connection status API with URL: {} for vehicleId: {}", apiUrl,
                 vehicleId);
         // Invoke the API, with no headers and params for now.
@@ -192,7 +192,7 @@ public class DefaultDeviceConnectionStatusRetriever implements ConnectionStatusR
      * @param vehicleId Identifier of the vehicle.
      * @return Formed API URL with the vehicle ID appended.
      */
-    private String appendToURL(String vehicleId) {
+    private String appendToUrl(String vehicleId) {
         /*
          * If '/' is already a part of apiUrl configured then just append the vehicleId, else append
          * '/<vehicleId>' to the apiUrl.
