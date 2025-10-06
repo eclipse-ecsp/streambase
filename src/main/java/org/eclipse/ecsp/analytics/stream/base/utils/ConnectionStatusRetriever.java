@@ -46,7 +46,7 @@ import java.util.Optional;
 /**
  * CR-4570 DMA should expose an interface for services to retrieve connection status from an API.
  * Services can implement this interface and plug-in its implementation configuration to provide
- * their own logic to call the API & fetch device connection status.
+ * their own logic to call the API and fetch device connection status.
  *
  * @author HBadshah
  */
