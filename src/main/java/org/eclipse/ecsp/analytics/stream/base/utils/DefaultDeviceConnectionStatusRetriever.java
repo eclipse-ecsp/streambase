@@ -1,38 +1,38 @@
 /*
  *
  *
- * ******************************************************************************
+ *   ******************************************************************************
  *
- * Copyright (c) 2023-24 Harman International
- *
- *
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- *
- * you may not use this file except in compliance with the License.
- *
- * You may obtain a copy of the License at
+ *    Copyright (c) 2023-24 Harman International
  *
  *
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    Licensed under the Apache License, Version 2.0 (the "License");
  *
+ *    you may not use this file except in compliance with the License.
  *
- * Unless required by applicable law or agreed to in writing, software
- *
- * distributed under the License is distributed on an "AS IS" BASIS,
- *
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
- * See the License for the specific language governing permissions and
- *
- * limitations under the License.
+ *    You may obtain a copy of the License at
  *
  *
  *
- * SPDX-License-Identifier: Apache-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
- * *******************************************************************************
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *    See the License for the specific language governing permissions and
+ *
+ *    limitations under the License.
+ *
+ *
+ *
+ *    SPDX-License-Identifier: Apache-2.0
+ *
+ *    *******************************************************************************
  *
  *
  */
@@ -169,16 +169,13 @@ public class DefaultDeviceConnectionStatusRetriever implements ConnectionStatusR
         logger.info("Invoking the connection status API with URL: {} for vehicleId: {}", apiUrl,
                 vehicleId);
         // Invoke the API, with no headers and params for now.
-        Map<String, Object> responseData =
-                httpClient.invokeJsonResource(HttpClient.HttpReqMethod.GET, url, null, null,
-                        apiMaxRetryCount, apiRetryIntervalMs);
-        long timeTaken = (System.currentTimeMillis() - startTime) / MILLISECONDS_IN_SECOND;
-        logger.debug("Time taken to fetch the connection status for vehicleId: {} "
-                + " and deviceId: {} is: {} second(s)", vehicleId, deviceId, timeTaken);
-        logger.debug(
-                "Received connection status data: {} from the API {} for vehicleId: {}, "
-                        + " deviceId: {} and requestId: {}",
-                responseData, apiUrl, vehicleId, deviceId, requestId);
+        Map<String, Object> responseData = httpClient.invokeJsonResource(HttpClient.HttpReqMethod.GET, url, null,
+                null, apiMaxRetryCount, apiRetryIntervalMs);
+        long timeTaken = (System.currentTimeMillis() - startTime) / Constants.THOUSAND;
+        logger.debug("Time taken to fetch the connection status for vehicleId: {} and deviceId: {} is: {} second(s)",
+                vehicleId, deviceId, timeTaken);
+        logger.debug("Received connection status data: {} from the API {} for vehicleId: {}, "
+                + "deviceId: {} and requestId: {}", responseData, apiUrl, vehicleId, deviceId, requestId);
 
         String connectionStatus = parser.getConnectionStatus(responseData);
         logger.info("Connection status from the API for vehicleId {} and deviceId {} is {}",
@@ -249,13 +246,11 @@ public class DefaultDeviceConnectionStatusRetriever implements ConnectionStatusR
         try {
             classObject = getClass().getClassLoader().loadClass(connStatusParserImpl);
             this.parser = (DeviceConnectionStatusParser) ctx.getBean(classObject);
-            logger.info("Class {} loaded as DeviceConnectionStatusParser",
-                    parser.getClass().getName());
+            logger.info("Class {} loaded as DeviceConnectionStatusParser", parser.getClass().getName());
         } catch (Exception e) {
             try {
                 if (classObject == null) {
-                    throw new IllegalArgumentException(
-                            "Could not load the class " + connStatusParserImpl);
+                    throw new IllegalArgumentException("Could not load the class " + connStatusParserImpl);
                 }
                 this.parser = (DeviceConnectionStatusParser) classObject.getDeclaredConstructor()
                         .newInstance();

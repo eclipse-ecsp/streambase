@@ -60,8 +60,7 @@ import java.util.Optional;
  * DeviceStatusDAO where the DAO layer is CacheBackedInMemoryDAOImpl (fusion of
  * In-Memory Map store and Redis).
  * Whenever querying for device status the input deviceId
- * should be of the format
- * DEVICE_STATUS_{@code <}SERVICE{@code >}_{@code <}deviceID{@code >}.
+ * should be of the format DEVICE_STATUS_{@code <}SERVICE{@code >}_{@code <}deviceID{@code >}.
  *
  * @author avadakkootko
  */

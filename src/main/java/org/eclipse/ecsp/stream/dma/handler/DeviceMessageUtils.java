@@ -71,11 +71,11 @@ public class DeviceMessageUtils {
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(DeviceMessageUtils.class);
 
     /**
-     * postFailureEvent().
+     * Post failure event.
      *
-     * @param data          data
-     * @param key           key
-     * @param spc           spc
+     * @param data data
+     * @param key key
+     * @param spc spc
      * @param feedBackTopic feedBackTopic
      */
 

@@ -68,7 +68,7 @@ public class DeviceMessageValidator implements DeviceMessageHandler {
     /**
      * Validate IgniteEvent by checking is it is deviceRoutable or not.
      *
-     * @param key   the key
+     * @param key the key
      * @param value the value
      */
     @Override

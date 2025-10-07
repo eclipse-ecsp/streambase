@@ -1,38 +1,38 @@
 /*
  *
  *
- * ******************************************************************************
+ *   ******************************************************************************
  *
- * Copyright (c) 2023-24 Harman International
- *
- *
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- *
- * you may not use this file except in compliance with the License.
- *
- * You may obtain a copy of the License at
+ *    Copyright (c) 2023-24 Harman International
  *
  *
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *    Licensed under the Apache License, Version 2.0 (the "License");
  *
+ *    you may not use this file except in compliance with the License.
  *
- * Unless required by applicable law or agreed to in writing, software
- *
- * distributed under the License is distributed on an "AS IS" BASIS,
- *
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
- * See the License for the specific language governing permissions and
- *
- * limitations under the License.
+ *    You may obtain a copy of the License at
  *
  *
  *
- * SPDX-License-Identifier: Apache-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
- * *******************************************************************************
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ *    See the License for the specific language governing permissions and
+ *
+ *    limitations under the License.
+ *
+ *
+ *
+ *    SPDX-License-Identifier: Apache-2.0
+ *
+ *    *******************************************************************************
  *
  *
  */
@@ -74,8 +74,8 @@ public interface StreamProcessingContext<K, V> {
     public long offset();
 
     /**
-     * Enforce a checkpoint of the processing. Once this is called messages till the current offset
-     * will never be available again unless replayed.
+     * Enforce a checkpoint of the processing. Once this is called messages till the current
+     * offset will never be available again unless replayed.
      */
     public void checkpoint();
 
@@ -106,8 +106,8 @@ public interface StreamProcessingContext<K, V> {
 
 
     /**
-     * Return the taskID per stream thread. It would be generally topicGroupID_partitionID. Useful
-     * when like to know the which task is processing which partition
+     * Return the taskID per stream thread. It would be generally topicGroupID_partitionID.
+     * Useful when like to know the which task is processing which partition
      *
      * @return String
      */
@@ -115,8 +115,6 @@ public interface StreamProcessingContext<K, V> {
 
     /**
      * Return the MetricRegistry.
-     * 
-     * @return MetricRegistry
      */
     public MetricRegistry getMetricRegistry();
 
@@ -127,8 +125,8 @@ public interface StreamProcessingContext<K, V> {
      * @param value value
      * @param topic topic
      */
-    public default void forwardDirectly(@SuppressWarnings("rawtypes") IgniteKey key,
-            IgniteEvent value, String topic) {}
+    public default void forwardDirectly(@SuppressWarnings("rawtypes") IgniteKey key, IgniteEvent value, String topic) {
+    }
 
     /**
      * Forwards to a sink stream directly without going through the rest of the framework.
