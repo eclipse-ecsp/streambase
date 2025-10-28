@@ -92,7 +92,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-
 /**
  * DeviceConnectionStatusHandler is responsble for maintaining cache of
  * DeviceStatus and taking appropriate measures based on the device
