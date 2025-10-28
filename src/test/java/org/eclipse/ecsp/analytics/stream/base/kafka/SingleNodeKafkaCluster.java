@@ -123,7 +123,7 @@ public class SingleNodeKafkaCluster extends ExternalResource {
 
         final Properties effectiveBrokerConfig = effectiveBrokerConfigFrom(brokerConfig, zookeeper);
         LOG.debug("Starting a Kafka instance on port {} ...",
-                effectiveBrokerConfig.getProperty(KafkaConfig.ListenersProp()));
+                effectiveBrokerConfig.getProperty("listeners"));
         broker = new EmbeddedKafka(effectiveBrokerConfig);
         LOG.debug("Kafka instance is running at {}, connected to ZooKeeper at {}",
                 broker.brokerList(), broker.zookeeperConnect());
@@ -145,19 +145,19 @@ public class SingleNodeKafkaCluster extends ExternalResource {
             LOG.error("Error fetching kafka port", e);
         }
         effectiveConfig.putAll(brokerConfig);
-        effectiveConfig.put(KafkaConfig$.MODULE$.ZkConnectProp(), zookeeper.connectString());
-        effectiveConfig.put(KafkaConfig$.MODULE$.ZkSessionTimeoutMsProp(),
+        effectiveConfig.put("zookeeper.connect", zookeeper.connectString());
+        effectiveConfig.put("zookeeper.session.timeout.ms",
                 TestConstants.INT_30 * TestConstants.THOUSAND);
-        effectiveConfig.put(KafkaConfig.ListenersProp(), String.format("PLAINTEXT://127.0.0.1:%s", kafkaBrokerPort));
-        effectiveConfig.put(KafkaConfig$.MODULE$.ZkConnectionTimeoutMsProp(),
+        effectiveConfig.put("listeners", String.format("PLAINTEXT://127.0.0.1:%s", kafkaBrokerPort));
+        effectiveConfig.put("zookeeper.connection.timeout.ms",
                 TestConstants.INT_60 * TestConstants.THOUSAND);
-        effectiveConfig.put(KafkaConfig$.MODULE$.DeleteTopicEnableProp(), true);
-        effectiveConfig.put(KafkaConfig$.MODULE$.LogCleanerDedupeBufferSizeProp(),
+        effectiveConfig.put("delete.topic.enable", true);
+        effectiveConfig.put("log.cleaner.dedupe.buffer.size",
                 TestConstants.TWO * TestConstants.LONG_1024 * TestConstants.LONG_1024);
-        effectiveConfig.put(KafkaConfig$.MODULE$.GroupMinSessionTimeoutMsProp(), 0);
-        effectiveConfig.put(KafkaConfig$.MODULE$.OffsetsTopicReplicationFactorProp(), (short) 1);
-        effectiveConfig.put(KafkaConfig$.MODULE$.OffsetsTopicPartitionsProp(), 1);
-        effectiveConfig.put(KafkaConfig$.MODULE$.AutoCreateTopicsEnableProp(), true);
+        effectiveConfig.put("group.min.session.timeout.ms", 0);
+        effectiveConfig.put("offsets.topic.replication.factor", (short) 1);
+        effectiveConfig.put("offsets.topic.num.partitions", 1);
+        effectiveConfig.put("auto.create.topics.enable", true);
         return effectiveConfig;
     }
 
