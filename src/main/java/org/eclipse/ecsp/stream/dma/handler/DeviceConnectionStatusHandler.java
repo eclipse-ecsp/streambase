@@ -489,9 +489,12 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
             }
             return Optional.empty();
         }
-
-        if (StringUtils.isNotEmpty(targetDeviceId) && deviceIdsInCache.contains(targetDeviceId)) {
-            deviceId = targetDeviceId;
+        if (StringUtils.isNotEmpty(targetDeviceId)) {
+            if (deviceIdsInCache.contains(targetDeviceId)) {
+                deviceId = targetDeviceId;
+            } else {
+                deviceId = getTargetDeviceIdFromRedis(vehicleId, targetDeviceId, subService);
+            }
         } else {
             if (deviceIdsInCache.size() == 1) {
                 deviceId = deviceIdsInCache.iterator().next();
@@ -530,6 +533,28 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
             deviceIdsInCache = deviceService.get(vehicleId, Optional.empty());
         }
         return deviceIdsInCache;
+    }
+
+    /**
+     * Get target device id from redis.
+     *
+     * @param vehicleId the vehicle id
+     * @param deviceId the device id
+     * @param targetDeviceId the target device id
+     * @param subService the sub service
+     * @return the targetDeviceId if found else null
+     */
+    private String getTargetDeviceIdFromRedis(String vehicleId, String targetDeviceId, String subService) {
+        ConcurrentHashSet<String> deviceIdsInCache;
+        deviceIdsInCache = (processPerSubService && subServicesList.contains(subService)) 
+                ? deviceService.forceGet(vehicleId, Optional.of(subService))
+                : deviceService.forceGet(vehicleId, Optional.empty());
+        if (!CollectionUtils.isEmpty(deviceIdsInCache) && deviceIdsInCache.contains(targetDeviceId)) {
+            logger.info("DeviceIdsInCache {} returned from redis contains targetDeviceId {}", 
+                deviceIdsInCache, targetDeviceId);
+            return targetDeviceId;
+        }
+        return null;
     }
     
     /**
