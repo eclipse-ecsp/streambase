@@ -42,7 +42,7 @@ package org.eclipse.ecsp.stream.dma.dao;
 import org.eclipse.ecsp.analytics.stream.base.kafka.internal.MutationId;
 import org.eclipse.ecsp.analytics.stream.base.kafka.internal.OffsetMetadata;
 import org.eclipse.ecsp.utils.ConcurrentHashSet;
-
+import java.lang.StackWalker.Option;
 import java.util.Optional;
 
 /**
@@ -55,11 +55,11 @@ public interface DeviceStatusService<T> {
     /**
      * Retrieves the connection status data for a given vehicle ID.
      *
-     * @param key        The key representing the vehicle ID.
+     * @param vehicleId  The vehicle ID.
      * @param subService Optional sub-service identifier.
      * @return The connection status data for the vehicle.
      */
-    public T get(String key, Optional<String> subService);
+    public T get(String vehicleId, Optional<String> subService);
 
     /**
      * Stores or updates connection status data in the in-memory cache.
@@ -108,7 +108,7 @@ public interface DeviceStatusService<T> {
      * @param vehicleId  The vehicle ID.
      * @return The connection status data for the vehicle.
      */
-    public T forceGet(Optional<String> subService, String vehicleId);
+    public T forceGet(String vehicleId, Optional<String> subService);
 
     /**
      * Updates the connection status of a specific device for a given vehicle ID.
@@ -117,6 +117,6 @@ public interface DeviceStatusService<T> {
      * @param targetDeviceId   The target device ID.
      * @param connectionStatus The new connection status of the device.
      */
-    public void update(String vehicleId, String targetDeviceId, String connectionStatus);
+    public void update(String vehicleId, String targetDeviceId, String connectionStatus, Optional<String> subService);
 
 }

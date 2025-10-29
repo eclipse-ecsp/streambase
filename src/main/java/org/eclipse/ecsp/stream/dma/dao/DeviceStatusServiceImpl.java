@@ -93,7 +93,7 @@ public class DeviceStatusServiceImpl implements DeviceStatusService<ConcurrentHa
      */
     @Qualifier("deviceStatusDaoImpl")
     @Autowired
-    private DeviceConnStatusDao<VehicleIdDeviceIdMapping> deviceStatusDaoImpl;
+    private DeviceConnStatusDao<VehicleIdDeviceIdMapping> deviceStatusDao;
 
     /**
      * Utility class for device status operations.
@@ -132,7 +132,6 @@ public class DeviceStatusServiceImpl implements DeviceStatusService<ConcurrentHa
      */
     @Override
     public ConcurrentHashSet<String> get(String key, Optional<String> subService) {
-
         DeviceStatusKey deviceStatusKey = null;
         String redisMapKey = mapParentKey;
         if (subService.isPresent()) {
@@ -145,7 +144,7 @@ public class DeviceStatusServiceImpl implements DeviceStatusService<ConcurrentHa
             deviceStatusKey = new DeviceStatusKey(key);
         }
         ConcurrentHashSet<String> deviceIds = null;
-        VehicleIdDeviceIdMapping mapping = deviceStatusDaoImpl.get(deviceStatusKey);
+        VehicleIdDeviceIdMapping mapping = deviceStatusDao.get(deviceStatusKey);
         if (mapping != null) {
             logger.debug("Received VehicleIdDeviceIdMapping from in-memory cache as {}",
                     mapping.toString());
@@ -179,7 +178,7 @@ public class DeviceStatusServiceImpl implements DeviceStatusService<ConcurrentHa
         if (deviceIds != null) {
             mapping.setDeviceIds(deviceIds);
             // Put the data in in-memory map
-            deviceStatusDaoImpl.put(deviceStatusKey, mapping, Optional.empty(),
+            deviceStatusDao.put(deviceStatusKey, mapping, Optional.empty(),
                     InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);
         }
     }
@@ -206,12 +205,12 @@ public class DeviceStatusServiceImpl implements DeviceStatusService<ConcurrentHa
         } else {
             deviceStatusKey = new DeviceStatusKey(key);
         }
-        deviceStatusDaoImpl.putIfAbsent(deviceStatusKey,
+        deviceStatusDao.putIfAbsent(deviceStatusKey,
                 new VehicleIdDeviceIdMapping(Version.V1_0, deviceIds), Optional.empty(),
                 InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);
-        VehicleIdDeviceIdMapping mapping = deviceStatusDaoImpl.get(deviceStatusKey);
+        VehicleIdDeviceIdMapping mapping = deviceStatusDao.get(deviceStatusKey);
         mapping.setDeviceIds(deviceIds);
-        deviceStatusDaoImpl.putToMap(redisMapKey, deviceStatusKey, mapping, mutationId,
+        deviceStatusDao.putToMap(redisMapKey, deviceStatusKey, mapping, mutationId,
                 InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);
         logger.info("Key {}, Value {} updated in cache", key, mapping.toString());
     }
@@ -235,7 +234,7 @@ public class DeviceStatusServiceImpl implements DeviceStatusService<ConcurrentHa
         }
         DeviceStatusKey deviceStatusKey = new DeviceStatusKey(key);
         logger.debug("In delete Mapping for key {}", deviceStatusKey.convertToString());
-        VehicleIdDeviceIdMapping mapping = deviceStatusDaoImpl.get(deviceStatusKey);
+        VehicleIdDeviceIdMapping mapping = deviceStatusDao.get(deviceStatusKey);
         if (mapping == null) {
             logger.warn("No VehicleIdDeviceIdMapping instance found to delete for key {}", key);
             return;
@@ -249,7 +248,7 @@ public class DeviceStatusServiceImpl implements DeviceStatusService<ConcurrentHa
             if (mapping.getDeviceIds().isEmpty()) {
                 deleteKey(key, mutationId);
             } else {
-                deviceStatusDaoImpl.putToMap(vehicleIdDeviceIdStatusParentKey, deviceStatusKey,
+                deviceStatusDao.putToMap(vehicleIdDeviceIdStatusParentKey, deviceStatusKey,
                         mapping, mutationId,
                         InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);
             }
@@ -264,7 +263,7 @@ public class DeviceStatusServiceImpl implements DeviceStatusService<ConcurrentHa
      */
     @Override
     public Optional<OffsetMetadata> getOffsetMetadata(String serviceName) {
-        return deviceStatusDaoImpl.getOffsetMetadata(serviceName);
+        return deviceStatusDao.getOffsetMetadata(serviceName);
     }
 
     /**
@@ -275,19 +274,19 @@ public class DeviceStatusServiceImpl implements DeviceStatusService<ConcurrentHa
      * @param connectionStatus The new connection status of the device.
      */
     @Override
-    public void update(String vehicleId, String targetDeviceId, String connectionStatus) {
+    public void update(String vehicleId, String targetDeviceId, String connectionStatus, Optional<String> subService) {
         DeviceStatusKey key = new DeviceStatusKey(vehicleId);
         // Get mapping for this vehicleId from in-memory cache.
-        VehicleIdDeviceIdMapping mapping = deviceStatusDaoImpl.get(key);
+        VehicleIdDeviceIdMapping mapping = deviceStatusDao.get(key);
         if (mapping != null) {
             mapping.addDeviceId(targetDeviceId);
             // put the mapping in in-memory cache for this vehicleId
-            deviceStatusDaoImpl.put(key, mapping, Optional.empty(),
+            deviceStatusDao.put(key, mapping, Optional.empty(),
                     InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);
         } else {
             ConcurrentHashSet<String> map = new ConcurrentHashSet<>();
             map.add(targetDeviceId);
-            deviceStatusDaoImpl.putIfAbsent(key, new VehicleIdDeviceIdMapping(Version.V1_0, map),
+            deviceStatusDao.putIfAbsent(key, new VehicleIdDeviceIdMapping(Version.V1_0, map),
                     Optional.empty(), InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);
         }
         logger.debug("Updated in memory for vehicleId {} and deviceId {} .", vehicleId,
@@ -307,11 +306,11 @@ public class DeviceStatusServiceImpl implements DeviceStatusService<ConcurrentHa
         if (!subServiceToParentKeyMapping.isEmpty()) {
             String[] arr = vehicleId.split(":");
             String subService = arr[arr.length - 1];
-            deviceStatusDaoImpl.deleteFromMap(subServiceToParentKeyMapping.get(subService),
+            deviceStatusDao.deleteFromMap(subServiceToParentKeyMapping.get(subService),
                     deviceStatusKey, mutationId,
                     InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);
         } else {
-            deviceStatusDaoImpl.deleteFromMap(mapParentKey, deviceStatusKey, mutationId,
+            deviceStatusDao.deleteFromMap(mapParentKey, deviceStatusKey, mutationId,
                     InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);
         }
     }
@@ -324,7 +323,7 @@ public class DeviceStatusServiceImpl implements DeviceStatusService<ConcurrentHa
      * @return A set of device IDs associated with the vehicle ID.
      */
     @Override
-    public ConcurrentHashSet<String> forceGet(Optional<String> subServiceOpt, String key) {
+    public ConcurrentHashSet<String> forceGet(String key, Optional<String> subServiceOpt) {
         if (subServiceOpt.isPresent()) {
             String subService = subServiceOpt.get();
             if (StringUtils.isEmpty(subServiceToParentKeyMapping.get(subService))) {
@@ -351,7 +350,7 @@ public class DeviceStatusServiceImpl implements DeviceStatusService<ConcurrentHa
     private ConcurrentHashSet<String> forceGet(String mapKey, DeviceStatusKey mapEntryKey) {
         ConcurrentHashSet<String> deviceIds = null;
         VehicleIdDeviceIdMapping vehicleIdDeviceIdMapping =
-                deviceStatusDaoImpl.forceGet(mapKey, mapEntryKey);
+                deviceStatusDao.forceGet(mapKey, mapEntryKey);
         if (vehicleIdDeviceIdMapping != null) {
             deviceIds = vehicleIdDeviceIdMapping.getDeviceIds();
         }

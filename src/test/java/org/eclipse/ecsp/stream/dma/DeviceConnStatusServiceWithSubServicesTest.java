@@ -114,7 +114,7 @@ public class DeviceConnStatusServiceWithSubServicesTest extends KafkaStreamsAppl
         ConcurrentHashSet<String> actualDeviceIds = new ConcurrentHashSet<>();
         actualDeviceIds.add(deviceId1);
         ConcurrentHashSet<String> deviceIds =
-                deviceStatusServiceImpl.forceGet(Optional.of(SUB_SERVICE_ECALL), key2);
+                deviceStatusServiceImpl.forceGet(key2, Optional.of(SUB_SERVICE_ECALL));
         Assert.assertEquals(actualDeviceIds, deviceIds);
     }
 }

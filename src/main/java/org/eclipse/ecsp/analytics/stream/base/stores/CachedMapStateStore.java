@@ -242,12 +242,14 @@ public class CachedMapStateStore<K extends CacheKeyConverter<K>, V extends Ignit
          Optional<MutationId> mutationId, String cacheType) {
         LOGGER.debug("Invoking put to map of CachedMapStateStore with key {} and value {} "
             + "and mutationId {}", mapEntryKey, mapEntryValue, mutationId);
-        if (persistInIgniteCache) {
+        if (persistInIgniteCache && mapKey != null) {
             CacheEntity<K, V> entity = new CacheEntity<>();
             entity.withMapKey(mapKey).withKey(mapEntryKey).withValue(mapEntryValue).withMutationId(mutationId)
                     .withOperation(Operation.PUT_TO_MAP);
             entity.setLastUpdatedTime(LocalDateTime.now());
             bypass.processEvents(entity);
+        } else {
+            LOGGER.warn("mapKey is null. Cannot perform Redis putToMap operation.");
         }
         super.put(mapEntryKey, mapEntryValue);
         cacheGuage.set(super.approximateNumEntries(), cacheType, svc, nodeName, taskId);
@@ -269,12 +271,14 @@ public class CachedMapStateStore<K extends CacheKeyConverter<K>, V extends Ignit
         LOGGER.debug("Invoking putIfAbsent to map of CachedMapStateStore with key {} and value {}", 
             mapEntryKey, mapEntryValue);
         V oldValue = super.putIfAbsent(mapEntryKey, mapEntryValue);
-        if (persistInIgniteCache && oldValue == null) {
+        if (persistInIgniteCache && mapKey != null && oldValue == null) {
             CacheEntity<K, V> entity = new CacheEntity<>();
             entity.withMapKey(mapKey).withKey(mapEntryKey).withValue(mapEntryValue).withMutationId(mutationId)
                     .withOperation(Operation.PUT_TO_MAP);
             entity.setLastUpdatedTime(LocalDateTime.now());
             bypass.processEvents(entity);
+        } else {
+            LOGGER.warn("mapKey is null. Cannot perform Redis putToMapIfAbsent operation.");
         }
         super.put(mapEntryKey, mapEntryValue);
         cacheGuage.set(super.approximateNumEntries(), cacheType, svc, nodeName, taskId);
@@ -296,12 +300,14 @@ public class CachedMapStateStore<K extends CacheKeyConverter<K>, V extends Ignit
         super.delete(mapEntryKey);
         cacheGuage.set(super.approximateNumEntries(), cacheType, svc, nodeName, taskId);
         
-        if (persistInIgniteCache) {
+        if (persistInIgniteCache && mapKey != null) {
             CacheEntity<K, V> entity = new CacheEntity<>();
             entity.withMapKey(mapKey).withKey(mapEntryKey).withMutationId(mutationId)
                     .withOperation(Operation.DEL_FROM_MAP);
             entity.setLastUpdatedTime(LocalDateTime.now());
             bypass.processEvents(entity);
+        } else {
+            LOGGER.warn("mapKey is null. Cannot perform Redis deleteFromMap operation.");
         }
     }
 

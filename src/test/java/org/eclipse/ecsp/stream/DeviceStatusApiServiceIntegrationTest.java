@@ -68,7 +68,7 @@ public class DeviceStatusApiServiceIntegrationTest extends KafkaStreamsApplicati
         deviceStatusMap.put(deviceId1, DeviceConnStatusV1_0.ConnectionStatus.ACTIVE);
         mapping = new VehicleIdDeviceIdStatus(Version.V1_0, deviceStatusMap);
         deviceStatusServiceImpl.update(key, deviceId1,
-                String.valueOf(DeviceConnStatusV1_0.ConnectionStatus.ACTIVE));
+                String.valueOf(DeviceConnStatusV1_0.ConnectionStatus.ACTIVE), Optional.empty());
     }
 
     /**
@@ -112,10 +112,10 @@ public class DeviceStatusApiServiceIntegrationTest extends KafkaStreamsApplicati
         putRequest.withNamespaceEnabled(false);
         cache.putMapOfEntities(putRequest);
         VehicleIdDeviceIdStatus status =
-                deviceStatusServiceImpl.forceGet(Optional.empty(), header.getVehicleId());
+                deviceStatusServiceImpl.forceGet(header.getVehicleId(), Optional.empty());
         Assert.assertEquals("ACTIVE", status.getDeviceIds().get(deviceId2).getConnectionStatus());
         deviceStatusServiceImpl.update(key2, deviceId2,
-                status.getDeviceIds().get(deviceId2).getConnectionStatus());
+                status.getDeviceIds().get(deviceId2).getConnectionStatus(), Optional.empty());
         Assert.assertNotNull(deviceStatusServiceImpl.get(key2, Optional.empty()));
         Assert.assertEquals("ACTIVE", deviceStatusServiceImpl.get(key2, Optional.empty())
                 .getDeviceIds().get(deviceId2).getConnectionStatus());

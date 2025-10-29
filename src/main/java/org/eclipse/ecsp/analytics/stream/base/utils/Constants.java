@@ -372,4 +372,7 @@ public class Constants {
     
     /** The Constant DEFAULT_PLATFORMID. */
     public static final String DEFAULT_PLATFORMID = "default";
+
+    /** The Constant EMPTY_STRING. */
+    public static final String EMPTY_STRING = "";
 }

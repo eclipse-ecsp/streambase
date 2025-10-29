@@ -247,7 +247,7 @@ public class DeviceConnectionStatusHandlerUnitTest {
         Mockito.verify(statusRetriever, Mockito.times(1)).getConnectionStatusData(requestId,
                 vehicleId, deviceId1, Optional.empty());
         Mockito.verify(deviceStatusApiServiceImpl, Mockito.times(1)).update(vehicleId, deviceId1,
-                ConnectionStatus.ACTIVE.toString());
+                ConnectionStatus.ACTIVE.toString(), Optional.empty());
         Mockito.verify(nextHandler, Mockito.times(1)).handle(testKey, msg);
 
         // prepare one more event with another deviceId
@@ -283,7 +283,7 @@ public class DeviceConnectionStatusHandlerUnitTest {
                 vehicleId, deviceId2, Optional.empty());
         // verify for Device786 existing mapping got updated.
         Mockito.verify(deviceStatusApiServiceImpl, Mockito.times(1)).update(vehicleId, deviceId2,
-                ConnectionStatus.INACTIVE.toString());
+                ConnectionStatus.INACTIVE.toString(), Optional.empty());
     }
 
     /**
@@ -347,7 +347,7 @@ public class DeviceConnectionStatusHandlerUnitTest {
 
         Mockito.when(deviceStatusApiServiceImpl.get(Mockito.anyString(), Mockito.any()))
                 .thenReturn(null);
-        Mockito.when(deviceStatusApiServiceImpl.forceGet(Mockito.any(), Mockito.any(String.class)))
+        Mockito.when(deviceStatusApiServiceImpl.forceGet(Mockito.any(String.class), Mockito.any()))
                 .thenReturn(null);
         ConcurrentHashMap<String, ConnectionStatus> deviceStatus = new ConcurrentHashMap<>();
         deviceStatus.put(deviceId, ConnectionStatus.ACTIVE);
@@ -360,7 +360,7 @@ public class DeviceConnectionStatusHandlerUnitTest {
         Mockito.verify(statusRetriever, Mockito.times(1)).getConnectionStatusData(requestId,
                 vehicleId, deviceId, Optional.empty());
         Mockito.verify(deviceStatusApiServiceImpl, Mockito.times(1)).update(vehicleId, deviceId,
-                ConnectionStatus.ACTIVE.toString());
+                ConnectionStatus.ACTIVE.toString(), Optional.empty());
     }
 
     /**
@@ -690,7 +690,7 @@ public class DeviceConnectionStatusHandlerUnitTest {
         VehicleIdDeviceIdStatus vehicleIdDeviceIdStatus =
                 new VehicleIdDeviceIdStatus(Version.V1_0, mapping);
         List<DMOfflineBufferEntry> bufferedEntries = new ArrayList<DMOfflineBufferEntry>();
-        Mockito.when(deviceStatusApiServiceImpl.forceGet(Mockito.any(), Mockito.anyString()))
+        Mockito.when(deviceStatusApiServiceImpl.forceGet(Mockito.anyString(), Mockito.any()))
                 .thenReturn(vehicleIdDeviceIdStatus);
         Mockito.when(offlineBufferDAO.getOfflineBufferEntriesSortedByPriority(vehicleId, true,
                 Optional.empty(), Optional.empty())).thenReturn(bufferedEntries);
@@ -698,7 +698,7 @@ public class DeviceConnectionStatusHandlerUnitTest {
                 false, true);
 
         Mockito.verify(deviceStatusApiServiceImpl, Mockito.times(1)).update(vehicleId, deviceId,
-                DMAConstants.ACTIVE);
+                DMAConstants.ACTIVE, Optional.empty());
         Mockito.verify(offlineBufferDAO, Mockito.times(1)).getOfflineBufferEntriesSortedByPriority(
                 vehicleId, true, Optional.empty(), Optional.empty());
         Mockito.verify(offlineBufferDAO, Mockito.times(0)).getOfflineBufferEntriesSortedByPriority(
@@ -723,7 +723,7 @@ public class DeviceConnectionStatusHandlerUnitTest {
                 null, false, true);
 
         Mockito.verify(deviceStatusApiServiceImpl, Mockito.times(1)).update(vehicleId, deviceId,
-                DMAConstants.INACTIVE);
+                DMAConstants.INACTIVE, Optional.empty());
         Mockito.verify(deviceStatusServiceImpl, Mockito.times(0)).get(vehicleId, null);
         Mockito.verify(deviceStatusServiceImpl, Mockito.times(0)).delete(vehicleId, deviceId, null,
                 null);
@@ -975,14 +975,14 @@ public class DeviceConnectionStatusHandlerUnitTest {
                 .thenReturn("Vehicle12345");
         Mockito.when(deviceStatusApiServiceImpl.get(Mockito.anyString(), Mockito.any()))
                 .thenReturn(null);
-        Mockito.when(deviceStatusApiServiceImpl.forceGet(Mockito.any(), Mockito.any(String.class)))
+        Mockito.when(deviceStatusApiServiceImpl.forceGet(Mockito.any(String.class), Mockito.any()))
                 .thenReturn(mapping);
         deviceConnectionStatusHandler.handle(testKey, msg);
 
         Mockito.verify(statusRetriever, Mockito.times(0)).getConnectionStatusData(requestId,
                 vehicleId, deviceId, Optional.of("subService"));
         Mockito.verify(deviceStatusApiServiceImpl, Mockito.times(1)).update(vehicleId, deviceId,
-                ConnectionStatus.ACTIVE.toString());
+                ConnectionStatus.ACTIVE.toString(), Optional.of("subService"));
     }
 
     // Refactored the long method `testFilterDMOffLineEntry` into smaller helper methods.

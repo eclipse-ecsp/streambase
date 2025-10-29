@@ -215,7 +215,7 @@ public class DeviceConnStatusServiceTest extends KafkaStreamsApplicationTestBase
         header.withVehicleId(key2).withTargetDeviceId(deviceId1);
 
         ConcurrentHashSet<String> deviceIds =
-                deviceStatusServiceImpl.forceGet(Optional.empty(), header.getVehicleId());
+                deviceStatusServiceImpl.forceGet(header.getVehicleId(), Optional.empty());
         Assert.assertEquals(actualDeviceIds, deviceIds);
     }
 

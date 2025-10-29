@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
 import org.eclipse.ecsp.analytics.stream.base.kafka.internal.MutationId;
 import org.eclipse.ecsp.analytics.stream.base.kafka.internal.OffsetMetadata;
+import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
 import org.eclipse.ecsp.analytics.stream.base.utils.InternalCacheConstants;
 import org.eclipse.ecsp.domain.DeviceConnStatusV1_0.ConnectionStatus;
 import org.eclipse.ecsp.domain.Version;
@@ -69,12 +70,6 @@ public class DeviceStatusApiServiceImpl implements DeviceStatusService<VehicleId
     private String serviceName;
 
     /**
-     * Empty string value for default sub-service.
-     */
-    @Value("${" + PropertyNames.EMPTY_STRING + ":}")
-    private String emptyString;
-
-    /**
      * Map containing sub-service names to their corresponding Redis parent keys.
      */
     private Map<String, String> subServiceToParentKeyMapping = new HashMap<>();
@@ -103,11 +98,13 @@ public class DeviceStatusApiServiceImpl implements DeviceStatusService<VehicleId
      */
     @Override
     public VehicleIdDeviceIdStatus get(String vehicleId, Optional<String> subServiceOpt) {
-        String subService = subServiceOpt.isPresent() ? subServiceOpt.get() : emptyString;
-        logger.debug(
-                "Fetching connection status from the in-memory for vehicleId: {}, with subService: {}",
-                vehicleId, subService);
-        DeviceStatusKey key = new DeviceStatusKey(vehicleId);
+        DeviceStatusKey key = null;
+        if (subServiceOpt.isPresent()) {
+            String keyWithSubService = key + DMAConstants.SEMI_COLON + subServiceOpt.get();
+            key = new DeviceStatusKey(keyWithSubService);
+        } else {
+            key = new DeviceStatusKey(vehicleId);
+        }
         // Get mapping for this vehicleId from in-memory cache.
         VehicleIdDeviceIdStatus mapping = deviceConnStatusDao.get(key);
         if (mapping != null) {
@@ -128,8 +125,14 @@ public class DeviceStatusApiServiceImpl implements DeviceStatusService<VehicleId
      */
 
     @Override
-    public void update(String vehicleId, String targetDeviceId, String connectionStatus) {
-        DeviceStatusKey key = new DeviceStatusKey(vehicleId);
+    public void update(String vehicleId, String targetDeviceId, String connectionStatus, Optional<String> subService) {
+        DeviceStatusKey key;
+        if (subService.isPresent()) {
+            String keyWithSubService = vehicleId + DMAConstants.SEMI_COLON + subService.get();
+            key = new DeviceStatusKey(keyWithSubService);
+        } else {
+            key = new DeviceStatusKey(vehicleId);
+        }
         // Get mapping for this vehicleId from in-memory cache.
         VehicleIdDeviceIdStatus mapping = deviceConnStatusDao.get(key);
         if (mapping != null) {
@@ -155,7 +158,7 @@ public class DeviceStatusApiServiceImpl implements DeviceStatusService<VehicleId
      * @param vehicleId Identifier of the vehicle.
      * @return Connection status data for the vehicle.
      */
-    public VehicleIdDeviceIdStatus forceGet(Optional<String> subServiceOpt, String vehicleId) {
+    public VehicleIdDeviceIdStatus forceGet(String vehicleId, Optional<String> subServiceOpt) {
         String subService =
                 subServiceOpt.isPresent() ? subServiceOpt.get() : String.valueOf(Optional.empty());
         String redisMapKey =
@@ -247,11 +250,15 @@ public class DeviceStatusApiServiceImpl implements DeviceStatusService<VehicleId
         DeviceStatusKey deviceStatusKey = new DeviceStatusKey(vehicleId);
         logger.debug("Attempting to Delete Device Status in cache for key {}", vehicleId);
         if (subServiceToParentKeyMapping.size() > 0) {
-            String[] arr = vehicleId.split(":");
-            String subService = arr[arr.length - 1];
-            deviceConnStatusDao.deleteFromMap(subServiceToParentKeyMapping.get(subService),
-                    deviceStatusKey, mutationId,
-                    InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);
+            if (vehicleId != null) {
+                String[] arr = vehicleId.split(":");
+                String subService = arr[arr.length - 1];
+                deviceConnStatusDao.deleteFromMap(subServiceToParentKeyMapping.get(subService),
+                        deviceStatusKey, mutationId,
+                        InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);
+            } else {
+                logger.error("VehicleId is null. Cannot perform deleteKey operation.");
+            }
         } else {
             deviceConnStatusDao.deleteFromMap(mapParentKey, deviceStatusKey, mutationId,
                     InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);

@@ -122,16 +122,4 @@ public class DeviceStatusUtil {
         return header.getDevMsgTopicSuffix() != null ? header.getDevMsgTopicSuffix().toLowerCase()
                 : null;
     }
-
-    /**
-     * Retrieves the cache map key for a given vehicle ID and optional sub-service.
-     *
-     * @param vehicleId the vehicle ID
-     * @param subService the optional sub-service
-     * @return the cache map key
-     */
-    public String getCacheMapKey(String vehicleId, Optional<String> subService) {
-        return (subService.isPresent() ? vehicleId + DMAConstants.SEMI_COLON + subService
-                : vehicleId);
-    }
 }

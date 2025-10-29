@@ -67,7 +67,7 @@ public class DeviceStatusApiServiceImplTest {
 
     @Test
     public void testUpdateDeviceIdStatusWhenStatusNotPresentInMemory() {
-        deviceStatusAPIInMemoryService.update(key, "d1", ACTIVE);
+        deviceStatusAPIInMemoryService.update(key, "d1", ACTIVE, Optional.empty());
         verify(deviceConnStatusDao, times(1)).putIfAbsent(any(), any(), any(), any());
     }
 
@@ -109,7 +109,7 @@ public class DeviceStatusApiServiceImplTest {
     public void testUpdateDeviceIdStatusWhenStatusIsPresentInMemory() {
         VehicleIdDeviceIdStatus vehicleIdDeviceIdStatus = new VehicleIdDeviceIdStatus();
         when(deviceConnStatusDao.get(any())).thenReturn(vehicleIdDeviceIdStatus);
-        deviceStatusAPIInMemoryService.update(key, "d1", ACTIVE);
+        deviceStatusAPIInMemoryService.update(key, "d1", ACTIVE, Optional.empty());
         verify(deviceConnStatusDao, times(0)).putIfAbsent(any(), any(), any(), any());
     }
 
@@ -126,7 +126,7 @@ public class DeviceStatusApiServiceImplTest {
                 .thenReturn(vehicleIdDeviceIdMapping);
         DeviceMessageHeader header = new DeviceMessageHeader();
         header.withVehicleId("v1");
-        deviceStatusAPIInMemoryService.forceGet(Optional.of("v1"), header.getVehicleId());
+        deviceStatusAPIInMemoryService.forceGet(header.getVehicleId(), Optional.of("v1"));
         verify(deviceConnStatusDao, times(0)).get(any());
     }
 
@@ -146,7 +146,7 @@ public class DeviceStatusApiServiceImplTest {
         when(deviceStatusDao.forceGet(Mockito.anyString(), any()))
                 .thenReturn(vehicleIdDeviceIdMapping);
         Assert.assertEquals(connectionStatus, deviceStatusAPIInMemoryService
-                .forceGet(Optional.empty(), "v1").getDeviceIds().get("v1"));
+                .forceGet("v1", Optional.empty()).getDeviceIds().get("v1"));
     }
 
     @Test
@@ -170,6 +170,6 @@ public class DeviceStatusApiServiceImplTest {
         when(deviceStatusDao.forceGet(Mockito.anyString(), any()))
                 .thenReturn(vehicleIdDeviceIdMapping);
         Assert.assertEquals(connectionStatus, deviceStatusAPIInMemoryService
-                .forceGet(Optional.of("fleet"), "v1").getDeviceIds().get("v1"));
+                .forceGet("v1", Optional.of("fleet")).getDeviceIds().get("v1"));
     }
 }

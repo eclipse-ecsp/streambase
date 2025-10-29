@@ -892,9 +892,6 @@ public class PropertyNames {
      */
     public static final String SUB_SERVICES = "sub.services";
 
-    /** The Constant EMPTY_STRING. */
-    public static final String EMPTY_STRING = "";
-
     /** The Constant KAFKA_HEADERS_ENABLED. */
     public static final String KAFKA_HEADERS_ENABLED = "kafka.headers.enabled";
     

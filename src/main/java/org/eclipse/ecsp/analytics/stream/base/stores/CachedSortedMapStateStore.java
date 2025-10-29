@@ -245,8 +245,12 @@ public class CachedSortedMapStateStore<K extends CacheKeyConverter<K>, V extends
     public void putToMap(String mapKey, K mapEntryKey, V mapEntryValue, 
             Optional<MutationId> mutationId, String cacheType) {
         logger.debug("Invoking put to map of CachedMapStateStore with key {} and value {} "
-            + AND_MUTATION_ID, mapEntryKey, mapEntryValue, mutationId);
-        putToMapCache(mapKey, mapEntryKey, mapEntryValue, mutationId);
+                + AND_MUTATION_ID, mapEntryKey, mapEntryValue, mutationId);
+        if (mapKey != null) {
+            putToMapCache(mapKey, mapEntryKey, mapEntryValue, mutationId);
+        } else {
+            LOGGER.warn("mapKey is null. Cannot perform Redis putToMap operation.");
+        }
         super.put(mapEntryKey, mapEntryValue);
         cacheGuage.set(super.approximateNumEntries(), cacheType, svc, nodeName, taskId);
     }
@@ -268,8 +272,10 @@ public class CachedSortedMapStateStore<K extends CacheKeyConverter<K>, V extends
             mapEntryKey.convertToString(), mapEntryValue);
         V oldValue = super.putIfAbsent(mapEntryKey, mapEntryValue);
         cacheGuage.set(super.approximateNumEntries(), cacheType, svc, nodeName, taskId);
-        if (oldValue == null) {
+        if (mapKey != null && oldValue == null) {
             putToMapCache(mapKey, mapEntryKey, mapEntryValue, mutationId);
+        } else {
+            LOGGER.warn("mapKey is null. Cannot perform Redis putToMapIfAbsent operation.");
         }
         return oldValue;
     }
@@ -283,12 +289,17 @@ public class CachedSortedMapStateStore<K extends CacheKeyConverter<K>, V extends
      * @param cacheType the cache type
      */
     @Override
-    public void deleteFromMap(String mapKey, K mapEntryKey, Optional<MutationId> mutationId, String cacheType) {
+    public void deleteFromMap(String mapKey, K mapEntryKey, Optional<MutationId> mutationId,
+            String cacheType) {
         logger.debug("Invoking delete from map of CachedMapStateStore with key {} and "
-            + "mutationId {}", mapEntryKey, mutationId);
+                + "mutationId {}", mapEntryKey, mutationId);
         super.delete(mapEntryKey);
         cacheGuage.set(super.approximateNumEntries(), cacheType, svc, nodeName, taskId);
-        deleteFromMapCache(mapKey, mapEntryKey, mutationId);
+        if (mapKey != null) {
+            deleteFromMapCache(mapKey, mapEntryKey, mutationId);
+        } else {
+            LOGGER.warn("mapKey is null. Cannot perform Redis deleteFromMap operation.");
+        }
     }
 
     /**

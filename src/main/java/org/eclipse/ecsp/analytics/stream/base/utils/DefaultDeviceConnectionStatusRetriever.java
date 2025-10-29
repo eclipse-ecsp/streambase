@@ -48,7 +48,6 @@ import org.eclipse.ecsp.domain.DeviceConnStatusV1_0.ConnectionStatus;
 import org.eclipse.ecsp.domain.Version;
 import org.eclipse.ecsp.entities.dma.VehicleIdDeviceIdStatus;
 import org.eclipse.ecsp.stream.dma.dao.DeviceStatusService;
-import org.eclipse.ecsp.stream.dma.dao.DeviceStatusUtil;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,8 +83,6 @@ import static org.eclipse.ecsp.analytics.stream.base.PropertyNames.DMA_CONNECTIO
 @Scope("prototype")
 public class DefaultDeviceConnectionStatusRetriever implements ConnectionStatusRetriever {
 
-    private static final int MILLISECONDS_IN_SECOND = 1000;
-
     /**
      * HTTP client used to invoke the connection status API.
      */
@@ -104,12 +101,6 @@ public class DefaultDeviceConnectionStatusRetriever implements ConnectionStatusR
     @Qualifier("deviceStatusApiServiceImpl")
     @Autowired
     private DeviceStatusService<VehicleIdDeviceIdStatus> deviceServiceInMemory;
-
-    /**
-     * Utility class for device status operations.
-     */
-    @Autowired
-    private DeviceStatusUtil deviceStatusUtil;
 
     /**
      * URL of the connection status API.

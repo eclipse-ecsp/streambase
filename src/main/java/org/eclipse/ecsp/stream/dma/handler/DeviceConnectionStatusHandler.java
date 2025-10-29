@@ -389,50 +389,45 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
         String subServiceFromHeader = deviceStatusUtil.getSubServiceNameFromHeader(header);
         VehicleIdDeviceIdStatus mapping = null;
         String targetDeviceId = header.getTargetDeviceId();
-        String mapKey = null;
-        String subService = null;
+        boolean isSubServiceEnabled = StringUtils.isNotEmpty(subServiceFromHeader)
+                && processPerSubService && subServicesList.contains(subServiceFromHeader);
 
-        if (processPerSubService && StringUtils.isNotEmpty(subServiceFromHeader)
-                && subServicesList.contains(subServiceFromHeader)) {
-            mapKey = deviceStatusUtil.getCacheMapKey(vehicleId, Optional.of(subServiceFromHeader));
-            subService = subServiceFromHeader;
-        } else {
-            mapKey = vehicleId;
-        }
-        mapping = deviceStatusApiServiceImpl.get(mapKey, Optional.ofNullable(subService));
+        mapping = deviceStatusApiServiceImpl.get(vehicleId,
+                isSubServiceEnabled ? Optional.ofNullable(subServiceFromHeader) 
+                                    : Optional.empty());
         if (mapping != null && mapping.getDeviceIds() != null
                 && mapping.getDeviceIds().containsKey(targetDeviceId)) {
-            logger.debug(
-                    "Received connection status of vehicleId {} and deviceId {} from in-memory as {}",
+            logger.info("Received connection status of vehicleId {} and deviceId {} from in-memory as {}",
                     vehicleId, targetDeviceId, mapping.getDeviceIds().get(targetDeviceId));
             return mapping.getDeviceIds().get(targetDeviceId);
         }
         // check connection status from redis and update in memory
-        logger.debug(
-                "Fetching connection status from the redis for vehicleId {} and deviceId {} with subService as {}",
-                vehicleId, targetDeviceId, subService);
-        mapping = deviceStatusApiServiceImpl.forceGet(Optional.ofNullable(subService), vehicleId);
+        logger.debug("Fetching connection status from the redis for vehicleId {} and deviceId {} with subService as {}",
+                vehicleId, targetDeviceId, subServiceFromHeader);
+        mapping = deviceStatusApiServiceImpl.forceGet(vehicleId, Optional.ofNullable(subServiceFromHeader));
         if (mapping != null && mapping.getDeviceIds() != null
                 && mapping.getDeviceIds().containsKey(targetDeviceId)) {
-            logger.debug(
-                    "Updating inMemory with mapping {} found from redis for vehicleId {} and deviceId {} ",
-                    mapping, mapKey, targetDeviceId);
-            deviceStatusApiServiceImpl.update(mapKey, targetDeviceId,
-                    mapping.getDeviceIds().get(targetDeviceId).toString());
+            deviceStatusApiServiceImpl.update(vehicleId, targetDeviceId,
+                    mapping.getDeviceIds().get(targetDeviceId).toString(),
+                            isSubServiceEnabled ? Optional.of(subServiceFromHeader) : Optional.empty());
             status = mapping.getDeviceIds().get(targetDeviceId);
+            logger.info("Updated in-memory cache with mapping {} found from redis for vehicleId {} and deviceId {} ",
+                    mapping, vehicleId, targetDeviceId);
             return status;
         } else {
             mapping = fetchConnStatusFromApi(header, vehicleId, targetDeviceId,
-                    Optional.ofNullable(subService));
+                    Optional.ofNullable(subServiceFromHeader));
+            logger.info("Fetched connection status from API for vehicleId {} and deviceId {} as {}",
+                    vehicleId, targetDeviceId, mapping);
             if (mapping != null && mapping.getDeviceIds() != null
                     && mapping.getDeviceIds().containsKey(targetDeviceId)) {
-                logger.debug(
-                        "Updating inMemory with mapping {} found from API for vehicleId {} and deviceId {} ",
-                        mapping, mapKey, targetDeviceId);
-                deviceStatusApiServiceImpl.update(mapKey, targetDeviceId,
-                        mapping.getDeviceIds().get(targetDeviceId).toString());
+                deviceStatusApiServiceImpl.update(vehicleId, targetDeviceId,
+                        mapping.getDeviceIds().get(targetDeviceId).toString(),
+                                isSubServiceEnabled ? Optional.of(subServiceFromHeader) : Optional.empty());
                 // return status to update the local variable status' value
                 status = mapping.getDeviceIds().get(targetDeviceId);
+                logger.debug("Updated in-memory cache with mapping {} found from API for vehicleId {} and deviceId {} ",
+                        mapping, vehicleId, targetDeviceId);
                 return status;
             }
         }
@@ -718,10 +713,8 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
          * Provide comments on below if, else condition
          */
         if (validEcuType) {
-            String cacheMapKey = validSubService
-                    ? deviceStatusUtil.getCacheMapKey(vehicleId, Optional.ofNullable(subService))
-                    : vehicleId;
-            deviceStatusApiServiceImpl.update(cacheMapKey, deviceId, DMAConstants.ACTIVE);
+            deviceStatusApiServiceImpl.update(vehicleId, deviceId, DMAConstants.ACTIVE, 
+                    validSubService ? Optional.of(subService) : Optional.empty());
             logger.info("Connection status for vehicleId {} and deviceId {} updated as "
                     + " ACTIVE in DeviceStatusAPIInMemoryService", vehicleId, deviceId);
         } else {
@@ -852,9 +845,8 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
          * Log separately
          */
         if (validEcuType) {
-            deviceStatusApiServiceImpl.update(validSubService
-                    ? deviceStatusUtil.getCacheMapKey(vehicleId, Optional.ofNullable(subService))
-                    : vehicleId, deviceId, DMAConstants.INACTIVE);
+            deviceStatusApiServiceImpl.update(vehicleId, deviceId, DMAConstants.INACTIVE,
+                    validSubService ? Optional.of(subService) : Optional.empty());
         } else {
             ConcurrentHashSet<String> deviceIdsInCache =
                     (validSubService ? deviceService.get(vehicleId, Optional.of(subService))
