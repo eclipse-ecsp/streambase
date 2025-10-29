@@ -90,7 +90,6 @@ public class DeviceMessageUtils {
         failureEvent.setTimezone(data.getFailedIgniteEvent().getTimezone());
         failureEvent.setMessageId(msgIdGenerator.generateUniqueMsgId(data.getFailedIgniteEvent().getVehicleId()));
         failureEvent.setVersion(Version.V1_0);
-        failureEvent.setVehicleId(data.getFailedIgniteEvent().getVehicleId());
         failureEvent.setEventData(data);
         spc.forwardDirectly(key, failureEvent, feedBackTopic);
         String payloadMsgId = data.getFailedIgniteEvent().getMessageId();
