@@ -41,8 +41,6 @@ package org.eclipse.ecsp.stream.dma.dao;
 
 import org.eclipse.ecsp.analytics.stream.base.kafka.internal.MutationId;
 import org.eclipse.ecsp.analytics.stream.base.kafka.internal.OffsetMetadata;
-import org.eclipse.ecsp.utils.ConcurrentHashSet;
-import java.lang.StackWalker.Option;
 import java.util.Optional;
 
 /**

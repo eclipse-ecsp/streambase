@@ -100,7 +100,7 @@ public class DeviceStatusApiServiceImpl implements DeviceStatusService<VehicleId
     public VehicleIdDeviceIdStatus get(String vehicleId, Optional<String> subServiceOpt) {
         DeviceStatusKey key = null;
         if (subServiceOpt.isPresent()) {
-            String keyWithSubService = key + DMAConstants.SEMI_COLON + subServiceOpt.get();
+            String keyWithSubService = vehicleId + DMAConstants.SEMI_COLON + subServiceOpt.get();
             key = new DeviceStatusKey(keyWithSubService);
         } else {
             key = new DeviceStatusKey(vehicleId);
@@ -250,15 +250,12 @@ public class DeviceStatusApiServiceImpl implements DeviceStatusService<VehicleId
         DeviceStatusKey deviceStatusKey = new DeviceStatusKey(vehicleId);
         logger.debug("Attempting to Delete Device Status in cache for key {}", vehicleId);
         if (subServiceToParentKeyMapping.size() > 0) {
-            if (vehicleId != null) {
-                String[] arr = vehicleId.split(":");
-                String subService = arr[arr.length - 1];
-                deviceConnStatusDao.deleteFromMap(subServiceToParentKeyMapping.get(subService),
-                        deviceStatusKey, mutationId,
-                        InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);
-            } else {
-                logger.error("VehicleId is null. Cannot perform deleteKey operation.");
-            }
+
+            String[] arr = vehicleId.split(":");
+            String subService = arr[arr.length - 1];
+            deviceConnStatusDao.deleteFromMap(subServiceToParentKeyMapping.get(subService),
+                    deviceStatusKey, mutationId,
+                    InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);
         } else {
             deviceConnStatusDao.deleteFromMap(mapParentKey, deviceStatusKey, mutationId,
                     InternalCacheConstants.CACHE_TYPE_DEVICE_CONN_STATUS_CACHE);

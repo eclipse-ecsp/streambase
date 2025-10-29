@@ -389,12 +389,13 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
         String subServiceFromHeader = deviceStatusUtil.getSubServiceNameFromHeader(header);
         VehicleIdDeviceIdStatus mapping = null;
         String targetDeviceId = header.getTargetDeviceId();
-        boolean isSubServiceEnabled = StringUtils.isNotEmpty(subServiceFromHeader)
-                && processPerSubService && subServicesList.contains(subServiceFromHeader);
+        String subService = null;
+        if (processPerSubService && StringUtils.isNotEmpty(subServiceFromHeader)
+                && subServicesList.contains(subServiceFromHeader)) {
+            subService = subServiceFromHeader;
+        }
 
-        mapping = deviceStatusApiServiceImpl.get(vehicleId,
-                isSubServiceEnabled ? Optional.ofNullable(subServiceFromHeader) 
-                                    : Optional.empty());
+        mapping = deviceStatusApiServiceImpl.get(vehicleId, Optional.ofNullable(subService));
         if (mapping != null && mapping.getDeviceIds() != null
                 && mapping.getDeviceIds().containsKey(targetDeviceId)) {
             logger.info("Received connection status of vehicleId {} and deviceId {} from in-memory as {}",
@@ -408,22 +409,20 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
         if (mapping != null && mapping.getDeviceIds() != null
                 && mapping.getDeviceIds().containsKey(targetDeviceId)) {
             deviceStatusApiServiceImpl.update(vehicleId, targetDeviceId,
-                    mapping.getDeviceIds().get(targetDeviceId).toString(),
-                            isSubServiceEnabled ? Optional.of(subServiceFromHeader) : Optional.empty());
+                    mapping.getDeviceIds().get(targetDeviceId).toString(), Optional.ofNullable(subService));
             status = mapping.getDeviceIds().get(targetDeviceId);
             logger.info("Updated in-memory cache with mapping {} found from redis for vehicleId {} and deviceId {} ",
                     mapping, vehicleId, targetDeviceId);
             return status;
         } else {
             mapping = fetchConnStatusFromApi(header, vehicleId, targetDeviceId,
-                    Optional.ofNullable(subServiceFromHeader));
+                    Optional.ofNullable(subService));
             logger.info("Fetched connection status from API for vehicleId {} and deviceId {} as {}",
                     vehicleId, targetDeviceId, mapping);
             if (mapping != null && mapping.getDeviceIds() != null
                     && mapping.getDeviceIds().containsKey(targetDeviceId)) {
                 deviceStatusApiServiceImpl.update(vehicleId, targetDeviceId,
-                        mapping.getDeviceIds().get(targetDeviceId).toString(),
-                                isSubServiceEnabled ? Optional.of(subServiceFromHeader) : Optional.empty());
+                        mapping.getDeviceIds().get(targetDeviceId).toString(), Optional.ofNullable(subService));
                 // return status to update the local variable status' value
                 status = mapping.getDeviceIds().get(targetDeviceId);
                 logger.debug("Updated in-memory cache with mapping {} found from API for vehicleId {} and deviceId {} ",
