@@ -980,9 +980,9 @@ public class DeviceConnectionStatusHandlerUnitTest {
         deviceConnectionStatusHandler.handle(testKey, msg);
 
         Mockito.verify(statusRetriever, Mockito.times(0)).getConnectionStatusData(requestId,
-                vehicleId, deviceId, Optional.of("subService"));
+                vehicleId, deviceId, Optional.empty());
         Mockito.verify(deviceStatusApiServiceImpl, Mockito.times(1)).update(vehicleId, deviceId,
-                ConnectionStatus.ACTIVE.toString(), Optional.of("subService"));
+                ConnectionStatus.ACTIVE.toString(), Optional.empty());
     }
 
     // Refactored the long method `testFilterDMOffLineEntry` into smaller helper methods.
