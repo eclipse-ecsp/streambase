@@ -41,6 +41,7 @@ package org.eclipse.ecsp.stream.dma.dao;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
+import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
 import org.eclipse.ecsp.entities.dma.DeviceMessage;
 import org.eclipse.ecsp.entities.dma.DeviceMessageHeader;
 import org.eclipse.ecsp.key.IgniteKey;
@@ -112,7 +113,8 @@ public class DMOfflineBufferEntryDAOMongoImpl extends IgniteBaseDAOMongoImpl<Str
             DeviceMessage entity, String subService) {
         logger.debug("Add buffer entry for vehicle id {} and service {}", vehicleId, serviceNameIdentifier);
         DeviceMessageHeader header = entity.getDeviceMessageHeader();
-        LocalDateTime eventDate = LocalDateTime.ofEpochSecond(header.getTimestamp(), 0, ZoneOffset.UTC);
+        LocalDateTime eventDate = LocalDateTime.ofEpochSecond(
+            header.getTimestamp() / Constants.INT_1000, 0, ZoneOffset.UTC);
         DMOfflineBufferEntry offlineEntry = new DMOfflineBufferEntry();
         offlineEntry.setIgniteKey(igniteKey);
         offlineEntry.setVehicleId(vehicleId);
