@@ -404,8 +404,8 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
         }
         // check connection status from redis and update in memory
         logger.debug("Fetching connection status from the redis for vehicleId {} and deviceId {} with subService as {}",
-                vehicleId, targetDeviceId, subServiceFromHeader);
-        mapping = deviceStatusApiServiceImpl.forceGet(vehicleId, Optional.ofNullable(subServiceFromHeader));
+                vehicleId, targetDeviceId, subService);
+        mapping = deviceStatusApiServiceImpl.forceGet(vehicleId, Optional.ofNullable(subService));
         if (mapping != null && mapping.getDeviceIds() != null
                 && mapping.getDeviceIds().containsKey(targetDeviceId)) {
             deviceStatusApiServiceImpl.update(vehicleId, targetDeviceId,
