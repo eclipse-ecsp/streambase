@@ -64,10 +64,9 @@ import org.eclipse.ecsp.stream.dma.dao.DMAConstants;
 import org.eclipse.ecsp.stream.dma.dao.DMOfflineBufferEntry;
 import org.eclipse.ecsp.stream.dma.dao.DMOfflineBufferEntryDAOMongoImpl;
 import org.eclipse.ecsp.stream.dma.dao.DeviceMessagingException;
-import org.eclipse.ecsp.stream.dma.dao.DeviceStatusAPIInMemoryService;
-import org.eclipse.ecsp.stream.dma.dao.DeviceStatusDaoCacheBackedInMemoryImpl;
-import org.eclipse.ecsp.stream.dma.dao.DeviceStatusDaoInMemoryCache;
+import org.eclipse.ecsp.stream.dma.dao.DeviceStatusDaoImpl;
 import org.eclipse.ecsp.stream.dma.dao.DeviceStatusService;
+import org.eclipse.ecsp.stream.dma.dao.DeviceStatusUtil;
 import org.eclipse.ecsp.stream.dma.entities.IgniteDeviceStatusRecord;
 import org.eclipse.ecsp.stream.dma.presencemanager.DeviceFetchConnectionStatusProducer;
 import org.eclipse.ecsp.stream.dma.scheduler.DeviceMessagingEventScheduler;
@@ -77,6 +76,7 @@ import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
 import org.eclipse.ecsp.utils.metrics.IgniteErrorCounter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
@@ -91,7 +91,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 
 /**
  * DeviceConnectionStatusHandler is responsble for maintaining cache of
@@ -108,14 +107,14 @@ import java.util.Optional;
 @Scope("prototype")
 @ConditionalOnProperty(name = PropertyNames.DMA_ENABLED, havingValue = "true")
 public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
-    
+
     /** The ecu types. */
     private static List<String> ecuTypes = null;
-    
+
     /** The ctx. */
     @Autowired
     private ApplicationContext ctx;
-    
+
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(DeviceConnectionStatusHandler.class);
 
@@ -127,35 +126,37 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
 
     /** The task id. */
     private String taskId;
-    
+
     /** The offline buffer DAO. */
     @Autowired
     private DMOfflineBufferEntryDAOMongoImpl offlineBufferDAO;
-    
+
     /** The device status back door kafka consumer. */
     @Autowired
     private DeviceStatusBackDoorKafkaConsumer deviceStatusBackDoorKafkaConsumer;
-    
+
     /** The device service. */
+    @Qualifier("deviceStatusServiceImpl")
     @Autowired
-    private DeviceStatusService deviceService;
-    
+    private DeviceStatusService<ConcurrentHashSet<String>> deviceService;
+
     /** The device service in memory. */
+    @Qualifier("deviceStatusApiServiceImpl")
     @Autowired
-    private DeviceStatusAPIInMemoryService deviceServiceInMemory;
-    
+    private DeviceStatusService<VehicleIdDeviceIdStatus> deviceStatusApiServiceImpl;
+
     /** The device status dao. */
     @Autowired
-    private DeviceStatusDaoCacheBackedInMemoryImpl deviceStatusDao;
-    
+    private DeviceStatusDaoImpl deviceStatusDao;
+
     /** The device status API dao. */
     @Autowired
-    private DeviceStatusDaoInMemoryCache deviceStatusAPIDao;
-    
+    private DeviceStatusUtil deviceStatusUtil;
+
     /** The service name. */
     @Value("${" + PropertyNames.SERVICE_NAME + ":}")
     private String serviceName;
-    
+
     /** The scheduler enabled. */
     @Value("${" + PropertyNames.SCHEDULER_ENABLED + ":true}")
     private String schedulerEnabled;
@@ -163,27 +164,27 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
     /** The ttl expiry notification enabled. */
     @Value("${" + PropertyNames.DMA_TTL_EXPIRY_NOTIFICATION_ENABLED + ":true}")
     private String ttlExpiryNotificationEnabled;
-    
+
     /** The offline buffer per device. */
     @Value("${" + PropertyNames.OFFLINE_BUFFER_PER_DEVICE + ":false}")
     private boolean offlineBufferPerDevice;
-    
+
     /** The device shoulder tap service. */
     @Autowired
     private DeviceShoulderTapService deviceShoulderTapService;
-    
+
     /** The device message utils. */
     @Autowired
     private DeviceMessageUtils deviceMessageUtils;
-    
+
     /** The error counter. */
     @Autowired
     private IgniteErrorCounter errorCounter;
-    
+
     /** The event scheduler. */
     @Autowired
     private DeviceMessagingEventScheduler eventScheduler;
-    
+
     /** The filter DM offline entry impl class. */
     @Value("${" + PropertyNames.FILTER_DM_OFFLINE_BUFFER_ENTRIES_IMPL
             + ": org.eclipse.ecsp.stream.dma.handler.NoFilterDMOfflineBufferEntryImpl}")
@@ -192,7 +193,7 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
     /** The fetch conn status producer. */
     @Autowired
     private DeviceFetchConnectionStatusProducer fetchConnStatusProducer;
-    
+
     /** The platform utils. */
     @Autowired
     private PlatformUtils platformUtils;
@@ -207,7 +208,7 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
 
     /** The filtered buffer entry. */
     FilterDMOfflineBufferEntry filteredBufferEntry;
-    
+
     /** The connection status retriever. */
     private ConnectionStatusRetriever connectionStatusRetriever;
 
@@ -232,20 +233,22 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
      */
     @Value("${" + PropertyNames.SUB_SERVICES + ":}")
     private String subServices;
-    
+
     /** The conn status retriever impl class. */
-    @Value("${" + PropertyNames.DMA_CONNECTION_STATUS_RETRIEVER_IMPL + ":" 
+    @Value("${" + PropertyNames.DMA_CONNECTION_STATUS_RETRIEVER_IMPL + ":"
             + PropertyNames.DEFAULT_CONNECTION_STATUS_RETRIEVER_IMPL + "}")
     private String connStatusRetrieverImplClass;
-    
+
     /** The skip offline buffer events. */
     private List<String> skipOfflineBufferEvents = new ArrayList<>();
-    
+
     /** The sub services list. */
     private List<String> subServicesList = new ArrayList<>();
 
     /** The process per sub service. */
     private boolean processPerSubService = false;
+
+    private ConnectionStatus status = null;
 
     /**
      * Sets the up ecu types.
@@ -282,7 +285,7 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
     public void setSkipOfflineBufferEvents(List<String> skipOfflineBufferEvents) {
         this.skipOfflineBufferEvents = skipOfflineBufferEvents;
     }
-    
+
     /**
      * Validates whether certain instances have been initialized.
      */
@@ -383,29 +386,58 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
      */
     protected ConnectionStatus getConnectionStatus(DeviceMessageHeader header) {
         String vehicleId = header.getVehicleId();
+        String subServiceFromHeader = deviceStatusUtil.getSubServiceNameFromHeader(header);
+        VehicleIdDeviceIdStatus mapping = null;
         String targetDeviceId = header.getTargetDeviceId();
-        VehicleIdDeviceIdStatus mapping = deviceServiceInMemory.get(vehicleId);
-        ConnectionStatus status = null;
-        if (mapping != null && mapping.getDeviceIds().containsKey(targetDeviceId)) {
-            logger.debug("Received connection status of vehicleId {} and deviceId {} from in-memory as {}", vehicleId,
-                    targetDeviceId, mapping.getDeviceIds().get(targetDeviceId));
+        String subService = null;
+        if (processPerSubService && StringUtils.isNotEmpty(subServiceFromHeader)
+                && subServicesList.contains(subServiceFromHeader)) {
+            subService = subServiceFromHeader;
+        }
+
+        mapping = deviceStatusApiServiceImpl.get(vehicleId, Optional.ofNullable(subService));
+        if (mapping != null && mapping.getDeviceIds() != null
+                && mapping.getDeviceIds().containsKey(targetDeviceId)) {
+            logger.info("Received connection status of vehicleId {} and deviceId {} from in-memory as {}",
+                    vehicleId, targetDeviceId, mapping.getDeviceIds().get(targetDeviceId));
             return mapping.getDeviceIds().get(targetDeviceId);
+        }
+        // check connection status from redis and update in memory
+        logger.debug("Fetching connection status from the redis for vehicleId {} and deviceId {} with subService as {}",
+                vehicleId, targetDeviceId, subService);
+        mapping = deviceStatusApiServiceImpl.forceGet(vehicleId, Optional.ofNullable(subService));
+        if (mapping != null && mapping.getDeviceIds() != null
+                && mapping.getDeviceIds().containsKey(targetDeviceId)) {
+            deviceStatusApiServiceImpl.update(vehicleId, targetDeviceId,
+                    mapping.getDeviceIds().get(targetDeviceId).toString(), Optional.ofNullable(subService));
+            status = mapping.getDeviceIds().get(targetDeviceId);
+            logger.info("Updated in-memory cache with mapping {} found from redis for vehicleId {} and deviceId {} ",
+                    mapping, vehicleId, targetDeviceId);
+            return status;
         } else {
-            // Get the connection status from a third party API and update the
-            // same in in-memory cache.
-            logger.debug("Fetching connection status from the API for vehicleId {} and deviceId {}", 
-                    vehicleId, targetDeviceId);
-            mapping = connectionStatusRetriever.getConnectionStatusData(header.getRequestId(), 
-                 vehicleId, targetDeviceId);
-            if (mapping != null) {
-                // Add a new mapping in in-memory for this vehicleId
-                deviceServiceInMemory.update(vehicleId, targetDeviceId, 
-                        mapping.getDeviceIds().get(targetDeviceId).toString());
-                // update the local variable status' value
+            mapping = fetchConnStatusFromApi(header, vehicleId, targetDeviceId,
+                    Optional.ofNullable(subService));
+            logger.info("Fetched connection status from API for vehicleId {} and deviceId {} as {}",
+                    vehicleId, targetDeviceId, mapping);
+            if (mapping != null && mapping.getDeviceIds() != null
+                    && mapping.getDeviceIds().containsKey(targetDeviceId)) {
+                deviceStatusApiServiceImpl.update(vehicleId, targetDeviceId,
+                        mapping.getDeviceIds().get(targetDeviceId).toString(), Optional.ofNullable(subService));
+                // return status to update the local variable status' value
                 status = mapping.getDeviceIds().get(targetDeviceId);
+                logger.debug("Updated in-memory cache with mapping {} found from API for vehicleId {} and deviceId {} ",
+                        mapping, vehicleId, targetDeviceId);
+                return status;
             }
         }
         return status;
+    }
+
+    private VehicleIdDeviceIdStatus fetchConnStatusFromApi(DeviceMessageHeader header,
+            String vehicleId, String targetDeviceId, Optional<String> subService) {
+        // Get the connection status from a third party API
+        return connectionStatusRetriever.getConnectionStatusData(header.getRequestId(), vehicleId,
+                targetDeviceId, subService);
     }
 
     /**
@@ -481,7 +513,7 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
          * before forwarding the event to DMA, it has to set the sub-service this event is intended for through
          * devMsgTopicSuffix property. Otherwise DMA won't know.
          */
-        String subService = header.getDevMsgTopicSuffix() != null ? header.getDevMsgTopicSuffix().toLowerCase() : null;
+        String subService = deviceStatusUtil.getSubServiceNameFromHeader(header);
         deviceIdsInCache = getDeviceIdsInCache(vehicleId, subService);
         if (CollectionUtils.isEmpty(deviceIdsInCache)) {
             if (StringUtils.isNotEmpty(header.getPlatformId())) {
@@ -496,9 +528,12 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
             if (deviceIdsInCache.size() == 1) {
                 deviceId = deviceIdsInCache.iterator().next();
             } else {
-                logger.error("{} cannot be forwarded to DeviceMessaging as there are multiple vehicleId to "
-                        + "deviceId mappings present.", header);
-                throw new DeviceMessagingException("Multiple forwards not allowed for key :" + vehicleId);
+                logger.error(
+                        "{} cannot be forwarded to DeviceMessaging as there are multiple vehicleId to "
+                                + "deviceId mappings present.",
+                        header);
+                throw new DeviceMessagingException(
+                        "Multiple forwards not allowed for key :" + vehicleId);
             }
         }
         return Optional.ofNullable(deviceId);
@@ -531,14 +566,14 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
         }
         return deviceIdsInCache;
     }
-    
+
     /**
      * DeviceStatusCallBack received an Igniteevent with event data
      * DeviceConnStatusV1 from Kafka Back door Consumer.
      * If Device Connection status changes from INACTIVE to ACTIVE. Messges are
      * retrieved from Offline buffer and processed.
      * The DeviceStatus is updated in cache.
-
+     * 
      * @author avadakkootko
      */
     public class DeviceStatusCallBack implements BackdoorKafkaConsumerCallback {
@@ -576,8 +611,8 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
                             && DeviceConnectionStatusHandler.ecuTypes.contains(ecuType));
 
                     if (StringUtils.isNotEmpty(deviceId) && StringUtils.isNotEmpty(vehicleId)) {
-                        performActionAsPerConnStatus(meta, deviceStatus, deviceId, vehicleId, subService, 
-                                validSubService, validEcuType);
+                        performActionAsPerConnStatus(meta, deviceStatus, deviceId, vehicleId,
+                                subService, validSubService, validEcuType);
                         forwardRecordToConsumer(key, value);
                     } else {
                         logger.error("DeviceId {} or VehicleId {} not set for IgniteEvent {} in device status "
@@ -677,31 +712,32 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
          * Provide comments on below if, else condition
          */
         if (validEcuType) {
-            deviceServiceInMemory.update(vehicleId, deviceId, DMAConstants.ACTIVE);
-            logger.info("Connection status for vehicleId {} and deviceId {} updated as ACTIVE in "
-                    + "DeviceStatusAPIInMemoryService", vehicleId, deviceId);
+            deviceStatusApiServiceImpl.update(vehicleId, deviceId, DMAConstants.ACTIVE, 
+                    validSubService ? Optional.of(subService) : Optional.empty());
+            logger.info("Connection status for vehicleId {} and deviceId {} updated as "
+                    + " ACTIVE in DeviceStatusAPIInMemoryService", vehicleId, deviceId);
         } else {
-            ConcurrentHashSet<String> deviceIdsInCache = validSubService 
-                    ? deviceService.get(vehicleId, Optional.of(subService))
-                    : deviceService.get(vehicleId, Optional.empty());
-            createDeviceIdsInCacheDataSet(vehicleId, deviceId, offsetMeta, subService, 
+            ConcurrentHashSet<String> deviceIdsInCache =
+                    (validSubService ? deviceService.get(vehicleId, Optional.of(subService))
+                            : deviceService.get(vehicleId, Optional.empty()));
+            createDeviceIdsInCacheDataSet(vehicleId, deviceId, offsetMeta, subService,
                     validSubService, deviceIdsInCache);
         }
         deviceShoulderTapService.executeOnDeviceActiveStatus(vehicleId, deviceId, serviceName);
-
         try {
             List<DMOfflineBufferEntry> bufferedEntries = null;
             if (offlineBufferPerDevice) {
-                bufferedEntries = offlineBufferDAO.getOfflineBufferEntriesSortedByPriority(vehicleId,
-                        true, Optional.ofNullable(deviceId),
-                        (validSubService) ? Optional.of(subService) : Optional.empty());
+                bufferedEntries = offlineBufferDAO.getOfflineBufferEntriesSortedByPriority(
+                        vehicleId, true, Optional.ofNullable(deviceId),
+                        (validSubService) ? Optional.ofNullable(subService) : Optional.empty());
                 logger.debug("{} OfflineBuffer entries found for vehicleId {}, deviceId {}",
                         bufferedEntries.size(), vehicleId, deviceId);
             } else {
-                bufferedEntries = offlineBufferDAO.getOfflineBufferEntriesSortedByPriority(vehicleId,
-                        true, Optional.empty(), (validSubService) ? Optional.of(subService) : Optional.empty());
-                logger.debug("{} OfflineBuffer entries found for vehicleId {}", bufferedEntries.size(),
-                        vehicleId);
+                bufferedEntries = offlineBufferDAO.getOfflineBufferEntriesSortedByPriority(
+                        vehicleId, true, Optional.empty(),
+                        (validSubService) ? Optional.ofNullable(subService) : Optional.empty());
+                logger.debug("{} OfflineBuffer entries found for vehicleId {}",
+                        bufferedEntries.size(), vehicleId);
             }
             if (!bufferedEntries.isEmpty()) {
                 bufferedEntries = filterBufferedEntries(vehicleId, bufferedEntries);
@@ -758,7 +794,7 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
      * @param deviceId the device id
      * @param entry the entry
      */
-    private void createAbstractIgniteEvent(String vehicleId, String deviceId, 
+    private void createAbstractIgniteEvent(String vehicleId, String deviceId,
             DMOfflineBufferEntry entry) {
         String targetDeviceIdFromHeader = (entry.getEvent().getDeviceMessageHeader() != null)
                 ? entry.getEvent().getDeviceMessageHeader().getTargetDeviceId()
@@ -802,12 +838,18 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
      */
     public void performActionWhenStatusInactive(String vehicleId, String deviceId, OffsetMetadata offsetMeta,
             String subService, boolean validSubService, boolean validEcuType) {
+        /*
+         * Provide comments on below if, else conditions.
+         * 
+         * Log separately
+         */
         if (validEcuType) {
-            deviceServiceInMemory.update(vehicleId, deviceId, DMAConstants.INACTIVE);
+            deviceStatusApiServiceImpl.update(vehicleId, deviceId, DMAConstants.INACTIVE,
+                    validSubService ? Optional.of(subService) : Optional.empty());
         } else {
-            ConcurrentHashSet<String> deviceIdsInCache = validSubService 
-                    ? deviceService.get(vehicleId, Optional.of(subService))
-                    : deviceService.get(vehicleId, Optional.empty());
+            ConcurrentHashSet<String> deviceIdsInCache =
+                    (validSubService ? deviceService.get(vehicleId, Optional.of(subService))
+                            : deviceService.get(vehicleId, Optional.empty()));
             if (deviceIdsInCache != null && deviceIdsInCache.contains(deviceId)) {
                 if (validSubService) {
                     deviceService.delete(vehicleId, deviceId, Optional.ofNullable(offsetMeta), Optional.of(subService));
@@ -859,7 +901,6 @@ public class DeviceConnectionStatusHandler implements DeviceMessageHandler {
         deviceShoulderTapService.setup(taskId);
         setupEcuTypes(ecuTypes);
         deviceStatusDao.setTaskId(taskId);
-        deviceStatusAPIDao.setTaskId(taskId);
     }
 
     /**

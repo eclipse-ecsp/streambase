@@ -1,38 +1,38 @@
 /*
  *
  *
- *   ******************************************************************************
+ * ******************************************************************************
  *
- *    Copyright (c) 2023-24 Harman International
- *
- *
- *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *
- *    you may not use this file except in compliance with the License.
- *
- *    You may obtain a copy of the License at
+ * Copyright (c) 2023-24 Harman International
  *
  *
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
  *
+ * you may not use this file except in compliance with the License.
  *
- *    Unless required by applicable law or agreed to in writing, software
- *
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
- *    See the License for the specific language governing permissions and
- *
- *    limitations under the License.
+ * You may obtain a copy of the License at
  *
  *
  *
- *    SPDX-License-Identifier: Apache-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- *    *******************************************************************************
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ *
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ *
+ * limitations under the License.
+ *
+ *
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * *******************************************************************************
  *
  *
  */
@@ -43,8 +43,10 @@ import org.eclipse.ecsp.analytics.stream.base.Launcher;
 import org.eclipse.ecsp.analytics.stream.base.utils.KafkaStreamsApplicationTestBase;
 import org.eclipse.ecsp.cache.IgniteCache;
 import org.eclipse.ecsp.cache.PutMapOfEntitiesRequest;
+import org.eclipse.ecsp.entities.dma.DeviceMessageHeader;
 import org.eclipse.ecsp.entities.dma.VehicleIdDeviceIdMapping;
-import org.eclipse.ecsp.stream.dma.dao.DeviceConnStatusDAO;
+import org.eclipse.ecsp.stream.dma.dao.DeviceConnStatusDao;
+import org.eclipse.ecsp.stream.dma.dao.DeviceStatusService;
 import org.eclipse.ecsp.stream.dma.dao.DeviceStatusServiceImpl;
 import org.eclipse.ecsp.stream.dma.dao.key.DeviceStatusKey;
 import org.eclipse.ecsp.utils.ConcurrentHashSet;
@@ -55,6 +57,7 @@ import org.junit.Test;
 import org.junit.jupiter.migrationsupport.rules.EnableRuleMigrationSupport;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -63,47 +66,47 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-
-
 /**
  * class DeviceConnStatusServiceTest extends KafkaStreamsApplicationTestBase.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { Launcher.class })
+@ContextConfiguration(classes = {Launcher.class})
 @EnableRuleMigrationSupport
 @TestPropertySource("/dma-handler-test.properties")
 public class DeviceConnStatusServiceTest extends KafkaStreamsApplicationTestBase {
 
     /** The key. */
     String key = "vehicleId12345";
-    
+
     /** The device id 1. */
     String deviceId1 = "deviceId12345";
-    
+
     /** The device id 2. */
     String deviceId2 = "deviceId12346";
-    
+
     /** The device id 3. */
     String deviceId3 = "deviceId12347";
-    
+
     /** The sub service 1. */
     String subService1 = "ecall/test_service/ubi";
-    
+
     /** The sub service 2. */
     String subService2 = "ecall/test_service/ftd";
-    
+
     /** The device status service impl. */
+    @Qualifier("deviceStatusServiceImpl")
     @Autowired
-    private DeviceStatusServiceImpl deviceStatusServiceImpl;
-    
+    private DeviceStatusService<ConcurrentHashSet<String>> deviceStatusServiceImpl;
+
     /** The cache. */
     @Autowired
     private IgniteCache cache;
-    
+
     /** The device status DAO. */
+    @Qualifier("deviceStatusDaoImpl")
     @Autowired
-    private DeviceConnStatusDAO deviceStatusDAO;
-    
+    private DeviceConnStatusDao<VehicleIdDeviceIdMapping> deviceStatusDAO;
+
     /** The value. */
     private ConcurrentHashSet<String> value;
 
@@ -208,8 +211,11 @@ public class DeviceConnStatusServiceTest extends KafkaStreamsApplicationTestBase
 
         ConcurrentHashSet<String> actualDeviceIds = new ConcurrentHashSet<String>();
         actualDeviceIds.add(deviceId1);
-        ConcurrentHashSet<String> deviceIds = deviceStatusServiceImpl
-                .forceGet(key2, Optional.empty());
+        DeviceMessageHeader header = new DeviceMessageHeader();
+        header.withVehicleId(key2).withTargetDeviceId(deviceId1);
+
+        ConcurrentHashSet<String> deviceIds =
+                deviceStatusServiceImpl.forceGet(header.getVehicleId(), Optional.empty());
         Assert.assertEquals(actualDeviceIds, deviceIds);
     }
 
@@ -221,7 +227,8 @@ public class DeviceConnStatusServiceTest extends KafkaStreamsApplicationTestBase
         clear();
         deviceStatusServiceImpl.put(key, null, null, Optional.empty());
         Assert.assertNull(deviceStatusServiceImpl.get(key, Optional.empty()));
-        Assert.assertNull(deviceStatusDAO.get(new DeviceStatusKey(key)).getDeviceIds());
+        VehicleIdDeviceIdMapping v = deviceStatusDAO.get(new DeviceStatusKey(key));
+        Assert.assertNull(v.getDeviceIds());
     }
 
     /**
@@ -232,7 +239,8 @@ public class DeviceConnStatusServiceTest extends KafkaStreamsApplicationTestBase
         clear();
         deviceStatusServiceImpl.put(key, new ConcurrentHashSet<>(), null, Optional.empty());
         Assert.assertNull(deviceStatusServiceImpl.get(key, Optional.empty()));
-        Assert.assertEquals(0, deviceStatusDAO.get(new DeviceStatusKey(key)).getDeviceIds().size());
+        VehicleIdDeviceIdMapping v = deviceStatusDAO.get(new DeviceStatusKey(key));
+        Assert.assertEquals(0, v.getDeviceIds().size());
     }
 
     /**
@@ -242,7 +250,7 @@ public class DeviceConnStatusServiceTest extends KafkaStreamsApplicationTestBase
     public void testGetDeviceStatusWhenMappingIsNotPresentInMemory() {
         clear();
         Assert.assertNull(deviceStatusServiceImpl.get(key, Optional.empty()));
-        Assert.assertNull(deviceStatusDAO.get(new DeviceStatusKey(key)));
+        VehicleIdDeviceIdMapping v = deviceStatusDAO.get(new DeviceStatusKey(key));
+        Assert.assertNull(v);
     }
-
 }

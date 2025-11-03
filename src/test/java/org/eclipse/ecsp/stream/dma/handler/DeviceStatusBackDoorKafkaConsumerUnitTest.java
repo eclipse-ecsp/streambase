@@ -39,8 +39,6 @@
 
 package org.eclipse.ecsp.stream.dma.handler;
 
-import org.eclipse.ecsp.stream.dma.dao.DeviceStatusDaoCacheBackedInMemoryImpl;
-import org.eclipse.ecsp.stream.dma.handler.DeviceStatusBackDoorKafkaConsumer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,8 +48,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-
-
 
 /**
  * Test class for {@link DeviceStatusBackDoorKafkaConsumer}.
@@ -65,10 +61,6 @@ public class DeviceStatusBackDoorKafkaConsumerUnitTest {
     /** The backdoor consumer. */
     @InjectMocks
     private DeviceStatusBackDoorKafkaConsumer backdoorConsumer;
-
-    /** The connection status dao. */
-    @Mock
-    private DeviceStatusDaoCacheBackedInMemoryImpl connectionStatusDao;
 
     /**
      * Sets the up.

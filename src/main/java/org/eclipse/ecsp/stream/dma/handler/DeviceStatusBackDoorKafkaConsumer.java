@@ -48,16 +48,13 @@ import org.eclipse.ecsp.analytics.stream.base.kafka.internal.BackdoorKafkaConsum
 import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
 import org.eclipse.ecsp.analytics.stream.base.utils.ThreadUtils;
 import org.eclipse.ecsp.stream.dma.dao.DMAConstants;
-import org.eclipse.ecsp.stream.dma.dao.DeviceConnStatusDAO;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
-
 
 /**
  * This is a singleton implementation responsible soley for starting back door kafka
@@ -72,29 +69,29 @@ public class DeviceStatusBackDoorKafkaConsumer extends BackdoorKafkaConsumer {
 
     /** The Constant DEVICE_STATUS_BACKDOOR_HEALTH_MONITOR. */
     public static final String DEVICE_STATUS_BACKDOOR_HEALTH_MONITOR = "DEVICE_STATUS_BACKDOOR_HEALTH_MONITOR";
-    
+
     /** The Constant DEVICE_STATUS_BACKDOOR_HEALTH_GUAGE. */
     public static final String DEVICE_STATUS_BACKDOOR_HEALTH_GUAGE = "DEVICE_STATUS_BACKDOOR_HEALTH_GUAGE";
-    
+
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(DeviceStatusBackDoorKafkaConsumer.class);
 
     /** The dma consumer poll. */
     @Value("${" + PropertyNames.DMA_KAFKA_CONSUMER_POLL + ":1000}")
     private long dmaConsumerPoll;
-    
+
     /** The dma auto offset reset. */
     @Value("${" + PropertyNames.DMA_AUTO_OFFSET_RESET_CONFIG + ":latest}")
     private String dmaAutoOffsetReset;
-    
+
     /** The service name. */
     @Value("${" + PropertyNames.SERVICE_NAME + ":}")
     private String serviceName;
-    
+
     /** The health monitor enabled. */
     @Value("${" + PropertyNames.HEALTH_DEVICE_STATUS_BACKDOOR_MONITOR_ENABLED + ":false}")
     private boolean healthMonitorEnabled;
-    
+
     /** The needs restart. */
     @Value("${" + PropertyNames.HEALTH_DEVICE_STATUS_BACKDOOR_MONITOR_RESTART_ON_FAILURE + ":true}")
     private boolean needsRestart;
@@ -104,10 +101,6 @@ public class DeviceStatusBackDoorKafkaConsumer extends BackdoorKafkaConsumer {
      */
     @Value("${" + PropertyNames.DMA_ENABLED + ":true}")
     private boolean isDmaEnabled;
-
-    /** The connection status dao. */
-    @Autowired
-    private DeviceConnStatusDAO connectionStatusDao;
 
     /**
      * Added as part of 153542: Acknowledge for policy data publish .

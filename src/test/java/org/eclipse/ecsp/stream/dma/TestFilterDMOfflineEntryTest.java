@@ -22,6 +22,7 @@ import org.eclipse.ecsp.stream.dma.dao.DMOfflineBufferEntryDAOMongoImpl;
 import org.eclipse.ecsp.stream.dma.dao.DeviceStatusService;
 import org.eclipse.ecsp.stream.dma.handler.DeviceConnectionStatusHandler;
 import org.eclipse.ecsp.stream.dma.handler.DeviceStatusBackDoorKafkaConsumer;
+import org.eclipse.ecsp.utils.ConcurrentHashSet;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.After;
 import org.junit.Before;
@@ -29,6 +30,7 @@ import org.junit.Test;
 import org.junit.jupiter.migrationsupport.rules.EnableRuleMigrationSupport;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -45,149 +47,167 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 /**
- * The Class TestFilterDMOfflineEntryTest.
+ * Test class for filtering DMOffline buffer entries.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { Launcher.class })
+@ContextConfiguration(classes = {Launcher.class})
 @EnableRuleMigrationSupport
 @TestPropertySource("/filter-dma-offline-test.properties")
 public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBase {
-    
+
     /** The service name. */
     @Value("${service.name}")
     private String serviceName;
-    
+
     /** The source topic. */
     @Value("${source.topic.name}")
     private String sourceTopic;
-    
+
     /** The mqtt prefix. */
     @Value("${mqtt.service.topic.name.prefix}")
     private String mqttPrefix;
-    
+
     /** The to device. */
     @Value("${" + PropertyNames.MQTT_TOPIC_TO_DEVICE_INFIX + ":" + Constants.TO_DEVICE + "}")
     private String toDevice;
-    
+
     /** The mqtt topic. */
     @Value("${mqtt.service.topic.name}")
     private String mqttTopic;
-    
+
     /** The device service. */
+    @Qualifier("deviceStatusServiceImpl")
     @Autowired
-    private DeviceStatusService deviceService;
+    private DeviceStatusService<ConcurrentHashSet<String>> deviceService;
 
     /** The offline buffer DAO. */
     @Autowired
     private DMOfflineBufferEntryDAOMongoImpl offlineBufferDAO;
-    
+
     /** The device status back door kafka consumer. */
     @Autowired
-    DeviceStatusBackDoorKafkaConsumer deviceStatusBackDoorKafkaConsumer;
-    
+    private DeviceStatusBackDoorKafkaConsumer deviceStatusBackDoorKafkaConsumer;
+
     /** The device connection status handler. */
     @Autowired
-    DeviceConnectionStatusHandler deviceConnectionStatusHandler;
+    private DeviceConnectionStatusHandler deviceConnectionStatusHandler;
 
     /** The device status topic name. */
     private String deviceStatusTopicName;
 
+    private static final int THREAD_SLEEP_TIME_5000 = 5000;
+    private static final int THREAD_SLEEP_TIME_3000 = 3000;
+    private static final int INT_60000 = 60000;
+
+    private static final String VEHICLE_ID = "Vehicle12345";
+    private static final String SPEED_EVENT =
+            "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":20.0},\"MessageId\": \"1234\","
+                    + "\"CorrelationId\": \"1234\",\"BizTransactionId\": \"Biz1234\",\"VehicleId\": \"Vehicle12345\","
+                    + "\"SourceDeviceId\": \"12345\"}";
+    private static final String SPEED_EVENT_1 =
+            "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":30.0},\"MessageId\": \"1235\","
+                    + "\"CorrelationId\": \"1237\",\"BizTransactionId\": \"Biz1235\",\"VehicleId\": \"Vehicle12345\","
+                    + "\"SourceDeviceId\": \"12345\"}";
+    private static final String SPEED_EVENT_2 =
+            "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":40.0},\"MessageId\": \"1236\","
+                    + "\"CorrelationId\": \"1238\",\"BizTransactionId\": \"Biz1236\",\"VehicleId\": \"Vehicle12345\","
+                    + "\"SourceDeviceId\": \"12345\"}";
+    private static final String SPEED_EVENT_3 =
+            "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":50.0},\"MessageId\": \"1237\","
+                    + "\"CorrelationId\": \"1239\",\"BizTransactionId\": \"Biz1237\",\"VehicleId\": \"Vehicle12345\","
+                    + "\"SourceDeviceId\": \"12345\"}";
+    private static final String SPEED_EVENT_4 =
+            "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":60.0},\"MessageId\": \"1238\","
+                    + "\"CorrelationId\": \"2234\",\"BizTransactionId\": \"Biz1238\",\"VehicleId\": \"Vehicle12345\","
+                    + "\"SourceDeviceId\": \"12345\"}";
+
+    private static final String DEVICE_INACTIVE =
+            "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": {\"connStatus\":\"INACTIVE\","
+                    + "\"serviceName\":\"eCall\"},\"MessageId\": \"1234\",\"VehicleId\": \"Vehicle12345\","
+                    + "\"SourceDeviceId\": \"12345\"}";
+    private static final String DEVICE_ACTIVE =
+            "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": {\"connStatus\":\"ACTIVE\","
+                    + "\"serviceName\":\"eCall\"},\"MessageId\": \"1234\",\"VehicleId\": \"Vehicle12345\","
+                    + "\"SourceDeviceId\": \"12345\"}";
+
     /**
-     * Sets the up.
+     * Sets up the test environment.
      *
-     * @throws Exception the exception
-     * @throws MqttException the mqtt exception
+     * @throws Exception if an error occurs during setup
+     * @throws MqttException if an MQTT error occurs
      */
     @Before
     public void setUp() throws Exception, MqttException {
         super.setup();
         deviceStatusTopicName = DMAConstants.DEVICE_STATUS_TOPIC_PREFIX + serviceName.toLowerCase();
         createTopics(sourceTopic, deviceStatusTopicName);
-        
+
         Properties kafkaConsumerProps = deviceStatusBackDoorKafkaConsumer.getKafkaConsumerProps();
-        kafkaConsumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.bootstrapServers());
-        deviceStatusBackDoorKafkaConsumer.addCallback(deviceConnectionStatusHandler.new DeviceStatusCallBack(), 0);
+        kafkaConsumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                KAFKA_CLUSTER.bootstrapServers());
+        deviceStatusBackDoorKafkaConsumer
+                .addCallback(deviceConnectionStatusHandler.new DeviceStatusCallBack(), 0);
         deviceStatusBackDoorKafkaConsumer.startBackDoorKafkaConsumer();
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
-        
+
         launchApplication();
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
         subscibeToMqttTopic(mqttPrefix + "12345" + toDevice + "/" + mqttTopic);
     }
 
-    /** The vehicle id. */
-    private String vehicleId = "Vehicle12345";
-
     /**
-     * Test filter offline buffer.
+     * Tests filtering of offline buffer entries.
      *
-     * @throws ExecutionException the execution exception
-     * @throws InterruptedException the interrupted exception
-     * @throws TimeoutException the timeout exception
+     * @throws ExecutionException if an execution error occurs
+     * @throws InterruptedException if the thread is interrupted
+     * @throws TimeoutException if a timeout occurs
      */
     @Test
-    public void testFilterOfflineBuffer() throws ExecutionException, InterruptedException, TimeoutException {
+    public void testFilterOfflineBuffer()
+            throws ExecutionException, InterruptedException, TimeoutException {
         Properties producerProps = new Properties();
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
+        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                KAFKA_CLUSTER.bootstrapServers());
 
-        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.bootstrapServers());
-        final String speedEvent = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":20.0},"
-                + "\"MessageId\": \"1234\",\"CorrelationId\": \"1234\",\"BizTransactionId\": \"Biz1234\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
-        final String speedEvent1 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":30.0},"
-                + "\"MessageId\": \"1235\",\"CorrelationId\": \"1237\",\"BizTransactionId\": \"Biz1235\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
-        final String speedEvent2 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":40.0},"
-                + "\"MessageId\": \"1236\",\"CorrelationId\": \"1238\",\"BizTransactionId\": \"Biz1236\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
-        final String speedEvent3 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":50.0},"
-                + "\"MessageId\": \"1237\",\"CorrelationId\": \"1239\",\"BizTransactionId\": \"Biz1237\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
-        final String speedEvent4 = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":60.0},"
-                + "\"MessageId\": \"1238\",\"CorrelationId\": \"2234\",\"BizTransactionId\": \"Biz1238\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
-
-        String deviceInactive = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
-                + "\"Data\": {\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
         sendMessages(deviceStatusTopicName, producerProps,
-                Arrays.asList(vehicleId.getBytes(), deviceInactive.getBytes()));
-        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
-        assertNull(deviceService.get(vehicleId, Optional.empty()));
+                Arrays.asList(VEHICLE_ID.getBytes(), DEVICE_INACTIVE.getBytes()));
+        Thread.sleep(THREAD_SLEEP_TIME_5000);
+        assertNull(deviceService.get(VEHICLE_ID, Optional.empty()));
 
         sendMessages(sourceTopic, producerProps,
-                Arrays.asList(vehicleId.getBytes(), speedEvent.getBytes()));
-        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
+                Arrays.asList(VEHICLE_ID.getBytes(), SPEED_EVENT.getBytes()));
+        Thread.sleep(THREAD_SLEEP_TIME_5000);
         sendMessages(sourceTopic, producerProps,
-                Arrays.asList(vehicleId.getBytes(), speedEvent1.getBytes()));
-        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_3000);
+                Arrays.asList(VEHICLE_ID.getBytes(), SPEED_EVENT_1.getBytes()));
+        Thread.sleep(THREAD_SLEEP_TIME_3000);
         sendMessages(sourceTopic, producerProps,
-                Arrays.asList(vehicleId.getBytes(), speedEvent2.getBytes()));
-        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_3000);
+                Arrays.asList(VEHICLE_ID.getBytes(), SPEED_EVENT_2.getBytes()));
+        Thread.sleep(THREAD_SLEEP_TIME_3000);
         sendMessages(sourceTopic, producerProps,
-                Arrays.asList(vehicleId.getBytes(), speedEvent3.getBytes()));
-        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_3000);
+                Arrays.asList(VEHICLE_ID.getBytes(), SPEED_EVENT_3.getBytes()));
+        Thread.sleep(THREAD_SLEEP_TIME_3000);
         sendMessages(sourceTopic, producerProps,
-                Arrays.asList(vehicleId.getBytes(), speedEvent4.getBytes()));
-        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_3000);
-        List<DMOfflineBufferEntry> bufferEntries = offlineBufferDAO
-              .getOfflineBufferEntriesSortedByPriority(vehicleId, false, Optional.empty(), Optional.empty());
+                Arrays.asList(VEHICLE_ID.getBytes(), SPEED_EVENT_4.getBytes()));
+        Thread.sleep(THREAD_SLEEP_TIME_3000);
+
+        List<DMOfflineBufferEntry> bufferEntries =
+                offlineBufferDAO.getOfflineBufferEntriesSortedByPriority(VEHICLE_ID, false,
+                        Optional.empty(), Optional.empty());
         assertEquals("Expected 5 entry", TestConstants.FIVE, bufferEntries.size());
-        String deviceActive = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\","
-                + "\"Data\": {\"connStatus\":\"ACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\","
-                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
+
         sendMessages(deviceStatusTopicName, producerProps,
-                Arrays.asList(vehicleId.getBytes(), deviceActive.getBytes()));
-        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
+                Arrays.asList(VEHICLE_ID.getBytes(), DEVICE_ACTIVE.getBytes()));
+        Thread.sleep(THREAD_SLEEP_TIME_5000);
 
         String completeMqttTopic = mqttPrefix + "12345" + toDevice + "/" + mqttTopic;
-        List<byte[]> messages = getMessagesFromMqttTopic(completeMqttTopic, 1, TestConstants.INT_60000);
+        List<byte[]> messages = getMessagesFromMqttTopic(completeMqttTopic, 1, INT_60000);
         assertEquals("No of message expected", TestConstants.FOUR, messages.size());
     }
-    
+
     /**
-     * Tear down.
+     * Cleans up the test environment.
      */
     @After
     public void tearDown() {
@@ -198,7 +218,7 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
      * The Class DMOfflineBufferTestStreamProcessor.
      */
     public static class DMOfflineBufferTestStreamProcessor implements IgniteEventStreamProcessor {
-        
+
         /** The spc. */
         private StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc;
 
@@ -210,7 +230,6 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
         @Override
         public void init(StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc) {
             this.spc = spc;
-
         }
 
         /**
@@ -253,7 +272,6 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
         @Override
         public void close() {
             // todo Auto-generated method stub
-
         }
 
         /**
@@ -264,7 +282,6 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
         @Override
         public void configChanged(Properties props) {
             // todo Auto-generated method stub
-
         }
 
         /**
@@ -277,6 +294,5 @@ public class TestFilterDMOfflineEntryTest extends KafkaStreamsApplicationTestBas
             // todo Auto-generated method stub
             return null;
         }
-
     }
 }

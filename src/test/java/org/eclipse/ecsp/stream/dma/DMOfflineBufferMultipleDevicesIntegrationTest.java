@@ -58,12 +58,14 @@ import org.eclipse.ecsp.stream.dma.dao.DMAConstants;
 import org.eclipse.ecsp.stream.dma.dao.DMOfflineBufferEntry;
 import org.eclipse.ecsp.stream.dma.dao.DMOfflineBufferEntryDAOMongoImpl;
 import org.eclipse.ecsp.stream.dma.dao.DeviceStatusService;
+import org.eclipse.ecsp.utils.ConcurrentHashSet;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -79,39 +81,39 @@ import java.util.concurrent.TimeoutException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-
-
 /**
- * class DMOfflineBufferMultipleDevicesIntegrationTest extends KafkaStreamsApplicationTestBase.
+ * class DMOfflineBufferMultipleDevicesIntegrationTest extends
+ * KafkaStreamsApplicationTestBase.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = Launcher.class)
 @TestPropertySource("/dma-offline-multiple-device-test.properties")
 public class DMOfflineBufferMultipleDevicesIntegrationTest extends KafkaStreamsApplicationTestBase {
-    
+
     /** The service name. */
     @Value("${service.name}")
     private String serviceName;
-    
+
     /** The source topic. */
     @Value("${source.topic.name}")
     private String sourceTopic;
-    
+
     /** The mqtt prefix. */
     @Value("${mqtt.service.topic.name.prefix}")
     private String mqttPrefix;
-    
+
     /** The to device. */
     @Value("${" + PropertyNames.MQTT_TOPIC_TO_DEVICE_INFIX + ":" + Constants.TO_DEVICE + "}")
     private String toDevice;
-    
+
     /** The mqtt topic. */
     @Value("${mqtt.service.topic.name}")
     private String mqttTopic;
-    
+
     /** The device service. */
+    @Qualifier("deviceStatusServiceImpl")
     @Autowired
-    private DeviceStatusService deviceService;
+    private DeviceStatusService<ConcurrentHashSet<String>> deviceService;
 
     /** The offline buffer DAO. */
     @Autowired
@@ -123,7 +125,7 @@ public class DMOfflineBufferMultipleDevicesIntegrationTest extends KafkaStreamsA
     /**
      * setUp().
      *
-     * @throws Exception Exception
+     * @throws Exception     Exception
      * @throws MqttException MqttException
      */
     @Before
@@ -147,9 +149,9 @@ public class DMOfflineBufferMultipleDevicesIntegrationTest extends KafkaStreamsA
     /**
      * test().
      *
-     * @throws ExecutionException ExecutionException
+     * @throws ExecutionException   ExecutionException
      * @throws InterruptedException InterruptedException
-     * @throws TimeoutException TimeoutException
+     * @throws TimeoutException     TimeoutException
      */
     // @Test
     public void test() throws ExecutionException, InterruptedException, TimeoutException {
@@ -192,9 +194,9 @@ public class DMOfflineBufferMultipleDevicesIntegrationTest extends KafkaStreamsA
     /**
      * Test when target device id not in payload.
      *
-     * @throws ExecutionException the execution exception
+     * @throws ExecutionException   the execution exception
      * @throws InterruptedException the interrupted exception
-     * @throws TimeoutException the timeout exception
+     * @throws TimeoutException     the timeout exception
      */
     @Test
     public void testWhenTargetDeviceIdNotInPayload() throws ExecutionException, InterruptedException, TimeoutException {
@@ -218,12 +220,12 @@ public class DMOfflineBufferMultipleDevicesIntegrationTest extends KafkaStreamsA
         String deviceId = "12346";
         Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
         List<DMOfflineBufferEntry> bufferEntriesWithDeviceId = offlineBufferDAO
-                .getOfflineBufferEntriesSortedByPriority(vehicleId, false, 
+                .getOfflineBufferEntriesSortedByPriority(vehicleId, false,
                         Optional.ofNullable(deviceId), Optional.empty());
         assertEquals("Expected 0 entry", 0, bufferEntriesWithDeviceId.size());
-        List<DMOfflineBufferEntry> bufferEntriesWithVehicleId =
-                offlineBufferDAO.getOfflineBufferEntriesSortedByPriority(vehicleId,
-                false, Optional.empty(), Optional.empty());
+        List<DMOfflineBufferEntry> bufferEntriesWithVehicleId = offlineBufferDAO
+                .getOfflineBufferEntriesSortedByPriority(vehicleId,
+                        false, Optional.empty(), Optional.empty());
         assertEquals("Expected 1 entry", 1, bufferEntriesWithVehicleId.size());
 
     }
@@ -232,7 +234,7 @@ public class DMOfflineBufferMultipleDevicesIntegrationTest extends KafkaStreamsA
      * DMOfflieBufferTestStreamProcessor implements IgniteEventStreamProcessor.
      */
     public static class DMOfflineBufferTestStreamProcessor implements IgniteEventStreamProcessor {
-        
+
         /** The spc. */
         private StreamProcessingContext<IgniteKey<?>, IgniteEvent> spc;
 
