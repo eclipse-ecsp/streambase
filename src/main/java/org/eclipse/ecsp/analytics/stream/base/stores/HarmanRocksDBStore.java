@@ -624,6 +624,7 @@ public class HarmanRocksDBStore<K, V> implements KeyValueStore<K, V>, BatchWriti
         if (batch instanceof WriteBatch writeBatch) {
             db.write(writeOptions, writeBatch);
         } else {
+            LOG.error("Batch must be an instance of WriteBatch");
             throw new IllegalArgumentException("Batch must be an instance of WriteBatch");
         }
     }
@@ -780,6 +781,7 @@ public class HarmanRocksDBStore<K, V> implements KeyValueStore<K, V>, BatchWriti
                 writeBatch.put(key, value);
             }
         } else {
+            LOG.error("Batch must be an instance of WriteBatch");
             throw new IllegalArgumentException("Batch must be an instance of WriteBatch");
         }
     }

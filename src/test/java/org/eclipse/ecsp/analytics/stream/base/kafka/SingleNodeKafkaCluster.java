@@ -40,10 +40,9 @@
 package org.eclipse.ecsp.analytics.stream.base.kafka;
 
 import de.flapdoodle.embed.process.runtime.Network;
-import kafka.server.KafkaConfig;
-import kafka.server.KafkaConfig$;
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.apache.kafka.test.TestCondition;
+import org.eclipse.ecsp.analytics.stream.base.constants.KafkaConfigConstant;
 import org.eclipse.ecsp.analytics.stream.base.constants.TestConstants;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
@@ -123,7 +122,7 @@ public class SingleNodeKafkaCluster extends ExternalResource {
 
         final Properties effectiveBrokerConfig = effectiveBrokerConfigFrom(brokerConfig, zookeeper);
         LOG.debug("Starting a Kafka instance on port {} ...",
-                effectiveBrokerConfig.getProperty("listeners"));
+                effectiveBrokerConfig.getProperty(KafkaConfigConstant.LISTENERS));
         broker = new EmbeddedKafka(effectiveBrokerConfig);
         LOG.debug("Kafka instance is running at {}, connected to ZooKeeper at {}",
                 broker.brokerList(), broker.zookeeperConnect());
@@ -145,19 +144,19 @@ public class SingleNodeKafkaCluster extends ExternalResource {
             LOG.error("Error fetching kafka port", e);
         }
         effectiveConfig.putAll(brokerConfig);
-        effectiveConfig.put("zookeeper.connect", zookeeper.connectString());
-        effectiveConfig.put("zookeeper.session.timeout.ms",
+        effectiveConfig.put(KafkaConfigConstant.ZOOKEEPER_CONNECT, zookeeper.connectString());
+        effectiveConfig.put(KafkaConfigConstant.ZOOKEEPER_SESSION_TIMEOUT_MS,
                 TestConstants.INT_30 * TestConstants.THOUSAND);
-        effectiveConfig.put("listeners", String.format("PLAINTEXT://127.0.0.1:%s", kafkaBrokerPort));
-        effectiveConfig.put("zookeeper.connection.timeout.ms",
+        effectiveConfig.put(KafkaConfigConstant.LISTENERS, String.format("PLAINTEXT://127.0.0.1:%s", kafkaBrokerPort));
+        effectiveConfig.put(KafkaConfigConstant.ZOOKEEPER_CONNECTION_TIMEOUT_MS,
                 TestConstants.INT_60 * TestConstants.THOUSAND);
-        effectiveConfig.put("delete.topic.enable", true);
-        effectiveConfig.put("log.cleaner.dedupe.buffer.size",
+        effectiveConfig.put(KafkaConfigConstant.DELETE_TOPIC_ENABLE, true);
+        effectiveConfig.put(KafkaConfigConstant.LOG_CLEANER_DEDUPE_BUFFER_SIZE,
                 TestConstants.TWO * TestConstants.LONG_1024 * TestConstants.LONG_1024);
-        effectiveConfig.put("group.min.session.timeout.ms", 0);
-        effectiveConfig.put("offsets.topic.replication.factor", (short) 1);
-        effectiveConfig.put("offsets.topic.num.partitions", 1);
-        effectiveConfig.put("auto.create.topics.enable", true);
+        effectiveConfig.put(KafkaConfigConstant.GROUP_MIN_SESSION_TIMEOUT_MS, 0);
+        effectiveConfig.put(KafkaConfigConstant.OFFSETS_TOPIC_REPLICATION_FACTOR, (short) 1);
+        effectiveConfig.put(KafkaConfigConstant.OFFSETS_TOPIC_NUM_PARTITIONS, 1);
+        effectiveConfig.put(KafkaConfigConstant.AUTO_CREATE_TOPICS_ENABLE, true);
         return effectiveConfig;
     }
 

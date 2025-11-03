@@ -52,10 +52,12 @@ import org.apache.kafka.common.security.auth.SecurityProtocol;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Time;
 import org.apache.kafka.streams.StreamsConfig;
+import org.eclipse.ecsp.analytics.stream.base.constants.KafkaConfigConstant;
 import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.collection.mutable.ArrayBuffer;
 
 import java.io.File;
 import java.io.IOException;
@@ -123,15 +125,15 @@ public class EmbeddedKafka {
      */
     private Properties effectiveConfigFrom(final Properties initialConfig) {
         final Properties effectiveConfigProps = new Properties();
-        effectiveConfigProps.put("broker.id", 0);
-        effectiveConfigProps.put("listeners", "PLAINTEXT://127.0.0.1:9092");
-        effectiveConfigProps.put("num.partitions", 1);
-        effectiveConfigProps.put("auto.create.topics.enable", true);
-        effectiveConfigProps.put("message.max.bytes", Constants.INT_1000000);
-        effectiveConfigProps.put("controlled.shutdown.enable", true);
+        effectiveConfigProps.put(KafkaConfigConstant.BROKER_ID, 0);
+        effectiveConfigProps.put(KafkaConfigConstant.LISTENERS, "PLAINTEXT://127.0.0.1:9092");
+        effectiveConfigProps.put(KafkaConfigConstant.NUM_PARTITIONS, 1);
+        effectiveConfigProps.put(KafkaConfigConstant.AUTO_CREATE_TOPICS_ENABLE, true);
+        effectiveConfigProps.put(KafkaConfigConstant.MESSAGE_MAX_BYTES, Constants.INT_1000000);
+        effectiveConfigProps.put(KafkaConfigConstant.CONTROLLED_SHUTDOWN_ENABLE, true);
 
         effectiveConfigProps.putAll(initialConfig);
-        effectiveConfigProps.setProperty("log.dir", logDir.getAbsolutePath());
+        effectiveConfigProps.setProperty(KafkaConfigConstant.LOG_DIR, logDir.getAbsolutePath());
 
         //effectiveConfig.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, effectiveConfig)
         effectiveConfigProps.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
@@ -149,8 +151,7 @@ public class EmbeddedKafka {
      */
     public String brokerList() {
         // Kafka 3.9.1 returns ArrayBuffer instead of ArraySeq
-        final scala.collection.Seq<EndPoint> listeners = kafka.advertisedListeners();
-        final EndPoint endPoint = listeners.apply(0);
+        final EndPoint endPoint = ((ArrayBuffer<EndPoint>) kafka.advertisedListeners()).head();
         final String hostname = endPoint.host() == null ? "" : endPoint.host();
 
         return String.join(":", hostname, Integer.toString(
