@@ -9,3 +9,8 @@ on:
 jobs:
   eol_dependency_check:
     uses: eclipse-ecsp/.github/.github/workflows/workflow-eol-analysis.yml@main
+
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
