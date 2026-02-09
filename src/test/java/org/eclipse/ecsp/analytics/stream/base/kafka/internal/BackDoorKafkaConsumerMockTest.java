@@ -111,7 +111,7 @@ public class BackDoorKafkaConsumerMockTest {
      */
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         backdoorKafkaConsumer.setConsumer(consumer);
         backdoorKafkaConsumer.setKafkaConsumerTopic(topic);
         backdoorKafkaConsumer.addCallback(new TestCallBack(), 0);

@@ -127,7 +127,7 @@ public class DMARetryRecordDAOCacheBackedInMemoryImplTest {
      */
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         mapKey = RetryRecordKey.getMapKey(serviceName, taskId);
         dao.initialize(taskId);
         igniteKey.setKey("abc");

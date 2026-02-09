@@ -126,7 +126,7 @@ public class DLQReprocessingTest<K, V> {
      */
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         timeZone = Constants.TEN;
         exceptionMessage = "Stream closed (through reference chain ...)";
         deatiledExceptionMessage = "Json mapping exception error";

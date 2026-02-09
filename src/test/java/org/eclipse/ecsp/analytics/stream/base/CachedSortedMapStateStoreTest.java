@@ -110,7 +110,7 @@ public class CachedSortedMapStateStoreTest {
     @Before
     public void setup() {
         key = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_123);
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         igniteEvent = new IgniteEventImpl();
         igniteEvent.setEventId("test");
         store.setTaskId(taskId);

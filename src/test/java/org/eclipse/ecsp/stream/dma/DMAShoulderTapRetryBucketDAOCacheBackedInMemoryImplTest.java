@@ -146,7 +146,7 @@ public class DMAShoulderTapRetryBucketDAOCacheBackedInMemoryImplTest {
         key3 = new ShoulderTapRetryBucketKey(TestConstants.THREAD_SLEEP_TIME_5000);
         key4 = new ShoulderTapRetryBucketKey(TestConstants.THREAD_SLEEP_TIME_1500);
 
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         mapKey = ShoulderTapRetryBucketKey.getMapKey(serviceName, "taskId");
         sortedDao.initialize("taskId");
         vehicleIdsSet1 = new ConcurrentHashSet<String>();

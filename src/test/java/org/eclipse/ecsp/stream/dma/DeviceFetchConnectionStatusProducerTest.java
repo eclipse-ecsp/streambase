@@ -95,7 +95,7 @@ public class DeviceFetchConnectionStatusProducerTest {
      */
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         ReflectionTestUtils.setField(fetchConnectionStatusProducer, "fetchConnectionStatusTopic", 
                 "fetchConnStatusTopic");
     }

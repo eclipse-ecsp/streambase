@@ -88,7 +88,7 @@ public class SequenceBlockServiceImplTest {
     @Before
     public void setup() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         Field blockValueField = seqBlockService.getClass().getDeclaredField("blockValue");
         blockValueField.setAccessible(true);
