@@ -166,7 +166,7 @@
         </checkstyle.suppressions.location>
         <sonar.java.checkstyle.reportPaths>${project.build.directory}/checkstyle-result.xml
         </sonar.java.checkstyle.reportPaths>
-        <java.17.options>
+        <java.25.options>
             --add-opens=java.base/java.io=ALL-UNNAMED
             --add-opens=java.base/java.lang=ALL-UNNAMED
             --add-opens=java.base/java.math=ALL-UNNAMED
@@ -176,7 +176,7 @@
             --add-opens=java.base/java.text=ALL-UNNAMED
             --add-opens=java.sql/java.sql=ALL-UNNAMED
             --add-opens java.base/java.time=ALL-UNNAMED
-        </java.17.options>
+        </java.25.options>
 
         <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
         <license-tool-plugin.version>1.1.0</license-tool-plugin.version>
@@ -192,6 +192,19 @@
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
+
+    <repositories>
+        <repository>
+            <id>org.sonatype.central</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
     
     <dependencyManagement>
         <dependencies>
@@ -970,7 +983,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.version}</version>
                 <configuration>
-                    <argLine>${surefireArgLine} ${java.17.options} -Dnet.bytebuddy.experimental=true</argLine>
+                    <argLine>${surefireArgLine} ${java.25.options} -Dnet.bytebuddy.experimental=true</argLine>
                     <forkMode>pertest</forkMode>
                     <childDelegation>true</childDelegation>
                     <excludedGroups>${excludeTestCaseGroups}</excludedGroups>
