@@ -43,7 +43,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.eclipse.ecsp</groupId>
     <artifactId>streambase</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2-java-25-SNAPSHOT</version>
 
     <name>StreamBase library</name>
     <description>Enabler for event driven processing and device messaging capabilities</description>
@@ -86,7 +86,7 @@
     </organization>
 
     <properties>
-	    <java.version>17</java.version>
+	    <java.version>25</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -98,16 +98,16 @@
         <additionalparam>-Xdoclint:none</additionalparam>
         <maven.surefire.version>2.18.1</maven.surefire.version>
         <maven.dependency.version>2.10</maven.dependency.version>
-        <spring.test.version>6.1.14</spring.test.version>
+        <spring.test.version>7.0.3</spring.test.version>
         <spring-boot-starter>3.3.3</spring-boot-starter>
-        <spring.version>6.1.14</spring.version>
+        <spring.version>7.0.3</spring.version>
         <embedded.mongodb>3.4.3</embedded.mongodb>
         <junit4.version>4.13.2</junit4.version>
-        <nosql.dao.version>1.1.1</nosql.dao.version>
-        <cache.enabler.version>1.0.0</cache.enabler.version>
-        <transformers.version>1.0.0</transformers.version>
-        <utils.version>1.1.1</utils.version>
-        <entities.version>1.1.1</entities.version>
+        <nosql.dao.version>1.2-java-25-SNAPSHOT</nosql.dao.version>
+        <cache.enabler.version>1.2-java-25-SNAPSHOT</cache.enabler.version>
+        <transformers.version>1.2-java-25-SNAPSHOT</transformers.version>
+        <utils.version>1.2-java-25-SNAPSHOT</utils.version>
+        <entities.version>1.2-java-25-SNAPSHOT</entities.version>
         <scala.version>2.13.14</scala.version>
         <curator.version>5.3.0</curator.version>
         <redis.jar.version>2.6.0.5</redis.jar.version>
@@ -122,8 +122,8 @@
 
 	    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
-        <sonar.java.source>${java.version}</sonar.java.source>
-        <sonar.java.target>${java.version}</sonar.java.target>
+        <sonar.java.source>25</sonar.java.source>
+        <sonar.java.target>25</sonar.java.target>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco-ut/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
         <sonar.language>java</sonar.language>
@@ -192,6 +192,27 @@
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
+    
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring 7.x dependency management for Java 25 compatibility -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring.test.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.test.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.test.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     
     <dependencies>	
 		<dependency>
@@ -550,12 +571,6 @@
             <artifactId>spring-test</artifactId>
             <version>${spring.test.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -663,7 +678,17 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.12.4</version>
+            <version>5.21.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.15.11</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>1.15.11</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.paho</groupId>
@@ -945,7 +970,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.version}</version>
                 <configuration>
-                    <argLine>${surefireArgLine} ${java.17.options}</argLine>
+                    <argLine>${surefireArgLine} ${java.17.options} -Dnet.bytebuddy.experimental=true</argLine>
                     <forkMode>pertest</forkMode>
                     <childDelegation>true</childDelegation>
                     <excludedGroups>${excludeTestCaseGroups}</excludedGroups>
@@ -957,7 +982,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.8</version>
+                <version>0.8.14</version>
                 <configuration>
                     <excludes>
                         <exclude>org/eclipse/ecsp/analytics/aws/**/*</exclude>
