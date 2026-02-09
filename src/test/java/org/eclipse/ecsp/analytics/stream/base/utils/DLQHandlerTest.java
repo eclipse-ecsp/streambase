@@ -78,7 +78,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.List;
 import java.util.Properties;
 
-import static org.mockito.MockitoAnnotations.initMocks;
+import org.mockito.MockitoAnnotations;
 
 
 
@@ -134,7 +134,7 @@ public class DLQHandlerTest extends KafkaStreamsApplicationTestBase {
     @Before
     public void setup() throws Exception {
         super.setup();
-        initMocks(this);
+        MockitoAnnotations.openMocks(this);
         createTopics(inTopicName);
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, "tc-consumer");
         consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
