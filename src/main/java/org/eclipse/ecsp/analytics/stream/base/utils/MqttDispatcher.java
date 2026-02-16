@@ -329,6 +329,9 @@ public abstract class MqttDispatcher implements Dispatcher<IgniteKey<?>, DeviceM
         } else {
             setMqttMessagePayload(payLoad);
         }
+        if (header.getQosLevel() != null) {
+            setQosLevel(header.getQosLevel());
+        }
         eventDispatchCounter.compareAndSet(THRESHOLD, 0);
         boolean isRetainedMessage = (null != globalBroadcastRetentionTopicList) 
                 && !globalBroadcastRetentionTopicList.isEmpty() 
@@ -400,6 +403,13 @@ public abstract class MqttDispatcher implements Dispatcher<IgniteKey<?>, DeviceM
      * @param payload the new mqtt message payload
      */
     protected abstract void setMqttMessagePayload(byte[] payload);
+
+    /**
+     * Sets the QoS level for MQTT message.
+     *
+     * @param qosLevel the QoS level (0, 1, or 2)
+     */
+    protected abstract void setQosLevel(Integer qosLevel);
 
     /**
      * Creates the mqtt client.

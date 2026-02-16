@@ -83,6 +83,9 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
     /** The mqtt qos. */
     private MqttQos mqttQos;
     
+    /** The qos level. */
+    private Integer qosLevel;
+    
     /** The mqtt client map. */
     private Map<String, Mqtt3AsyncClient> mqttClientMap;
 
@@ -262,6 +265,7 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
                 + "for platformID : {}", mqttTopicName, isRetainedMessage, platform);
         Optional<MqttConfig> mqttConfigOpt = getMqttConfig(platform);
         MqttQos qos = (mqttConfigOpt.isPresent() ? MqttQos.fromCode(mqttConfigOpt.get().getMqttQosValue()) : mqttQos);
+        qos = (qosLevel != null) ? MqttQos.fromCode(qosLevel) : qos;
         client.publishWith().topic(mqttTopicName)
                 .payload(messagePayLoad)
                 .qos(qos)
@@ -277,6 +281,23 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
     @Override
     protected void setMqttMessagePayload(byte[] payload) {
         messagePayLoad = payload;
+    }
+
+    /**
+     * Sets the QoS level for MQTT message.
+     *
+     * @param qosLevel the QoS level (0, 1, or 2)
+     */
+    @Override
+    protected void setQosLevel(Integer qosLevel) {
+        this.qosLevel = qosLevel;
+        if (null != qosLevel) {
+            mqttQos = MqttQos.fromCode(qosLevel);
+            if (null == mqttQos) {
+                logger.warn("Invalid QoS level: {}. Using default QoS", qosLevel);
+                mqttQos = Mqtt3Publish.DEFAULT_QOS;
+            }
+        }
     }
 
     /**

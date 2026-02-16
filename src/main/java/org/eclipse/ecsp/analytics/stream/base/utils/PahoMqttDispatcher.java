@@ -89,6 +89,9 @@ public class PahoMqttDispatcher extends MqttDispatcher {
     /** The mqtt conn opts. */
     protected Map<String, MqttConnectOptions> mqttConnOpts;
     
+    /** The qos level. */
+    private Integer qosLevel;
+    
     /** The Constant TLS_V1_2. */
     private static final String TLS_V1_2 = "TLSv1.2";
 
@@ -162,11 +165,16 @@ public class PahoMqttDispatcher extends MqttDispatcher {
                     + ". No MQTT client found against platformID : " + platform);
         }
         Optional<MqttConfig> mqttConfigOpt = getMqttConfig(platform);
-        int qos = (mqttConfigOpt.isPresent() ? mqttConfigOpt.get().getMqttQosValue() : mqttQosValue);
+
+        if (qosLevel != null) {
+            mqttMessage.setQos(qosLevel);
+        } else {
+            mqttMessage.setQos(mqttConfigOpt.isPresent() ? mqttConfigOpt.get().getMqttQosValue() : mqttQosValue);
+        }
+
         logger.debug("Publishing event via PAHO client to the mqtt topic : {}, with retained flag as {}, "
                 + "platformId {}, clientID {}", mqttTopicName, isRetainedMessage, platform, client.getClientId());
         mqttMessage.setRetained(isRetainedMessage);
-        mqttMessage.setQos(qos);
         client.publish(mqttTopicName, mqttMessage);
     }
 
@@ -179,6 +187,16 @@ public class PahoMqttDispatcher extends MqttDispatcher {
     protected void setMqttMessagePayload(byte[] payload) {
         mqttMessage = new MqttMessage();
         mqttMessage.setPayload(payload);
+    }
+
+    /**
+     * Sets the QoS level for MQTT message.
+     *
+     * @param qosLevel the QoS level (0, 1, or 2)
+     */
+    @Override
+    protected void setQosLevel(Integer qosLevel) {
+        this.qosLevel = qosLevel;
     }
 
     /**
