@@ -5,20 +5,20 @@ maven/mavencentral/com.bugsnag/bugsnag/3.8.0, MIT, approved, #22566
 maven/mavencentral/com.esotericsoftware/kryo/5.6.0, BSD-3-Clause, approved, clearlydefined
 maven/mavencentral/com.esotericsoftware/minlog/1.3.1, BSD-2-Clause, approved, CQ9247
 maven/mavencentral/com.esotericsoftware/reflectasm/1.11.9, BSD-3-Clause, approved, #6835
-maven/mavencentral/com.fasterxml.jackson.core/jackson-annotations/2.13.5, Apache-2.0, approved, clearlydefined
+maven/mavencentral/com.fasterxml.jackson.core/jackson-annotations/2.16.2, Apache-2.0, approved, #11606
 maven/mavencentral/com.fasterxml.jackson.core/jackson-core/2.15.3, Apache-2.0 AND MIT AND BSD-2-Clause, approved, #15194
-maven/mavencentral/com.fasterxml.jackson.core/jackson-databind/2.13.5, Apache-2.0, approved, #2134
-maven/mavencentral/com.fasterxml.jackson.dataformat/jackson-dataformat-csv/2.13.5, Apache-2.0, approved, clearlydefined
+maven/mavencentral/com.fasterxml.jackson.core/jackson-databind/2.16.2, Apache-2.0, approved, #11605
+maven/mavencentral/com.fasterxml.jackson.dataformat/jackson-dataformat-csv/2.16.2, Apache-2.0, approved, #13635
 maven/mavencentral/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml/2.17.1, Apache-2.0, approved, #13669
-maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/2.13.5, Apache-2.0, approved, clearlydefined
+maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/2.16.2, Apache-2.0, approved, #13626
 maven/mavencentral/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/2.15.3, Apache-2.0, approved, #15189
-maven/mavencentral/com.fasterxml.jackson.module/jackson-module-scala_2.13/2.13.5, Apache-2.0, approved, clearlydefined
+maven/mavencentral/com.fasterxml.jackson.module/jackson-module-scala_2.13/2.16.2, Apache-2.0, approved, clearlydefined
 maven/mavencentral/com.github.ben-manes.caffeine/caffeine/2.9.3, Apache-2.0, approved, clearlydefined
 maven/mavencentral/com.github.docker-java/docker-java-api/3.3.0, Apache-2.0, approved, #10346
 maven/mavencentral/com.github.docker-java/docker-java-transport-zerodep/3.3.0, Apache-2.0 AND (Apache-2.0 AND BSD-3-Clause), approved, #7946
 maven/mavencentral/com.github.docker-java/docker-java-transport/3.3.0, Apache-2.0, approved, #7942
 maven/mavencentral/com.github.kstyrc/embedded-redis/0.6, Apache-2.0, approved, clearlydefined
-maven/mavencentral/com.github.luben/zstd-jni/1.5.5-1, BSD-2-Clause, approved, #19653
+maven/mavencentral/com.github.luben/zstd-jni/1.5.6-4, BSD-2-Clause, approved, #19830
 maven/mavencentral/com.github.spotbugs/spotbugs-annotations/3.1.9, LGPL-2.1-or-later, approved, #20049
 maven/mavencentral/com.google.code.findbugs/jsr305/3.0.2, Apache-2.0 and CC-BY-2.5, approved, #15220
 maven/mavencentral/com.google.code.gson/gson/2.8.9, Apache-2.0, approved, CQ23496
@@ -39,7 +39,7 @@ maven/mavencentral/com.squareup.okio/okio/3.6.0, Apache-2.0, approved, #11155
 maven/mavencentral/com.sun.xml.bind/jaxb-core/2.3.0.1, CDDL-1.0 OR GPL-2.0-only WITH Classpath-exception-2.0, approved, #229
 maven/mavencentral/com.sun.xml.bind/jaxb-impl/2.3.1, BSD-3-Clause, approved, #230
 maven/mavencentral/com.thoughtworks.paranamer/paranamer/2.8, BSD-3-Clause, approved, #19741
-maven/mavencentral/com.typesafe.scala-logging/scala-logging_2.13/3.9.4, Apache-2.0, approved, #20020
+maven/mavencentral/com.typesafe.scala-logging/scala-logging_2.13/3.9.5, Apache-2.0, approved, #20020
 maven/mavencentral/com.vaadin.external.google/android-json/0.0.20131108.vaadin1, Apache-2.0, approved, CQ21310
 maven/mavencentral/com.yammer.metrics/metrics-core/2.2.0, Apache-2.0, approved, CQ9083
 maven/mavencentral/com.zaxxer/HikariCP/2.4.7, Apache-2.0, approved, clearlydefined
@@ -48,7 +48,7 @@ maven/mavencentral/commons-cli/commons-cli/1.4, Apache-2.0, approved, CQ13132
 maven/mavencentral/commons-codec/commons-codec/1.15, Apache-2.0 AND BSD-3-Clause AND LicenseRef-Public-Domain, approved, CQ22641
 maven/mavencentral/commons-collections/commons-collections/3.2.2, Apache-2.0, approved, #15185
 maven/mavencentral/commons-digester/commons-digester/2.1, Apache-2.0, approved, clearlydefined
-maven/mavencentral/commons-io/commons-io/2.16.1, Apache-2.0, approved, #14190
+maven/mavencentral/commons-io/commons-io/2.14.0, Apache-2.0, approved, #10768
 maven/mavencentral/commons-validator/commons-validator/1.7, Apache-2.0, approved, clearlydefined
 maven/mavencentral/de.flapdoodle.embed/de.flapdoodle.embed.mongo.packageresolver/1.0.1, Apache-2.0, approved, clearlydefined
 maven/mavencentral/de.flapdoodle.embed/de.flapdoodle.embed.mongo/3.4.3, Apache-2.0, approved, clearlydefined
@@ -99,17 +99,20 @@ maven/mavencentral/net.sourceforge.argparse4j/argparse4j/0.7.0, MIT, approved, c
 maven/mavencentral/org.apache.commons/commons-compress/1.23.0, Apache-2.0 AND BSD-3-Clause, approved, #7506
 maven/mavencentral/org.apache.commons/commons-lang3/3.9, Apache-2.0, approved, CQ21762
 maven/mavencentral/org.apache.curator/curator-test/5.3.0, Apache-2.0, approved, #20889
-maven/mavencentral/org.apache.kafka/kafka-clients/3.6.2, Apache-2.0 AND (Apache-2.0 AND MIT) AND (Apache-2.0 AND BSD-3-Clause), approved, #11084
-maven/mavencentral/org.apache.kafka/kafka-group-coordinator/3.6.2, Apache-2.0, approved, #20855
-maven/mavencentral/org.apache.kafka/kafka-metadata/3.6.2, Apache-2.0, approved, #20854
-maven/mavencentral/org.apache.kafka/kafka-raft/3.6.2, Apache-2.0, approved, #20851
-maven/mavencentral/org.apache.kafka/kafka-server-common/3.6.2, Apache-2.0, approved, #20852
-maven/mavencentral/org.apache.kafka/kafka-storage-api/3.6.2, Apache-2.0, approved, #20847
-maven/mavencentral/org.apache.kafka/kafka-storage/3.6.2, Apache-2.0, approved, #20849
-maven/mavencentral/org.apache.kafka/kafka-streams-scala_2.13/3.6.2, Apache-2.0, approved, #20891
-maven/mavencentral/org.apache.kafka/kafka-streams/3.6.2, Apache-2.0, approved, #11259
-maven/mavencentral/org.apache.kafka/kafka-tools-api/3.6.2, Apache-2.0, approved, #20848
-maven/mavencentral/org.apache.kafka/kafka_2.13/3.6.2, Apache-2.0, approved, #20850
+maven/mavencentral/org.apache.kafka/kafka-clients/3.9.1, Apache-2.0 AND (Apache-2.0 AND MIT) AND (Apache-2.0 AND BSD-3-Clause), approved, #17160
+maven/mavencentral/org.apache.kafka/kafka-group-coordinator-api/3.9.1, Apache-2.0 AND BSD-3-Clause AND CDDL-1.0 AND EPL-2.0, approved, clearlydefined
+maven/mavencentral/org.apache.kafka/kafka-group-coordinator/3.9.1, Apache-2.0 AND BSD-3-Clause AND CDDL-1.0 AND EPL-2.0, approved, clearlydefined
+maven/mavencentral/org.apache.kafka/kafka-metadata/3.9.1, Apache-2.0 AND BSD-3-Clause AND CDDL-1.0 AND EPL-2.0, approved, clearlydefined
+maven/mavencentral/org.apache.kafka/kafka-raft/3.9.1, Apache-2.0 AND BSD-3-Clause AND CDDL-1.0 AND EPL-2.0, approved, clearlydefined
+maven/mavencentral/org.apache.kafka/kafka-server-common/3.9.1, Apache-2.0 AND BSD-3-Clause AND CDDL-1.0 AND EPL-2.0, approved, clearlydefined
+maven/mavencentral/org.apache.kafka/kafka-server/3.9.1, Apache-2.0, approved, #24585
+maven/mavencentral/org.apache.kafka/kafka-storage-api/3.9.1, Apache-2.0 AND BSD-3-Clause AND CDDL-1.0 AND EPL-2.0, approved, clearlydefined
+maven/mavencentral/org.apache.kafka/kafka-storage/3.9.1, Apache-2.0 AND BSD-3-Clause AND CDDL-1.0 AND EPL-2.0, approved, clearlydefined
+maven/mavencentral/org.apache.kafka/kafka-streams-scala_2.13/3.9.1, Apache-2.0, approved, #20031
+maven/mavencentral/org.apache.kafka/kafka-streams/3.9.1, Apache-2.0, approved, #20000
+maven/mavencentral/org.apache.kafka/kafka-tools-api/3.9.1, Apache-2.0 AND BSD-3-Clause AND CDDL-1.0 AND EPL-2.0, approved, clearlydefined
+maven/mavencentral/org.apache.kafka/kafka-transaction-coordinator/3.9.1, Apache-2.0, approved, #24586
+maven/mavencentral/org.apache.kafka/kafka_2.13/3.9.1, Apache-2.0 AND BSD-3-Clause AND CDDL-1.0 AND EPL-2.0, approved, clearlydefined
 maven/mavencentral/org.apache.yetus/audience-annotations/0.12.0, Apache-2.0, approved, #19676
 maven/mavencentral/org.apache.zookeeper/zookeeper-jute/3.8.4, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.apache.zookeeper/zookeeper/3.8.4, Apache-2.0, approved, #11422
@@ -158,7 +161,7 @@ maven/mavencentral/org.rocksdb/rocksdbjni/7.9.2, Apache-2.0 OR GPL-2.0-only, app
 maven/mavencentral/org.scala-lang.modules/scala-collection-compat_2.13/2.10.0, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.scala-lang.modules/scala-java8-compat_2.13/1.0.2, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.scala-lang/scala-library/2.13.14, Apache-2.0 AND (Apache-2.0 AND BSD-3-Clause AND MIT) AND (Apache-2.0 AND CC0-1.0), approved, #3221
-maven/mavencentral/org.scala-lang/scala-reflect/2.13.11, Apache-2.0, approved, #5844
+maven/mavencentral/org.scala-lang/scala-reflect/2.13.15, Apache-2.0, approved, #5844
 maven/mavencentral/org.skyscreamer/jsonassert/1.5.0, Apache-2.0, approved, clearlydefined
 maven/mavencentral/org.slf4j/slf4j-api/2.0.13, MIT, approved, #5915
 maven/mavencentral/org.slf4j/slf4j-reload4j/1.7.36, MIT, approved, #19989

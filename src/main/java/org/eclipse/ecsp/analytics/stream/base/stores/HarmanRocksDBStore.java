@@ -86,6 +86,7 @@ import org.rocksdb.RocksIterator;
 import org.rocksdb.Statistics;
 import org.rocksdb.TableFormatConfig;
 import org.rocksdb.WriteBatch;
+import org.rocksdb.WriteBatchInterface;
 import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -619,8 +620,13 @@ public class HarmanRocksDBStore<K, V> implements KeyValueStore<K, V>, BatchWriti
      * @throws RocksDBException the rocks DB exception
      */
     @Override
-    public void write(final WriteBatch batch) throws RocksDBException {
-        db.write(writeOptions, batch);
+    public void write(final WriteBatchInterface batch) throws RocksDBException {
+        if (batch instanceof WriteBatch writeBatch) {
+            db.write(writeOptions, writeBatch);
+        } else {
+            LOG.error("Batch must be an instance of WriteBatch");
+            throw new IllegalArgumentException("Batch must be an instance of WriteBatch");
+        }
     }
 
     /**
@@ -767,11 +773,16 @@ public class HarmanRocksDBStore<K, V> implements KeyValueStore<K, V>, BatchWriti
      */
     public void addToBatch(final byte[] key,
             final byte[] value,
-            final WriteBatch batch) throws RocksDBException {
-        if (value == null) {
-            batch.delete(key);
+            final WriteBatchInterface batch) throws RocksDBException {
+        if (batch instanceof WriteBatch writeBatch) {
+            if (value == null) {
+                writeBatch.delete(key);
+            } else {
+                writeBatch.put(key, value);
+            }
         } else {
-            batch.put(key, value);
+            LOG.error("Batch must be an instance of WriteBatch");
+            throw new IllegalArgumentException("Batch must be an instance of WriteBatch");
         }
     }
 
@@ -783,7 +794,7 @@ public class HarmanRocksDBStore<K, V> implements KeyValueStore<K, V>, BatchWriti
      * @throws RocksDBException the rocks DB exception
      */
     @Override
-    public void addToBatch(KeyValue<byte[], byte[]> kvRecord, WriteBatch batch) throws RocksDBException {
+    public void addToBatch(KeyValue<byte[], byte[]> kvRecord, WriteBatchInterface batch) throws RocksDBException {
         addToBatch(kvRecord.key, kvRecord.value, batch);
     }
     
