@@ -215,7 +215,7 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
                         logger.info("HiveMQ Mqtt Client with id {} is created successfully for platformID : {}", 
                                     mqttClientId, platform);
                     }
-                }).join();
+                });
         } catch (Exception e) {
             logger.error("HiveMQ MQTT client could not connect for platformID : {}. Exception while creating "
                     + "HiveMQ Mqtt client " + "and the error msg is : {}", platform, e);
