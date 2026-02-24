@@ -93,7 +93,7 @@
         <kafka.version>3.6.2</kafka.version>
         <zookeeper.version>3.8.4</zookeeper.version>
         <junit.version>5.11.4</junit.version>
-        <jackson.version>2.17.1</jackson.version>
+        <jackson.version>2.15.3</jackson.version>
         <slf4j.version>2.0.13</slf4j.version>
         <additionalparam>-Xdoclint:none</additionalparam>
         <maven.surefire.version>3.5.2</maven.surefire.version>
