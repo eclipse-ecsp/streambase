@@ -43,7 +43,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.eclipse.ecsp</groupId>
     <artifactId>streambase</artifactId>
-    <version>1.2-java-25-SNAPSHOT</version>
+    <version>1.2-java-25-1-SNAPSHOT</version>
 
     <name>StreamBase library</name>
     <description>Enabler for event driven processing and device messaging capabilities</description>
@@ -93,20 +93,20 @@
         <kafka.version>3.6.2</kafka.version>
         <zookeeper.version>3.8.4</zookeeper.version>
         <junit.version>5.11.4</junit.version>
-        <jackson.version>2.17.1</jackson.version>
+        <jackson.version>2.15.3</jackson.version>
         <slf4j.version>2.0.13</slf4j.version>
         <additionalparam>-Xdoclint:none</additionalparam>
         <maven.surefire.version>3.5.2</maven.surefire.version>
         <maven.dependency.version>2.10</maven.dependency.version>
-        <spring.test.version>7.0.3</spring.test.version>
-        <spring-boot-starter>4.0.2</spring-boot-starter>
-        <spring.version>7.0.3</spring.version>
+        <spring.test.version>7.0.5</spring.test.version>
+        <spring-boot-starter>4.0.3</spring-boot-starter>
+        <spring.version>7.0.5</spring.version>
         <embedded.mongodb>3.4.3</embedded.mongodb>
         <junit4.version>4.13.2</junit4.version>
-        <nosql.dao.version>1.2-java-25-SNAPSHOT</nosql.dao.version>
-        <cache.enabler.version>1.2-java-25-SNAPSHOT</cache.enabler.version>
-        <transformers.version>1.2-java-25-SNAPSHOT</transformers.version>
-        <utils.version>1.2-java-25-SNAPSHOT</utils.version>
+        <nosql.dao.version>1.2-java-25-1-SNAPSHOT</nosql.dao.version>
+        <cache.enabler.version>1.2-java-25-1-SNAPSHOT</cache.enabler.version>
+        <transformers.version>1.2-java-25-1-SNAPSHOT</transformers.version>
+        <utils.version>1.2-java-25-1-SNAPSHOT</utils.version>
         <entities.version>1.2-java-25-SNAPSHOT</entities.version>
         <scala.version>2.13.14</scala.version>
         <curator.version>5.3.0</curator.version>
@@ -223,6 +223,22 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>${spring.test.version}</version>
+            </dependency>
+            <!-- Force Jackson ${jackson.version} across all dependencies -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
