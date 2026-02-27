@@ -48,8 +48,15 @@
 		<appender-ref ref="ASYNC-STDOUT" />
 	</logger>
 
-	<include resource="org/springframework/boot/logging/logback/base.xml" />
-	<logger name="org.springframework" level="ERROR">
+	<logger name="org.springframework" level="ERROR" additivity="false">
+		<appender-ref ref="ASYNC-STDOUT" />
+	</logger>
+
+	<logger name="org.apache.catalina" level="ERROR" additivity="false">
+		<appender-ref ref="ASYNC-STDOUT" />
+	</logger>
+
+	<logger name="org.hibernate" level="ERROR" additivity="false">
 		<appender-ref ref="ASYNC-STDOUT" />
 	</logger>
 
