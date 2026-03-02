@@ -43,9 +43,11 @@ import jakarta.annotation.PostConstruct;
 import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
 import org.eclipse.ecsp.analytics.stream.base.StreamBaseConstant;
 import org.eclipse.ecsp.analytics.stream.base.exception.DeviceMessagingMqttClientTrustStoreException;
+import org.eclipse.ecsp.enums.QosLevel;
 import org.eclipse.ecsp.serializer.IngestionSerializerFactory;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -77,6 +79,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Scope("prototype")
 public class PahoMqttDispatcher extends MqttDispatcher {
 
+    private static final int PUBACK_TIMEOUT = 5000;
+
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(PahoMqttDispatcher.class);
     
@@ -89,8 +93,8 @@ public class PahoMqttDispatcher extends MqttDispatcher {
     /** The mqtt conn opts. */
     protected Map<String, MqttConnectOptions> mqttConnOpts;
     
-    /** The qos level. */
-    private Integer qosLevel;
+    /** The ignite event qos level. */
+    private QosLevel igniteEventQosLevel;
     
     /** The Constant TLS_V1_2. */
     private static final String TLS_V1_2 = "TLSv1.2";
@@ -166,8 +170,8 @@ public class PahoMqttDispatcher extends MqttDispatcher {
         }
         Optional<MqttConfig> mqttConfigOpt = getMqttConfig(platform);
 
-        if (qosLevel != null) {
-            mqttMessage.setQos(qosLevel);
+        if (igniteEventQosLevel != null) {
+            mqttMessage.setQos(igniteEventQosLevel.getValue());
         } else {
             mqttMessage.setQos(mqttConfigOpt.isPresent() ? mqttConfigOpt.get().getMqttQosValue() : mqttQosValue);
         }
@@ -175,7 +179,51 @@ public class PahoMqttDispatcher extends MqttDispatcher {
         logger.debug("Publishing event via PAHO client to the mqtt topic : {}, with retained flag as {}, "
                 + "platformId {}, clientID {}", mqttTopicName, isRetainedMessage, platform, client.getClientId());
         mqttMessage.setRetained(isRetainedMessage);
+        if (mqttMessage.getQos() == QosLevel.AT_LEAST_ONCE.getValue() 
+            || mqttMessage.getQos() == QosLevel.EXACTLY_ONCE.getValue()) {
+            client.setManualAcks(true);
+            publishWithManualRetry(mqttTopicName, mqttMessage, retryCount, platform);
+            return;
+        }
         client.publish(mqttTopicName, mqttMessage);
+    }
+
+    /**
+     * Publish message to mqtt topic.
+     *
+     * @param mqttTopicName the mqtt topic name
+     * @param mqttMessage the is mqttmessage
+     * @param attempts the attempts
+     * @param platformId the platformId
+     * @throws MqttException the mqtt exception
+     */
+    public void publishWithManualRetry(String mqttTopicName, MqttMessage mqttMessage, int attempts, String platformId) {
+        MqttClient client = mqttClientMap.get(platformId);
+        if (client == null) {
+            logger.error("No MQTT client found against platformID : {} to publish message to topic : {}", 
+                    platformId, mqttTopicName);
+            return;
+        }
+        int attempt = 0;
+        while (attempt < attempts) {
+            try {
+                logger.debug("Attempting to publish message to topic : {} with PAHO client. Attempt number : {}",
+                        mqttTopicName, attempt + 1);
+                client.setTimeToWait(PUBACK_TIMEOUT); // Set a timeout for the publish operation
+                client.publish(mqttTopicName, mqttMessage);
+                logger.info("Message published successfully to topic : {} with PAHO client on attempt number : {}",
+                        mqttTopicName, attempt + 1);
+                break; // Exit loop if publish is successful
+            } catch (MqttException e) {
+                logger.error("Failed to publish message to topic : {} with PAHO client on attempt number : {}. "
+                        + "Error: {}", mqttTopicName, attempt + 1, e.getMessage());
+                attempt++;
+                if (attempt >= attempts) {
+                    logger.error("Exceeded maximum retry attempts to publish message to topic : {} with PAHO client",
+                            mqttTopicName);
+                }
+            }
+        }
     }
 
     /**
@@ -195,8 +243,8 @@ public class PahoMqttDispatcher extends MqttDispatcher {
      * @param qosLevel the QoS level (0, 1, or 2)
      */
     @Override
-    protected void setQosLevel(Integer qosLevel) {
-        this.qosLevel = qosLevel;
+    protected void setIgniteEventQosLevel(QosLevel igniteEventQosLevel) {
+        this.igniteEventQosLevel = igniteEventQosLevel;
     }
 
     /**

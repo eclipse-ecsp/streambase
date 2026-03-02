@@ -44,6 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
 import org.eclipse.ecsp.analytics.stream.base.StreamBaseConstant;
 import org.eclipse.ecsp.analytics.stream.base.StreamProcessingContext;
+import org.eclipse.ecsp.analytics.stream.base.exception.PuBackNotReceivedException;
 import org.eclipse.ecsp.analytics.stream.base.platform.MqttTopicNameGenerator;
 import org.eclipse.ecsp.domain.AbstractBlobEventData.Encoding;
 import org.eclipse.ecsp.domain.BlobDataV1_0;
@@ -55,6 +56,7 @@ import org.eclipse.ecsp.entities.IgniteEvent;
 import org.eclipse.ecsp.entities.dma.DeviceMessage;
 import org.eclipse.ecsp.entities.dma.DeviceMessageErrorCode;
 import org.eclipse.ecsp.entities.dma.DeviceMessageHeader;
+import org.eclipse.ecsp.enums.QosLevel;
 import org.eclipse.ecsp.key.IgniteKey;
 import org.eclipse.ecsp.key.IgniteStringKey;
 import org.eclipse.ecsp.serializer.IngestionSerializer;
@@ -330,7 +332,7 @@ public abstract class MqttDispatcher implements Dispatcher<IgniteKey<?>, DeviceM
             setMqttMessagePayload(payLoad);
         }
         if (header.getQosLevel() != null) {
-            setQosLevel(header.getQosLevel());
+            setIgniteEventQosLevel(header.getQosLevel());
         }
         eventDispatchCounter.compareAndSet(THRESHOLD, 0);
         boolean isRetainedMessage = (null != globalBroadcastRetentionTopicList) 
@@ -349,7 +351,11 @@ public abstract class MqttDispatcher implements Dispatcher<IgniteKey<?>, DeviceM
             if (header.isGlobalTopicNameProvided()) {
                 DeviceMessageFailureEventDataV1_0 failEventData = new DeviceMessageFailureEventDataV1_0();
                 failEventData.setFailedIgniteEvent(entity.getEvent());
-                failEventData.setErrorCode(DeviceMessageErrorCode.MQTT_DISPATCH_FAILED);
+                if (e instanceof PuBackNotReceivedException) {
+                    failEventData.setErrorCode(DeviceMessageErrorCode.PU_BACK_NOT_RECEIVED);
+                } else {
+                    failEventData.setErrorCode(DeviceMessageErrorCode.MQTT_DISPATCH_FAILED);
+                }
                 deviceMessageUtils.postFailureEvent(failEventData, key, spc, entity.getFeedBackTopic());
             }
             errorCounter.incErrorCounter(Optional.ofNullable(taskId), e.getClass());
@@ -407,9 +413,9 @@ public abstract class MqttDispatcher implements Dispatcher<IgniteKey<?>, DeviceM
     /**
      * Sets the QoS level for MQTT message.
      *
-     * @param qosLevel the QoS level (0, 1, or 2)
+     * @param igniteEventQosLevel the QoS level (0, 1, or 2)
      */
-    protected abstract void setQosLevel(Integer qosLevel);
+    protected abstract void setIgniteEventQosLevel(QosLevel igniteEventQosLevel);
 
     /**
      * Creates the mqtt client.

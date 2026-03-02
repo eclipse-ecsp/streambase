@@ -49,11 +49,12 @@ import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish;
 import jakarta.annotation.PostConstruct;
 import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
 import org.eclipse.ecsp.analytics.stream.base.StreamBaseConstant;
+import org.eclipse.ecsp.analytics.stream.base.exception.PuBackNotReceivedException;
+import org.eclipse.ecsp.enums.QosLevel;
 import org.eclipse.ecsp.serializer.IngestionSerializerFactory;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -74,6 +75,10 @@ import java.util.concurrent.TimeUnit;
 @Scope("prototype")
 public class HiveMqMqttDispatcher extends MqttDispatcher {
    
+    private static final int ATTEMPTS = 3;
+
+    private static final int TIMEOUT = 5;
+
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(HiveMqMqttDispatcher.class);
    
@@ -83,8 +88,8 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
     /** The mqtt qos. */
     private MqttQos mqttQos;
     
-    /** The qos level. */
-    private Integer qosLevel;
+    /** The qos level in ignite event. */
+    private QosLevel igniteEventQosLevel;
     
     /** The mqtt client map. */
     private Map<String, Mqtt3AsyncClient> mqttClientMap;
@@ -264,13 +269,61 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
         logger.debug("Publishing the event via HiveMQ client to the mqtt topic : {} ,with retained flag as : {} ,"
                 + "for platformID : {}", mqttTopicName, isRetainedMessage, platform);
         Optional<MqttConfig> mqttConfigOpt = getMqttConfig(platform);
-        MqttQos qos = (mqttConfigOpt.isPresent() ? MqttQos.fromCode(mqttConfigOpt.get().getMqttQosValue()) : mqttQos);
-        qos = (qosLevel != null) ? MqttQos.fromCode(qosLevel) : qos;
+
+        MqttQos qos;
+
+        if (igniteEventQosLevel != null) {
+            qos = MqttQos.fromCode(igniteEventQosLevel.getValue());
+        } else {
+            qos = (mqttConfigOpt.isPresent() ? MqttQos.fromCode(mqttConfigOpt.get().getMqttQosValue()) : mqttQos);
+        }
+
+        if (MqttQos.EXACTLY_ONCE.equals(qos) || MqttQos.AT_LEAST_ONCE.equals(qos)) {
+            publishWithManualRetry(mqttTopicName, 1, platform, qos, isRetainedMessage);
+            return;
+        }
         client.publishWith().topic(mqttTopicName)
                 .payload(messagePayLoad)
                 .qos(qos)
                 .retain(isRetainedMessage)
                 .send();
+    }
+
+    /**
+     * Publish message to mqtt topic with handling of PUBACK from hivemq.
+     *
+     * @param topic the mqtt topic name
+     * @param attempt the attempt count for retrying publish in case of PUBACK not received
+     * @param platform the platform
+     * @param qos the mqtt qos level
+     * @param isRetainedMessage the is retained message
+     * @throws PuBackNotReceivedException the pu back not received exception
+     */
+    public void publishWithManualRetry(String topic, int attempt,
+         String platform, MqttQos qos, boolean isRetainedMessage) 
+         throws PuBackNotReceivedException {
+        Mqtt3AsyncClient client = mqttClientMap.get(platform);
+        if (attempt > ATTEMPTS) {
+            logger.warn("Retries exceeded for publishing message to topic : {} for platformID : {}",
+                topic, platform);
+            throw new PuBackNotReceivedException("Failed to publish message to topic : "
+                + topic + " after " + (attempt - 1) + " attempts");
+        }
+        client.publishWith()
+            .topic(topic)
+            .qos(qos)
+            .payload(messagePayLoad)
+            .retain(isRetainedMessage)
+            .send()
+            .orTimeout(TIMEOUT, TimeUnit.SECONDS) // Wait 5s for PUBACK        
+            .whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    logger.warn("PUBACK not received for attempt {}. Retrying...", attempt);
+                    publishWithManualRetry(topic, attempt + 1, platform, qos, isRetainedMessage);
+                } else {
+                    logger.info("Message acknowledged successfully");
+                }
+            });
     }
 
     /**
@@ -289,15 +342,8 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
      * @param qosLevel the QoS level (0, 1, or 2)
      */
     @Override
-    protected void setQosLevel(Integer qosLevel) {
-        this.qosLevel = qosLevel;
-        if (null != qosLevel) {
-            mqttQos = MqttQos.fromCode(qosLevel);
-            if (null == mqttQos) {
-                logger.warn("Invalid QoS level: {}. Using default QoS", qosLevel);
-                mqttQos = Mqtt3Publish.DEFAULT_QOS;
-            }
-        }
+    protected void setIgniteEventQosLevel(QosLevel igniteEventQosLevel) {
+        this.igniteEventQosLevel = igniteEventQosLevel;
     }
 
     /**
