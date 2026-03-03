@@ -44,7 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
 import org.eclipse.ecsp.analytics.stream.base.StreamBaseConstant;
 import org.eclipse.ecsp.analytics.stream.base.StreamProcessingContext;
-import org.eclipse.ecsp.analytics.stream.base.exception.PuBackNotReceivedException;
+import org.eclipse.ecsp.analytics.stream.base.exception.PubAckNotReceivedException;
 import org.eclipse.ecsp.analytics.stream.base.platform.MqttTopicNameGenerator;
 import org.eclipse.ecsp.domain.AbstractBlobEventData.Encoding;
 import org.eclipse.ecsp.domain.BlobDataV1_0;
@@ -351,8 +351,8 @@ public abstract class MqttDispatcher implements Dispatcher<IgniteKey<?>, DeviceM
             if (header.isGlobalTopicNameProvided()) {
                 DeviceMessageFailureEventDataV1_0 failEventData = new DeviceMessageFailureEventDataV1_0();
                 failEventData.setFailedIgniteEvent(entity.getEvent());
-                if (e instanceof PuBackNotReceivedException) {
-                    failEventData.setErrorCode(DeviceMessageErrorCode.PU_BACK_NOT_RECEIVED);
+                if (e instanceof PubAckNotReceivedException) {
+                    failEventData.setErrorCode(DeviceMessageErrorCode.PUB_ACK_NOT_RECEIVED);
                 } else {
                     failEventData.setErrorCode(DeviceMessageErrorCode.MQTT_DISPATCH_FAILED);
                 }
