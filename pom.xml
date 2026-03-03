@@ -182,6 +182,19 @@
         <license-tool-plugin.version>1.1.0</license-tool-plugin.version>
         <install-plugin.version>3.1.1</install-plugin.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>org.sonatype.central</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
  
     <pluginRepositories>
         <pluginRepository>
