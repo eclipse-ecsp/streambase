@@ -49,7 +49,7 @@ import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish;
 import jakarta.annotation.PostConstruct;
 import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
 import org.eclipse.ecsp.analytics.stream.base.StreamBaseConstant;
-import org.eclipse.ecsp.analytics.stream.base.exception.PuBackNotReceivedException;
+import org.eclipse.ecsp.analytics.stream.base.exception.PubAckNotReceivedException;
 import org.eclipse.ecsp.enums.QosLevel;
 import org.eclipse.ecsp.serializer.IngestionSerializerFactory;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
@@ -297,16 +297,16 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
      * @param platform the platform
      * @param qos the mqtt qos level
      * @param isRetainedMessage the is retained message
-     * @throws PuBackNotReceivedException the pu back not received exception
+     * @throws PubAckNotReceivedException the pu back not received exception
      */
     public void publishWithManualRetry(String topic, int attempt,
          String platform, MqttQos qos, boolean isRetainedMessage) 
-         throws PuBackNotReceivedException {
+         throws PubAckNotReceivedException {
         Mqtt3AsyncClient client = mqttClientMap.get(platform);
         if (attempt > ATTEMPTS) {
             logger.warn("Retries exceeded for publishing message to topic : {} for platformID : {}",
                 topic, platform);
-            throw new PuBackNotReceivedException("Failed to publish message to topic : "
+            throw new PubAckNotReceivedException("Failed to publish message to topic : "
                 + topic + " after " + (attempt - 1) + " attempts");
         }
         client.publishWith()

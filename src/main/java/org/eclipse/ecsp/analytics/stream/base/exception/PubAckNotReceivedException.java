@@ -42,7 +42,7 @@ package org.eclipse.ecsp.analytics.stream.base.exception;
 /**
  * Exception thrown in case a property's default value is not found.
  */
-public class PuBackNotReceivedException extends RuntimeException {
+public class PubAckNotReceivedException extends RuntimeException {
 
     /** The Constant serialVersionUID. */
     private static final long serialVersionUID = 1L;
@@ -52,7 +52,7 @@ public class PuBackNotReceivedException extends RuntimeException {
      *
      * @param message the message
      */
-    public PuBackNotReceivedException(String message) {
+    public PubAckNotReceivedException(String message) {
         super(message);
     }
 }
