@@ -98,7 +98,7 @@
         <additionalparam>-Xdoclint:none</additionalparam>
         <maven.surefire.version>2.18.1</maven.surefire.version>
         <maven.dependency.version>2.10</maven.dependency.version>
-        <spring.test.version>6.1.14</spring.test.version>
+        <spring.test.version>7.0.0</spring.test.version>
         <spring-boot-starter>3.3.3</spring-boot-starter>
         <spring.version>6.1.14</spring.version>
         <embedded.mongodb>3.4.3</embedded.mongodb>
