@@ -44,7 +44,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
 import org.eclipse.ecsp.analytics.stream.base.StreamBaseConstant;
 import org.eclipse.ecsp.analytics.stream.base.StreamProcessingContext;
-import org.eclipse.ecsp.analytics.stream.base.exception.PubAckNotReceivedException;
 import org.eclipse.ecsp.analytics.stream.base.platform.MqttTopicNameGenerator;
 import org.eclipse.ecsp.domain.AbstractBlobEventData.Encoding;
 import org.eclipse.ecsp.domain.BlobDataV1_0;
@@ -76,6 +75,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -249,6 +250,9 @@ public abstract class MqttDispatcher implements Dispatcher<IgniteKey<?>, DeviceM
     /** The forced check key. */
     private IgniteStringKey forcedCheckKey;
 
+    @Value("${" + PropertyNames.MQTT_QOS_TIMEOUT_IN_MILLIS + ":5000}")
+    protected int mqttQosTimeoutInMillis;
+
     /**
      * Method to verify if all the required properties are valid, and not null
      * or empty.
@@ -331,46 +335,50 @@ public abstract class MqttDispatcher implements Dispatcher<IgniteKey<?>, DeviceM
         } else {
             setMqttMessagePayload(payLoad);
         }
-        if (header.getQosLevel() != null) {
-            setIgniteEventQosLevel(header.getQosLevel());
-        }
         eventDispatchCounter.compareAndSet(THRESHOLD, 0);
         boolean isRetainedMessage = (null != globalBroadcastRetentionTopicList) 
                 && !globalBroadcastRetentionTopicList.isEmpty() 
                 && (header.isGlobalTopicNameProvided()) && (globalBroadcastRetentionTopicList.contains(mqttTopicName));
-        try {
-            publishMessageToMqttTopic(mqttTopicName, isRetainedMessage, platform);
-            logger.info("Successfully published the event : {}, to the mqtt topic : {}, "
-                    + "with retained flag as {}, for platformID {}", entity.getEvent(), 
-                    mqttTopicName, isRetainedMessage, platform);
-            healthy = true;
-            if (null != dmaPostDispatchHandler) {
-                dmaPostDispatchHandler.handle(key, entity);
-            }
-        } catch (Exception e) {
-            if (header.isGlobalTopicNameProvided()) {
-                DeviceMessageFailureEventDataV1_0 failEventData = new DeviceMessageFailureEventDataV1_0();
-                failEventData.setFailedIgniteEvent(entity.getEvent());
-                if (e instanceof PubAckNotReceivedException) {
-                    failEventData.setErrorCode(DeviceMessageErrorCode.PUB_ACK_NOT_RECEIVED);
+        publishMessageToMqttTopic(mqttTopicName, isRetainedMessage, platform, header.getQosLevel())
+            .whenComplete((unused, throwable) -> {
+                if (throwable == null) {
+                    logger.info("Successfully published the event : {}, to the mqtt topic : {}, "
+                        + "with retained flag as {}, for platformID {}", entity.getEvent(),
+                        mqttTopicName, isRetainedMessage, platform);
+                    healthy = true;
+                    if (null != dmaPostDispatchHandler) {
+                        dmaPostDispatchHandler.handle(key, entity);
+                    }
                 } else {
-                    failEventData.setErrorCode(DeviceMessageErrorCode.MQTT_DISPATCH_FAILED);
+                    // HANDLE TIMEOUTS OR CONNECTION ERRORS
+                    DeviceMessageErrorCode errorCode = DeviceMessageErrorCode.MQTT_DISPATCH_FAILED;
+                    if (throwable instanceof TimeoutException || throwable.getCause() instanceof TimeoutException) {
+                        logger.error("Timeout: Broker did not acknowledge message in time for event: {}",
+                            entity.getEvent());
+                        errorCode = DeviceMessageErrorCode.PUB_ACK_NOT_RECEIVED;
+                    }
+
+                    if (header.isGlobalTopicNameProvided()) {
+                        DeviceMessageFailureEventDataV1_0 failEventData = new DeviceMessageFailureEventDataV1_0();
+                        failEventData.setFailedIgniteEvent(entity.getEvent());
+                        failEventData.setErrorCode(errorCode);
+                        deviceMessageUtils.postFailureEvent(failEventData, key, spc, entity.getFeedBackTopic());
+                    }
+
+                    errorCounter.incErrorCounter(Optional.ofNullable(taskId), throwable.getClass());
+                    logger.error("Unable to push the event:{} to the mqtt topic:{} for platform:{}, with exception: {}",
+                            entity.toString(), mqttTopicName, platform, throwable);
+                    /*
+                    * DataPlatform 101-HCP-12088, We will not do any retry if
+                    * exception is thrown.
+                    *
+                    * Future: We will retry sending the event for a configurable amount
+                    * of time before bailing out
+                    */
+                    healthy = false;
+                    closeMqttConnection(platform);
                 }
-                deviceMessageUtils.postFailureEvent(failEventData, key, spc, entity.getFeedBackTopic());
-            }
-            errorCounter.incErrorCounter(Optional.ofNullable(taskId), e.getClass());
-            logger.error("Unable to push the event:{} to the mqtt topic:{} for platform:{}, with exception: {}",
-                    entity.toString(), mqttTopicName, platform, e);
-            /*
-             * DataPlatform 101-HCP-12088, We will not do any retry if
-             * exception is thrown.
-             *
-             * Future: We will retry sending the event for a configurable amount
-             * of time before bailing out
-             */
-            healthy = false;
-            closeMqttConnection(platform);
-        }
+            });
     }
 
     /**
@@ -400,8 +408,8 @@ public abstract class MqttDispatcher implements Dispatcher<IgniteKey<?>, DeviceM
      * @param platform the platform
      * @throws MqttException the mqtt exception
      */
-    protected abstract void publishMessageToMqttTopic(String mqttTopicName,
-            boolean isRetainedMessage, String platform) throws MqttException;
+    protected abstract CompletableFuture<Void> publishMessageToMqttTopic(String mqttTopicName,
+            boolean isRetainedMessage, String platform, QosLevel qosLevel);
 
     /**
      * Sets the mqtt message payload.
@@ -409,13 +417,6 @@ public abstract class MqttDispatcher implements Dispatcher<IgniteKey<?>, DeviceM
      * @param payload the new mqtt message payload
      */
     protected abstract void setMqttMessagePayload(byte[] payload);
-
-    /**
-     * Sets the QoS level for MQTT message.
-     *
-     * @param igniteEventQosLevel the QoS level (0, 1, or 2)
-     */
-    protected abstract void setIgniteEventQosLevel(QosLevel igniteEventQosLevel);
 
     /**
      * Creates the mqtt client.

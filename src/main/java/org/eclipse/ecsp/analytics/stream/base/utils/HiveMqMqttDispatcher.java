@@ -49,7 +49,6 @@ import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish;
 import jakarta.annotation.PostConstruct;
 import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
 import org.eclipse.ecsp.analytics.stream.base.StreamBaseConstant;
-import org.eclipse.ecsp.analytics.stream.base.exception.PubAckNotReceivedException;
 import org.eclipse.ecsp.enums.QosLevel;
 import org.eclipse.ecsp.serializer.IngestionSerializerFactory;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
@@ -62,6 +61,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -75,10 +75,6 @@ import java.util.concurrent.TimeUnit;
 @Scope("prototype")
 public class HiveMqMqttDispatcher extends MqttDispatcher {
    
-    private static final int ATTEMPTS = 3;
-
-    private static final int TIMEOUT = 5;
-
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(HiveMqMqttDispatcher.class);
    
@@ -223,7 +219,7 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
                         logger.info("HiveMQ Mqtt Client with id {} is created successfully for platformID : {}", 
                                     mqttClientId, platform);
                     }
-                });
+                }).get(); // Wait for connection to complete
         } catch (Exception e) {
             logger.error("HiveMQ MQTT client could not connect for platformID : {}. Exception while creating "
                     + "HiveMQ Mqtt client " + "and the error msg is : {}", platform, e);
@@ -259,11 +255,12 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
      * @param platform the platform
      */
     @Override
-    protected void publishMessageToMqttTopic(String mqttTopicName, boolean isRetainedMessage, String platform) {
+    protected CompletableFuture<Void> publishMessageToMqttTopic(String mqttTopicName, boolean isRetainedMessage,
+        String platform, QosLevel qosLevel) {
         Mqtt3AsyncClient client = mqttClientMap.get(platform);
         if (null == client) {
-            throw new NoMqttClientFoundException("Unable to publish message to topic : " + mqttTopicName + ". "
-                    + "No MQTT client found against platformID : " + platform);
+            return CompletableFuture.failedFuture(new NoMqttClientFoundException("Unable to publish message to topic :"
+             + mqttTopicName + ". No MQTT client found against platformID : " + platform));
         }
 
         logger.debug("Publishing the event via HiveMQ client to the mqtt topic : {} ,with retained flag as : {} ,"
@@ -273,57 +270,18 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
         MqttQos qos;
 
         if (igniteEventQosLevel != null) {
-            qos = MqttQos.fromCode(igniteEventQosLevel.getValue());
+            qos = MqttQos.fromCode(qosLevel.getValue());
         } else {
             qos = (mqttConfigOpt.isPresent() ? MqttQos.fromCode(mqttConfigOpt.get().getMqttQosValue()) : mqttQos);
         }
 
-        if (MqttQos.EXACTLY_ONCE.equals(qos) || MqttQos.AT_LEAST_ONCE.equals(qos)) {
-            publishWithManualRetry(mqttTopicName, 1, platform, qos, isRetainedMessage);
-            return;
-        }
-        client.publishWith().topic(mqttTopicName)
+        return client.publishWith().topic(mqttTopicName)
                 .payload(messagePayLoad)
                 .qos(qos)
                 .retain(isRetainedMessage)
-                .send();
-    }
-
-    /**
-     * Publish message to mqtt topic with handling of PUBACK from hivemq.
-     *
-     * @param topic the mqtt topic name
-     * @param attempt the attempt count for retrying publish in case of PUBACK not received
-     * @param platform the platform
-     * @param qos the mqtt qos level
-     * @param isRetainedMessage the is retained message
-     * @throws PubAckNotReceivedException the pu back not received exception
-     */
-    public void publishWithManualRetry(String topic, int attempt,
-         String platform, MqttQos qos, boolean isRetainedMessage) 
-         throws PubAckNotReceivedException {
-        Mqtt3AsyncClient client = mqttClientMap.get(platform);
-        if (attempt > ATTEMPTS) {
-            logger.warn("Retries exceeded for publishing message to topic : {} for platformID : {}",
-                topic, platform);
-            throw new PubAckNotReceivedException("Failed to publish message to topic : "
-                + topic + " after " + (attempt - 1) + " attempts");
-        }
-        client.publishWith()
-            .topic(topic)
-            .qos(qos)
-            .payload(messagePayLoad)
-            .retain(isRetainedMessage)
-            .send()
-            .orTimeout(TIMEOUT, TimeUnit.SECONDS) // Wait 5s for PUBACK        
-            .whenComplete((result, throwable) -> {
-                if (throwable != null) {
-                    logger.warn("PUBACK not received for attempt {}. Retrying...", attempt);
-                    publishWithManualRetry(topic, attempt + 1, platform, qos, isRetainedMessage);
-                } else {
-                    logger.info("Message acknowledged successfully");
-                }
-            });
+                .send()
+                .orTimeout(mqttTimeoutInMillis, TimeUnit.MILLISECONDS) //TimeoutException if ack takes too long
+                .thenAccept(publish -> {});
     }
 
     /**
@@ -334,16 +292,6 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
     @Override
     protected void setMqttMessagePayload(byte[] payload) {
         messagePayLoad = payload;
-    }
-
-    /**
-     * Sets the QoS level for MQTT message.
-     *
-     * @param qosLevel the QoS level (0, 1, or 2)
-     */
-    @Override
-    protected void setIgniteEventQosLevel(QosLevel igniteEventQosLevel) {
-        this.igniteEventQosLevel = igniteEventQosLevel;
     }
 
     /**

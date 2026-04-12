@@ -47,7 +47,6 @@ import org.eclipse.ecsp.enums.QosLevel;
 import org.eclipse.ecsp.serializer.IngestionSerializerFactory;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -64,6 +63,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -161,69 +162,32 @@ public class PahoMqttDispatcher extends MqttDispatcher {
      * @throws MqttException the mqtt exception
      */
     @Override
-    protected void publishMessageToMqttTopic(String mqttTopicName, boolean isRetainedMessage, String platform) 
-            throws MqttException {
+    protected CompletableFuture<Void> publishMessageToMqttTopic(String mqttTopicName, boolean isRetainedMessage,
+            String platform, QosLevel qosLevel) {
         MqttClient client = mqttClientMap.get(platform);
         if (null == client) {
-            throw new NoMqttClientFoundException("Unable to publish message to topic : " + mqttTopicName
-                    + ". No MQTT client found against platformID : " + platform);
+            return CompletableFuture.failedFuture(new NoMqttClientFoundException("Unable to publish message to topic :"
+             + mqttTopicName + ". No MQTT client found against platformID : " + platform));
         }
         Optional<MqttConfig> mqttConfigOpt = getMqttConfig(platform);
-
-        if (igniteEventQosLevel != null) {
-            mqttMessage.setQos(igniteEventQosLevel.getValue());
+        int qos;
+        if (qosLevel != null) {
+            qos = qosLevel.getValue();
         } else {
-            mqttMessage.setQos(mqttConfigOpt.isPresent() ? mqttConfigOpt.get().getMqttQosValue() : mqttQosValue);
+            qos = mqttConfigOpt.isPresent() ? mqttConfigOpt.get().getMqttQosValue() : mqttQosValue;
         }
-
         logger.debug("Publishing event via PAHO client to the mqtt topic : {}, with retained flag as {}, "
                 + "platformId {}, clientID {}", mqttTopicName, isRetainedMessage, platform, client.getClientId());
-        mqttMessage.setRetained(isRetainedMessage);
-        if (mqttMessage.getQos() == QosLevel.AT_LEAST_ONCE.getValue() 
-            || mqttMessage.getQos() == QosLevel.EXACTLY_ONCE.getValue()) {
-            client.setManualAcks(true);
-            publishWithManualRetry(mqttTopicName, mqttMessage, retryCount, platform);
-            return;
-        }
-        client.publish(mqttTopicName, mqttMessage);
-    }
-
-    /**
-     * Publish message to mqtt topic.
-     *
-     * @param mqttTopicName the mqtt topic name
-     * @param mqttMessage the is mqttmessage
-     * @param attempts the attempts
-     * @param platformId the platformId
-     * @throws MqttException the mqtt exception
-     */
-    public void publishWithManualRetry(String mqttTopicName, MqttMessage mqttMessage, int attempts, String platformId) {
-        MqttClient client = mqttClientMap.get(platformId);
-        if (client == null) {
-            logger.error("No MQTT client found against platformID : {} to publish message to topic : {}", 
-                    platformId, mqttTopicName);
-            return;
-        }
-        int attempt = 0;
-        while (attempt < attempts) {
+        return CompletableFuture.runAsync(() -> {
             try {
-                logger.debug("Attempting to publish message to topic : {} with PAHO client. Attempt number : {}",
-                        mqttTopicName, attempt + 1);
-                client.setTimeToWait(PUBACK_TIMEOUT); // Set a timeout for the publish operation
+                mqttMessage.setRetained(isRetainedMessage);
+                mqttMessage.setQos(qos);
+                client.setTimeToWait(mqttQosTimeoutInMillis);
                 client.publish(mqttTopicName, mqttMessage);
-                logger.info("Message published successfully to topic : {} with PAHO client on attempt number : {}",
-                        mqttTopicName, attempt + 1);
-                break; // Exit loop if publish is successful
             } catch (MqttException e) {
-                logger.error("Failed to publish message to topic : {} with PAHO client on attempt number : {}. "
-                        + "Error: {}", mqttTopicName, attempt + 1, e.getMessage());
-                attempt++;
-                if (attempt >= attempts) {
-                    logger.error("Exceeded maximum retry attempts to publish message to topic : {} with PAHO client",
-                            mqttTopicName);
-                }
+                throw new CompletionException(e);
             }
-        }
+        });
     }
 
     /**
@@ -235,16 +199,6 @@ public class PahoMqttDispatcher extends MqttDispatcher {
     protected void setMqttMessagePayload(byte[] payload) {
         mqttMessage = new MqttMessage();
         mqttMessage.setPayload(payload);
-    }
-
-    /**
-     * Sets the QoS level for MQTT message.
-     *
-     * @param qosLevel the QoS level (0, 1, or 2)
-     */
-    @Override
-    protected void setIgniteEventQosLevel(QosLevel igniteEventQosLevel) {
-        this.igniteEventQosLevel = igniteEventQosLevel;
     }
 
     /**
