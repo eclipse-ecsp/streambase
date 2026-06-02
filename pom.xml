@@ -90,13 +90,13 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <kafka.version>3.6.2</kafka.version>
+        <kafka.version>3.9.1</kafka.version>
         <zookeeper.version>3.8.4</zookeeper.version>
-        <junit.version>5.5.2</junit.version>
+        <junit.version>5.11.4</junit.version>
         <jackson.version>2.15.3</jackson.version>
         <slf4j.version>2.0.13</slf4j.version>
         <additionalparam>-Xdoclint:none</additionalparam>
-        <maven.surefire.version>2.18.1</maven.surefire.version>
+        <maven.surefire.version>3.5.4</maven.surefire.version>
         <maven.dependency.version>2.10</maven.dependency.version>
         <spring.test.version>7.0.5</spring.test.version>
         <spring-boot-starter>4.0.3</spring-boot-starter>
@@ -182,6 +182,19 @@
         <license-tool-plugin.version>1.1.0</license-tool-plugin.version>
         <install-plugin.version>3.1.1</install-plugin.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>org.sonatype.central</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
  
     <pluginRepositories>
         <pluginRepository>
@@ -780,7 +793,7 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>1.0.1</version>
+            <version>1.11.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>

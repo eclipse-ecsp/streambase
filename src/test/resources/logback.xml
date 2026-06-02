@@ -33,7 +33,6 @@
 		<appender-ref ref="ASYNC-STDOUT" />
 	</logger>
      <logger name="org.eclipse.ecsp.dao" level="ERROR" additivity="false">
-        <appender-ref ref="${APPENDER}" />
         <appender-ref ref="ASYNC-STDOUT" />
     </logger>
 	<logger name="com.codahale.metrics" level="ERROR" additivity="false">
