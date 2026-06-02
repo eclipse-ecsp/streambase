@@ -139,7 +139,8 @@ public class HarmanRocksDBMetricsExporterTest {
         exporter.fetchMetrics();
 
         Mockito.verify(db, Mockito.times(Constants.THREE)).getLongProperty(Mockito.anyString());
-        Mockito.verify(rocksdbGuage, Mockito.times(Constants.THREE)).set(Mockito.anyDouble(), Mockito.any());
+        Mockito.verify(rocksdbGuage, Mockito.times(Constants.THREE))
+                .set(Mockito.anyDouble(), Mockito.any(), Mockito.any(), Mockito.any());
     }
 
     /**

@@ -125,7 +125,7 @@ public class KafkaTopicsMonitorTest {
      */
     @Before
     public void setup() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         props = new Properties();
         props.put(PropertyNames.BOOTSTRAP_SERVERS, bootStrapServer);
         Set<String> topics = new HashSet<>();

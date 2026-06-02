@@ -77,7 +77,7 @@ public class GlobalMessageGeneratorTest {
     @Before
     public void setup() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         globalMessageIdGenerator.init();
         Field retryCounterFiled = globalMessageIdGenerator.getClass().getDeclaredField("retryCounter");
         retryCounterFiled.setAccessible(true);

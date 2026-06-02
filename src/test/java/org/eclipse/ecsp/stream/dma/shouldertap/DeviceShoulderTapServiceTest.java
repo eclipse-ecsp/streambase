@@ -78,7 +78,7 @@ public class DeviceShoulderTapServiceTest {
      */
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         deviceShoulderTapService.setShoulderTapEnabled(true);
     }
 

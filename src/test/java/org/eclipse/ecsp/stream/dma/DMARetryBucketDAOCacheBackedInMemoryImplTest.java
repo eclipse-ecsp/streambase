@@ -150,7 +150,7 @@ public class DMARetryBucketDAOCacheBackedInMemoryImplTest {
         key3 = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_5000);
         key4 = new RetryBucketKey(TestConstants.THREAD_SLEEP_TIME_1500);
 
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         sortedDao.initialize(taskId);
         messageIdsSet1 = new ConcurrentHashSet<String>();
         messageIdsSet1.add("message123");

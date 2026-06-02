@@ -115,7 +115,7 @@ public class MqttDispatcherTest {
      */
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         mqttClientMap = new HashMap<>();
         mqttClientMap.put(PropertyNames.DEFAULT_PLATFORMID, client);
         ReflectionTestUtils.setField(mqttDispatcher, "mqttClientMap", mqttClientMap);

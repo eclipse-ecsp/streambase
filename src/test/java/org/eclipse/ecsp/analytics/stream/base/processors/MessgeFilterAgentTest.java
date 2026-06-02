@@ -96,7 +96,7 @@ public class MessgeFilterAgentTest {
      */
     @Before
     public void setup() throws NoSuchFieldException, SecurityException {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         igniteStringKey = new IgniteStringKey("test123");
         igniteEvent = new IgniteEventImpl();
         ReflectionTestUtils.setField(messgeFilterAgentTest, "messageFilter", messageFilter);

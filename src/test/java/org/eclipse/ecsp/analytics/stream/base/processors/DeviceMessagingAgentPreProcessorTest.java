@@ -106,7 +106,7 @@ public class DeviceMessagingAgentPreProcessorTest {
     public void setUp() throws Exception {
         igniteKey = new RetryTestKey();
         igniteKey.setKey("VIN123");
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         DeviceMessage entity = new DeviceMessage();
         DeviceMessageHeader header = new DeviceMessageHeader();
         header.withMessageId(msgId);

@@ -121,7 +121,7 @@ public class HiveMQMqttDispatcherHealthMontiorTest {
      */
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         ReflectionTestUtils.setField(mqttHealthMonitor, "mqttHealthMonitorEnabled", true);
         ReflectionTestUtils.setField(mqttDispatcherOne, "retryCount", 1);
         ReflectionTestUtils.setField(mqttDispatcherTwo, "retryCount", 1);

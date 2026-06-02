@@ -517,7 +517,7 @@ public class KafkaStreamsLauncherTest extends KafkaStreamsApplicationTestBase {
             String name = thread.getName();
             if (name.endsWith("-StreamThread-" + threadCount)) {
                 LOGGER.info("Killing thread {} ", name);
-                thread.stop();
+                thread.interrupt();
             }
         }
 
