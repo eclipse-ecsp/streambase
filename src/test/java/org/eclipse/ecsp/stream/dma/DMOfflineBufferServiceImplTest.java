@@ -39,7 +39,6 @@
 
 package org.eclipse.ecsp.stream.dma;
 
-import dev.morphia.AdvancedDatastore;
 import org.eclipse.ecsp.analytics.stream.base.Launcher;
 import org.eclipse.ecsp.analytics.stream.base.constants.TestConstants;
 import org.eclipse.ecsp.analytics.stream.base.utils.Constants;
@@ -95,10 +94,6 @@ public class DMOfflineBufferServiceImplTest {
     /** The offline buffer DAO. */
     @Autowired
     private DMOfflineBufferEntryDAOMongoImpl offlineBufferDAO;
-
-    /** The mongo datastore. */
-    @Autowired
-    private AdvancedDatastore mongoDatastore;
 
     /** The transformer. */
     @Autowired
