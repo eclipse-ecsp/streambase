@@ -103,11 +103,11 @@
         <spring.version>7.0.5</spring.version>
         <embedded.mongodb>3.4.3</embedded.mongodb>
         <junit4.version>4.13.2</junit4.version>
-        <nosql.dao.version>1.3.SPRING-SNAPSHOT</nosql.dao.version>
-        <cache.enabler.version>1.0.SPRING-SNAPSHOT</cache.enabler.version>
-        <transformers.version>1.0.SPRING-SNAPSHOT</transformers.version>
-        <utils.version>1.2.SPRING-SNAPSHOT</utils.version>
-        <entities.version>1.1.1</entities.version>
+        <nosql.dao.version>1.1.1</nosql.dao.version>
+        <cache.enabler.version>1.0.0</cache.enabler.version>
+        <transformers.version>1.0.0</transformers.version>
+        <utils.version>1.1.1</utils.version>
+        <entities.version>1.2-798587-SNAPSHOT</entities.version>
         <scala.version>2.13.14</scala.version>
         <curator.version>5.3.0</curator.version>
         <redis.jar.version>2.6.0.5</redis.jar.version>
@@ -182,6 +182,19 @@
         <license-tool-plugin.version>1.1.0</license-tool-plugin.version>
         <install-plugin.version>3.1.1</install-plugin.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>org.sonatype.central</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
  
     <pluginRepositories>
         <pluginRepository>

@@ -49,11 +49,11 @@ import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish;
 import jakarta.annotation.PostConstruct;
 import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
 import org.eclipse.ecsp.analytics.stream.base.StreamBaseConstant;
+import org.eclipse.ecsp.enums.QosLevel;
 import org.eclipse.ecsp.serializer.IngestionSerializerFactory;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -61,6 +61,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -82,6 +83,9 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
     
     /** The mqtt qos. */
     private MqttQos mqttQos;
+    
+    /** The qos level in ignite event. */
+    private QosLevel igniteEventQosLevel;
     
     /** The mqtt client map. */
     private Map<String, Mqtt3AsyncClient> mqttClientMap;
@@ -215,7 +219,7 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
                         logger.info("HiveMQ Mqtt Client with id {} is created successfully for platformID : {}", 
                                     mqttClientId, platform);
                     }
-                });
+                }).get(); // Wait for connection to complete
         } catch (Exception e) {
             logger.error("HiveMQ MQTT client could not connect for platformID : {}. Exception while creating "
                     + "HiveMQ Mqtt client " + "and the error msg is : {}", platform, e);
@@ -251,22 +255,33 @@ public class HiveMqMqttDispatcher extends MqttDispatcher {
      * @param platform the platform
      */
     @Override
-    protected void publishMessageToMqttTopic(String mqttTopicName, boolean isRetainedMessage, String platform) {
+    protected CompletableFuture<Void> publishMessageToMqttTopic(String mqttTopicName, boolean isRetainedMessage,
+        String platform, QosLevel qosLevel) {
         Mqtt3AsyncClient client = mqttClientMap.get(platform);
         if (null == client) {
-            throw new NoMqttClientFoundException("Unable to publish message to topic : " + mqttTopicName + ". "
-                    + "No MQTT client found against platformID : " + platform);
+            return CompletableFuture.failedFuture(new NoMqttClientFoundException("Unable to publish message to topic :"
+             + mqttTopicName + ". No MQTT client found against platformID : " + platform));
         }
 
         logger.debug("Publishing the event via HiveMQ client to the mqtt topic : {} ,with retained flag as : {} ,"
                 + "for platformID : {}", mqttTopicName, isRetainedMessage, platform);
         Optional<MqttConfig> mqttConfigOpt = getMqttConfig(platform);
-        MqttQos qos = (mqttConfigOpt.isPresent() ? MqttQos.fromCode(mqttConfigOpt.get().getMqttQosValue()) : mqttQos);
-        client.publishWith().topic(mqttTopicName)
+
+        MqttQos qos;
+
+        if (igniteEventQosLevel != null) {
+            qos = MqttQos.fromCode(qosLevel.getValue());
+        } else {
+            qos = (mqttConfigOpt.isPresent() ? MqttQos.fromCode(mqttConfigOpt.get().getMqttQosValue()) : mqttQos);
+        }
+
+        return client.publishWith().topic(mqttTopicName)
                 .payload(messagePayLoad)
                 .qos(qos)
                 .retain(isRetainedMessage)
-                .send();
+                .send()
+                .orTimeout(mqttTimeoutInMillis, TimeUnit.MILLISECONDS) //TimeoutException if ack takes too long
+                .thenAccept(publish -> {});
     }
 
     /**

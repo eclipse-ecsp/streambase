@@ -43,6 +43,7 @@ import jakarta.annotation.PostConstruct;
 import org.eclipse.ecsp.analytics.stream.base.PropertyNames;
 import org.eclipse.ecsp.analytics.stream.base.StreamBaseConstant;
 import org.eclipse.ecsp.analytics.stream.base.exception.DeviceMessagingMqttClientTrustStoreException;
+import org.eclipse.ecsp.enums.QosLevel;
 import org.eclipse.ecsp.serializer.IngestionSerializerFactory;
 import org.eclipse.ecsp.utils.logger.IgniteLogger;
 import org.eclipse.ecsp.utils.logger.IgniteLoggerFactory;
@@ -62,6 +63,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -77,6 +80,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Scope("prototype")
 public class PahoMqttDispatcher extends MqttDispatcher {
 
+    private static final int PUBACK_TIMEOUT = 5000;
+
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(PahoMqttDispatcher.class);
     
@@ -88,6 +93,9 @@ public class PahoMqttDispatcher extends MqttDispatcher {
 
     /** The mqtt conn opts. */
     protected Map<String, MqttConnectOptions> mqttConnOpts;
+    
+    /** The ignite event qos level. */
+    private QosLevel igniteEventQosLevel;
     
     /** The Constant TLS_V1_2. */
     private static final String TLS_V1_2 = "TLSv1.2";
@@ -154,20 +162,32 @@ public class PahoMqttDispatcher extends MqttDispatcher {
      * @throws MqttException the mqtt exception
      */
     @Override
-    protected void publishMessageToMqttTopic(String mqttTopicName, boolean isRetainedMessage, String platform) 
-            throws MqttException {
+    protected CompletableFuture<Void> publishMessageToMqttTopic(String mqttTopicName, boolean isRetainedMessage,
+            String platform, QosLevel qosLevel) {
         MqttClient client = mqttClientMap.get(platform);
         if (null == client) {
-            throw new NoMqttClientFoundException("Unable to publish message to topic : " + mqttTopicName
-                    + ". No MQTT client found against platformID : " + platform);
+            return CompletableFuture.failedFuture(new NoMqttClientFoundException("Unable to publish message to topic :"
+             + mqttTopicName + ". No MQTT client found against platformID : " + platform));
         }
         Optional<MqttConfig> mqttConfigOpt = getMqttConfig(platform);
-        int qos = (mqttConfigOpt.isPresent() ? mqttConfigOpt.get().getMqttQosValue() : mqttQosValue);
+        int qos;
+        if (qosLevel != null) {
+            qos = qosLevel.getValue();
+        } else {
+            qos = mqttConfigOpt.isPresent() ? mqttConfigOpt.get().getMqttQosValue() : mqttQosValue;
+        }
         logger.debug("Publishing event via PAHO client to the mqtt topic : {}, with retained flag as {}, "
                 + "platformId {}, clientID {}", mqttTopicName, isRetainedMessage, platform, client.getClientId());
-        mqttMessage.setRetained(isRetainedMessage);
-        mqttMessage.setQos(qos);
-        client.publish(mqttTopicName, mqttMessage);
+        return CompletableFuture.runAsync(() -> {
+            try {
+                mqttMessage.setRetained(isRetainedMessage);
+                mqttMessage.setQos(qos);
+                client.setTimeToWait(mqttQosTimeoutInMillis);
+                client.publish(mqttTopicName, mqttMessage);
+            } catch (MqttException e) {
+                throw new CompletionException(e);
+            }
+        });
     }
 
     /**
