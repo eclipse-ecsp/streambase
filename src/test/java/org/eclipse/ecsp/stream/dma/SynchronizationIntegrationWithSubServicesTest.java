@@ -46,7 +46,7 @@ import org.eclipse.ecsp.cache.IgniteCache;
 import org.eclipse.ecsp.cache.PutMapOfEntitiesRequest;
 import org.eclipse.ecsp.domain.Version;
 import org.eclipse.ecsp.entities.dma.VehicleIdDeviceIdMapping;
-import org.eclipse.ecsp.stream.dma.dao.DeviceStatusDaoCacheBackedInMemoryImpl;
+import org.eclipse.ecsp.stream.dma.dao.DeviceStatusDaoImpl;
 import org.eclipse.ecsp.stream.dma.dao.key.DeviceStatusKey;
 import org.eclipse.ecsp.transform.DeviceMessageIgniteEventTransformer;
 import org.eclipse.ecsp.utils.ConcurrentHashSet;
@@ -63,10 +63,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.HashMap;
 import java.util.Map;
 
-
-
 /**
- * This test class is to verify whether the in-memory state store can sync-up with redis.
+ * This test class is to verify whether the in-memory state store can sync-up
+ * with redis.
  *
  * @author hbadshah
  */
@@ -78,7 +77,7 @@ public class SynchronizationIntegrationWithSubServicesTest extends KafkaStreamsA
 
     /** The device status cache backed in memory DAO. */
     @Autowired
-    private DeviceStatusDaoCacheBackedInMemoryImpl deviceStatusCacheBackedInMemoryDAO;
+    private DeviceStatusDaoImpl deviceStatusCacheBackedInMemoryDAO;
 
     /** The cache. */
     @Autowired
@@ -123,8 +122,9 @@ public class SynchronizationIntegrationWithSubServicesTest extends KafkaStreamsA
         putToCacheForSubServices(hij, mapping3);
         deviceStatusCacheBackedInMemoryDAO.initialize();
 
-        //After initialization, below as argument to DeviceStatusKey's constructor, is how the keys
-        //will be stored in DMA's in-memory map. Combination of VIN+subService.
+        // After initialization, below as argument to DeviceStatusKey's constructor, is
+        // how the keys
+        // will be stored in DMA's in-memory map. Combination of VIN+subService.
         DeviceStatusKey abcWithSubService = new DeviceStatusKey("abc;ecall/test/ubi");
         DeviceStatusKey efgWithSubService = new DeviceStatusKey("efg;ecall/test/ubi");
         DeviceStatusKey hijWithSubService = new DeviceStatusKey("hij;ecall/test/ftd");
@@ -136,7 +136,7 @@ public class SynchronizationIntegrationWithSubServicesTest extends KafkaStreamsA
     /**
      * Put to cache for sub services.
      *
-     * @param key the key
+     * @param key   the key
      * @param value the value
      */
     private void putToCacheForSubServices(DeviceStatusKey key, VehicleIdDeviceIdMapping value) {

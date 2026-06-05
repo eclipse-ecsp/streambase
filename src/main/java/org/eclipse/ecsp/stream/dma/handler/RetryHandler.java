@@ -97,27 +97,27 @@ import java.util.concurrent.atomic.AtomicReference;
 @Scope("prototype")
 @ConditionalOnProperty(name = PropertyNames.DMA_ENABLED, havingValue = "true")
 public class RetryHandler implements DeviceMessageHandler {
-    
+
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(RetryHandler.class);
-    
+
     /** The retry executor. */
     private ScheduledExecutorService retryExecutor = null;
-    
+
     /** The current scheduled task for dynamic retry processing. */
     private final AtomicReference<ScheduledFuture<?>> currentScheduledTask = new AtomicReference<>();
 
     /** The next handler. */
     private DeviceMessageHandler nextHandler;
-    
+
     /** The device message utils. */
     @Autowired
     private DeviceMessageUtils deviceMessageUtils;
-    
+
     /** The retry bucket DAO. */
     @Autowired
     private DMARetryBucketDAOCacheBackedInMemoryImpl retryBucketDAO;
-    
+
     /** The retry event DAO. */
     @Autowired
     private DMARetryRecordDAOCacheBackedInMemoryImpl retryEventDAO;
@@ -143,10 +143,10 @@ public class RetryHandler implements DeviceMessageHandler {
 
     /** The retry bucket map key. */
     private String retryBucketMapKey;
-    
+
     /** The retry event map key. */
     private String retryEventMapKey;
-    
+
     /** The conn status handler. */
     private DeviceConnectionStatusHandler connStatusHandler;
 
@@ -164,7 +164,7 @@ public class RetryHandler implements DeviceMessageHandler {
     /** The scheduler enabled. */
     @Value("${" + PropertyNames.SCHEDULER_ENABLED + ":true}")
     private String schedulerEnabled;
-    
+
     /** The ttl expiry notification enabled. */
     @Value("${" + PropertyNames.DMA_TTL_EXPIRY_NOTIFICATION_ENABLED + ":true}")
     private String ttlExpiryNotificationEnabled;
@@ -174,7 +174,7 @@ public class RetryHandler implements DeviceMessageHandler {
     private long maxPollingInterval;
 
     /** The Constant DEFAULT_EVENT_CONFIG_PROVIDER. */
-    private static final String DEFAULT_EVENT_CONFIG_PROVIDER = 
+    private static final String DEFAULT_EVENT_CONFIG_PROVIDER =
             "org.eclipse.ecsp.stream.dma.config.DefaultEventConfigProvider";
 
     /** The event config provider impl class. */
@@ -187,12 +187,12 @@ public class RetryHandler implements DeviceMessageHandler {
 
     /** The config provider. */
     EventConfigProvider configProvider;
-    
+
     /** The event config map. */
     private ConcurrentMap<String, EventConfig> eventConfigMap = new ConcurrentHashMap<>();
 
     /** The retry attempt log. */
-    private static String retryAttemptLog = 
+    private static String retryAttemptLog =
             "Current retry attempt is {} for messageId {}, with requestId {} and key {}";
 
     /**
@@ -235,7 +235,7 @@ public class RetryHandler implements DeviceMessageHandler {
     }
 
     /**
-     * **********HAPPY FLOW********
+     *  **********HAPPY FLOW********
      * Check TTL exceeded -> Check Device ACTIVE -> Check if AckExpected -> Check
      * maxRetryExceeded -> Increment retry counter -> Add Event to retry map and add
      * messageId to appropriate bucket by timestamp -> Forward to next handle.
@@ -350,14 +350,27 @@ public class RetryHandler implements DeviceMessageHandler {
             } catch (Exception e) {
                 logger.warn("Retry record unavailable in redis for key {}", retryEventKey.toString());
             }
-            DeviceMessageFailureEventDataV1_0 failEventData = new DeviceMessageFailureEventDataV1_0();
-            failEventData.setFailedIgniteEvent(value.getEvent());
-            failEventData.setErrorCode(DeviceMessageErrorCode.DEVICE_DELIVERY_CUTOFF_EXCEEDED);
-            failEventData.setRetryAttempts(attempts);
-            failEventData.setDeviceDeliveryCutoffExceeded(true);
-            deviceMessageUtils.postFailureEvent(failEventData, key, spc, value.getFeedBackTopic());
-            logger.error("For key {} and value {} cutoff exceeded will not send it to device.", key, value);
+            sendDeviceMessageFailureEvent(key, value, attempts);
         }
+    }
+
+    /**
+     * Send device message failure event.
+     * 
+     * @param key the key
+     * @param value the value
+     * @param attempts the attempts
+     */
+    private void sendDeviceMessageFailureEvent(IgniteKey<?> key, DeviceMessage value,
+            int attempts) {
+        DeviceMessageFailureEventDataV1_0 failEventData = new DeviceMessageFailureEventDataV1_0();
+        failEventData.setFailedIgniteEvent(value.getEvent());
+        failEventData.setErrorCode(DeviceMessageErrorCode.DEVICE_DELIVERY_CUTOFF_EXCEEDED);
+        failEventData.setRetryAttempts(attempts);
+        failEventData.setDeviceDeliveryCutoffExceeded(true);
+        deviceMessageUtils.postFailureEvent(failEventData, key, spc, value.getFeedBackTopic());
+        logger.error("For key {} and value {} cutoff exceeded will not send it to device.", key,
+                value);
     }
 
     /**
@@ -385,7 +398,7 @@ public class RetryHandler implements DeviceMessageHandler {
      * @param event the event
      * @param currentTime the current time
      */
-    private void retryFOrMaxOrAddInMap(IgniteKey<?> key, DeviceMessage value, boolean firstAttempt, 
+    private void retryFOrMaxOrAddInMap(IgniteKey<?> key, DeviceMessage value, boolean firstAttempt,
             RetryRecordKey retryEventKey, RetryRecord event, long currentTime) {
         if (event != null) {
             attemptRetryForFallbackToTLLOnMaxRetryExhausted(event, currentTime, retryEventKey);
@@ -404,7 +417,7 @@ public class RetryHandler implements DeviceMessageHandler {
      * @param event the event
      * @param currentTime the current time
      */
-    private void retryOrAddInMap(IgniteKey<?> key, DeviceMessage value, boolean firstAttempt, 
+    private void retryOrAddInMap(IgniteKey<?> key, DeviceMessage value, boolean firstAttempt,
             RetryRecordKey retryEventKey, RetryRecord event, long currentTime) {
         if (event != null) {
             attemptRetry(event, currentTime, retryEventKey);
@@ -462,21 +475,22 @@ public class RetryHandler implements DeviceMessageHandler {
             RetryBucketKey nextRetryKey = new RetryBucketKey(nextRetry);
             String retryRecordKey = retryEventKey.getKey();
             retryBucketDAO.update(retryBucketMapKey, nextRetryKey, retryRecordKey);
-            logger.info("Added entry {} with timestamp {} to retry bucket.", retryRecordKey, nextRetry);
+            logger.info("Added entry {} with timestamp {} to retry bucket.", retryRecordKey,
+                    nextRetry);
 
             DeviceMessageFailureEventDataV1_0 failEventData = new DeviceMessageFailureEventDataV1_0();
             failEventData.setFailedIgniteEvent(currentEvent);
             failEventData.setErrorCode(DeviceMessageErrorCode.RETRYING_DEVICE_MESSAGE);
             failEventData.setRetryAttempts(event.getAttempts());
-            logger.info(retryAttemptLog,
-                    event.getAttempts(), currentEvent.getMessageId(), currentEvent.getRequestId(), key);
+            logger.info(retryAttemptLog, event.getAttempts(), currentEvent.getMessageId(),
+                    currentEvent.getRequestId(), key);
             deviceMessageUtils.postFailureEvent(failEventData, key, spc, value.getFeedBackTopic());
-            logger.debug(retryAttemptLog,
-                    event.getAttempts(), currentEvent.getMessageId(), currentEvent.getRequestId(), key);
+            logger.debug(retryAttemptLog, event.getAttempts(), currentEvent.getMessageId(),
+                    currentEvent.getRequestId(), key);
             nextHandler.handle(key, value);
         }
     }
-    
+
     /**
      * Gets the next retry interval.
      *
@@ -486,8 +500,9 @@ public class RetryHandler implements DeviceMessageHandler {
      */
     private long getNextRetryInterval(DeviceMessage deviceMessage, IgniteKey<?> key) {
         logger.debug("Retry interval for event with key: {} , requestId: {} , messageId: {} is {}",
-                key, deviceMessage.getDeviceMessageHeader().getRequestId(), deviceMessage
-                .getDeviceMessageHeader().getMessageId(), deviceMessage.getEventLevelRetryInterval());
+                key, deviceMessage.getDeviceMessageHeader().getRequestId(),
+                deviceMessage.getDeviceMessageHeader().getMessageId(),
+                deviceMessage.getEventLevelRetryInterval());
         return deviceMessage.getEventLevelRetryInterval();
     }
 
@@ -786,6 +801,7 @@ public class RetryHandler implements DeviceMessageHandler {
                     delayUntilNextRetry, taskId);
         } catch (Exception e) {
             logger.error("Error occurred in scheduling dynamic retry processing: {}", e.getMessage(), e);
+
         }
     }
 
@@ -815,11 +831,10 @@ public class RetryHandler implements DeviceMessageHandler {
      */
     private void processRetries() {
         /*
-         * Iterate over the timestamps in map which is less than equal to current
-         * timestamp.
+         * Iterate over the timestamps in map which is less than equal to current timestamp.
          */
-        KeyValueIterator<RetryBucketKey, RetryRecordIds> headMap = retryBucketDAO
-                .getHead(new RetryBucketKey(System.currentTimeMillis()));
+        KeyValueIterator<RetryBucketKey, RetryRecordIds> headMap =
+                retryBucketDAO.getHead(new RetryBucketKey(System.currentTimeMillis()));
         /*
          * If same keys are present in two different buckets, avoid processing them
          * twice which could lead to duplicate requests at the same time. This can also
@@ -913,7 +928,7 @@ public class RetryHandler implements DeviceMessageHandler {
      * The Class RetryUncaughtExceptionHandler.
      */
     private class RetryUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-        
+
         /**
          * Uncaught exception.
          *
@@ -966,6 +981,11 @@ public class RetryHandler implements DeviceMessageHandler {
         return currentEarliestRetryTime < previousEarliestRetryTime;
     }
 
+    /**
+     * Sets the max polling interval.
+     *
+     * @param maxPollingInterval the new max polling interval
+     */
     public void setMaxPollingInterval(long maxPollingInterval) {
         this.maxPollingInterval = maxPollingInterval;
     }

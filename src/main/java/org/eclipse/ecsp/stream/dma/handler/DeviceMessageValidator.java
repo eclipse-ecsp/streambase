@@ -48,7 +48,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-
 /**
  * DeviceMessageValidator it checks is message is deviceRoutable.
  * Other validations can be added here in future.
@@ -59,7 +58,7 @@ import org.springframework.stereotype.Component;
 @Scope("prototype")
 @ConditionalOnProperty(name = PropertyNames.DMA_ENABLED, havingValue = "true")
 public class DeviceMessageValidator implements DeviceMessageHandler {
-    
+
     /** The logger. */
     private static IgniteLogger logger = IgniteLoggerFactory.getLogger(DeviceMessageValidator.class);
 
@@ -75,7 +74,7 @@ public class DeviceMessageValidator implements DeviceMessageHandler {
     @Override
     public void handle(IgniteKey<?> key, DeviceMessage value) {
         if (value.getDeviceMessageHeader().isDeviceRoutable()) {
-            logger.debug("Value is DeviceRoutable.");
+            logger.debug("Value is DeviceRoutable: {}", value);
 
             // forward the message to the first handler in the chain.
             nextHandler.handle(key, value);

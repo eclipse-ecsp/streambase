@@ -961,4 +961,3 @@ public class PropertyNames {
     /** The Constant MQTT_SERVICE_TRUSTSTORE_TYPE_SUFFIX. */
     public static final String MQTT_SERVICE_TRUSTSTORE_TYPE_SUFFIX = ".service.truststore.type";
 }
-
