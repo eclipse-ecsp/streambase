@@ -1,6 +1,5 @@
 package org.eclipse.ecsp.analytics.stream.base.stores;
 
-import dev.morphia.AdvancedDatastore;
 import org.eclipse.ecsp.analytics.stream.base.Launcher;
 import org.eclipse.ecsp.analytics.stream.base.constants.TestConstants;
 import org.eclipse.ecsp.analytics.stream.base.kafka.internal.MutationId;
@@ -68,9 +67,6 @@ public class CacheBypassIntegrationTest extends KafkaStreamsApplicationTestBase 
     @Autowired
     private DMCacheEntityDAOMongoImpl dmCacheEntityDAO;
 
-    /** The ds. */
-    @Autowired
-    private AdvancedDatastore ds;
     
     /** The cache. */
     @Autowired
