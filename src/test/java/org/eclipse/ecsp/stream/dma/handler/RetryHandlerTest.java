@@ -165,7 +165,7 @@ public class RetryHandlerTest {
     @Before
     public void setUp() {
         retryTestKey.setKey("Vehicle12345");
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         retryHandler.close();
         retryHandler.setMaxPollingInterval(TestConstants.TWENTY_FIVE);
         retryHandler.setMaxRetry(maxRetry);

@@ -60,6 +60,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -120,7 +121,7 @@ public class HiveMQMqttDispatcherHealthMontiorTest {
      */
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         ReflectionTestUtils.setField(mqttHealthMonitor, "mqttHealthMonitorEnabled", true);
         ReflectionTestUtils.setField(mqttDispatcherOne, "retryCount", 1);
         ReflectionTestUtils.setField(mqttDispatcherTwo, "retryCount", 1);
@@ -146,10 +147,12 @@ public class HiveMQMqttDispatcherHealthMontiorTest {
             .when(mqttDispatcherOne).getMqttClient(PropertyNames.DEFAULT_PLATFORMID);
         Mockito.doReturn(Optional.of(mqttClientOne))
             .when(mqttDispatcherTwo).getMqttClient(PropertyNames.DEFAULT_PLATFORMID);
-        Mockito.doNothing().when(mqttDispatcherOne)
-            .publishMessageToMqttTopic(any(), eq(false), eq(PropertyNames.DEFAULT_PLATFORMID));
-        Mockito.doNothing().when(mqttDispatcherTwo)
-            .publishMessageToMqttTopic(any(), eq(false), eq(PropertyNames.DEFAULT_PLATFORMID));
+        Mockito.doReturn(CompletableFuture.completedFuture(null))
+                .when(mqttDispatcherOne)
+                .publishMessageToMqttTopic(any(), eq(false), eq(PropertyNames.DEFAULT_PLATFORMID), any());
+        Mockito.doReturn(CompletableFuture.completedFuture(null))
+                .when(mqttDispatcherTwo)
+                .publishMessageToMqttTopic(any(), eq(false), eq(PropertyNames.DEFAULT_PLATFORMID), any());
         when(mqttClientOne.getConfig()).thenReturn(mqtt3ClientConfig);
         when(mqttClientTwo.getConfig()).thenReturn(mqtt3ClientConfig);
 

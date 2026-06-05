@@ -1044,4 +1044,295 @@ public class DeviceConnectionStatusHandlerUnitTest {
         bufferEntry3.setVehicleId(vehicleId);
         bufferedEntries.add(bufferEntry3);
     }
+
+    /**
+     * Test get target device id from redis when target device id found in redis without sub service.
+     */
+    @Test
+    public void testGetTargetDeviceIdFromRedisWhenTargetDeviceIdFoundWithoutSubService() {
+        String deviceId = "Device12345";
+        ConcurrentHashSet<String> deviceIdsInCache = new ConcurrentHashSet<>();
+        deviceIdsInCache.add(deviceId);
+        
+        IgniteEventImpl event = new IgniteEventImpl();
+        SpeedV1_0 speed = new SpeedV1_0();
+        speed.setValue(Constants.THREAD_SLEEP_TIME_100);
+        event.setMessageId("Msg123");
+        event.setBizTransactionId("Biz123");
+        String vehicleId = "Vehicle12345";
+        event.setEventData(speed);
+        event.setVehicleId(vehicleId);
+        event.setSourceDeviceId(deviceId);
+        String targetDeviceId = "Device67890";
+        event.setTargetDeviceId(targetDeviceId);
+
+        // First cache call returns deviceIdsInCache without targetDeviceId
+        Mockito.when(deviceService.get(vehicleId, Optional.empty())).thenReturn(deviceIdsInCache);
+        
+        // Redis call returns deviceIdsInCache with targetDeviceId
+        ConcurrentHashSet<String> deviceIdsFromRedis = new ConcurrentHashSet<>();
+        deviceIdsFromRedis.add(deviceId);
+        deviceIdsFromRedis.add(targetDeviceId);
+        Mockito.when(deviceService.forceGet(vehicleId, Optional.empty())).thenReturn(deviceIdsFromRedis);
+
+        String payload = "payload";
+        DeviceMessage msg = new DeviceMessage(payload.getBytes(), Version.V1_0,
+                event, "topic", Constants.THREAD_SLEEP_TIME_60000);
+        
+        deviceConnectionStatusHandler.handle(testKey, msg);
+        
+        Mockito.verify(deviceService, Mockito.times(1)).get(vehicleId, Optional.empty());
+        Mockito.verify(deviceService, Mockito.times(1)).forceGet(vehicleId, Optional.empty());
+        Mockito.verify(nextHandler, Mockito.times(1)).handle(testKey, msg);
+    }
+
+    /**
+     * Test get target device id from redis when target device id not found in redis without sub service.
+     */
+    @Test
+    public void testGetTargetDeviceIdFromRedisWhenTargetDeviceIdNotFoundWithoutSubService() {
+        String deviceId = "Device12345";
+        ConcurrentHashSet<String> deviceIdsInCache = new ConcurrentHashSet<>();
+        deviceIdsInCache.add(deviceId);
+        
+        IgniteEventImpl event = new IgniteEventImpl();
+        SpeedV1_0 speed = new SpeedV1_0();
+        speed.setValue(Constants.THREAD_SLEEP_TIME_100);
+        event.setMessageId("Msg123");
+        event.setBizTransactionId("Biz123");
+        String vehicleId = "Vehicle12345";
+        event.setEventData(speed);
+        event.setVehicleId(vehicleId);
+        event.setSourceDeviceId(deviceId);
+        String targetDeviceId = "Device67890";
+        event.setTargetDeviceId(targetDeviceId);
+
+        String payload = "payload";
+        DeviceMessage msg = new DeviceMessage(payload.getBytes(), Version.V1_0,
+                event, "topic", Constants.THREAD_SLEEP_TIME_60000);
+        
+        // First cache call returns deviceIdsInCache without targetDeviceId
+        Mockito.when(deviceService.get(vehicleId, Optional.empty())).thenReturn(deviceIdsInCache);
+        
+        // Redis call also returns deviceIdsInCache without targetDeviceId
+        Mockito.when(deviceService.forceGet(vehicleId, Optional.empty())).thenReturn(deviceIdsInCache);
+        
+        deviceConnectionStatusHandler.handle(testKey, msg);
+        
+        Mockito.verify(deviceService, Mockito.times(1)).get(vehicleId, Optional.empty());
+        Mockito.verify(deviceService, Mockito.times(1)).forceGet(vehicleId, Optional.empty());
+        Mockito.verify(nextHandler, Mockito.times(0)).handle(testKey, msg);
+        Mockito.verify(offlineBufferDAO, Mockito.times(1))
+                .addOfflineBufferEntry(vehicleId, testKey, msg, null);
+    }
+
+    /**
+     * Test get target device id from redis when target device id found in redis with sub service.
+     */
+    @Test
+    public void testGetTargetDeviceIdFromRedisWhenTargetDeviceIdFoundWithSubService() {
+        String deviceId = "Device12345";
+        ConcurrentHashSet<String> deviceIdsInCache = new ConcurrentHashSet<>();
+        deviceIdsInCache.add(deviceId);
+        
+        IgniteEventImpl event = new IgniteEventImpl();
+        SpeedV1_0 speed = new SpeedV1_0();
+        speed.setValue(Constants.THREAD_SLEEP_TIME_100);
+        event.setMessageId("Msg123");
+        event.setBizTransactionId("Biz123");
+        String vehicleId = "Vehicle12345";
+        event.setEventData(speed);
+        event.setVehicleId(vehicleId);
+        event.setSourceDeviceId(deviceId);
+        String targetDeviceId = "Device67890";
+        event.setTargetDeviceId(targetDeviceId);
+        String subService = "ecall/test_service/ubi";
+        event.setDevMsgTopicSuffix(subService);
+
+        deviceConnectionStatusHandler.setSubServicesList(
+                Arrays.asList("ecall/test_service/ubi", "ecall/test_service/ftd"));
+        deviceConnectionStatusHandler.setProcessPerSubService(true);
+        
+        // First cache call returns deviceIdsInCache without targetDeviceId
+        Mockito.when(deviceService.get(vehicleId, Optional.of(subService))).thenReturn(deviceIdsInCache);
+        
+        // Redis call returns deviceIdsInCache with targetDeviceId
+        ConcurrentHashSet<String> deviceIdsFromRedis = new ConcurrentHashSet<>();
+        deviceIdsFromRedis.add(deviceId);
+        deviceIdsFromRedis.add(targetDeviceId);
+        Mockito.when(deviceService.forceGet(vehicleId, Optional.of(subService))).thenReturn(deviceIdsFromRedis);
+
+        String payload = "payload";
+        DeviceMessage msg = new DeviceMessage(payload.getBytes(), Version.V1_0,
+                event, "topic", Constants.THREAD_SLEEP_TIME_60000);
+        
+        deviceConnectionStatusHandler.handle(testKey, msg);
+        
+        Mockito.verify(deviceService, Mockito.times(1)).get(vehicleId, Optional.of(subService));
+        Mockito.verify(deviceService, Mockito.times(1)).forceGet(vehicleId, Optional.of(subService));
+        Mockito.verify(nextHandler, Mockito.times(1)).handle(testKey, msg);
+    }
+
+    /**
+     * Test get target device id from redis when target device id not found in redis with sub service.
+     */
+    @Test
+    public void testGetTargetDeviceIdFromRedisWhenTargetDeviceIdNotFoundWithSubService() {
+        String deviceId = "Device12345";
+        ConcurrentHashSet<String> deviceIdsInCache = new ConcurrentHashSet<>();
+        deviceIdsInCache.add(deviceId);
+        
+        IgniteEventImpl event = new IgniteEventImpl();
+        SpeedV1_0 speed = new SpeedV1_0();
+        speed.setValue(Constants.THREAD_SLEEP_TIME_100);
+        event.setMessageId("Msg123");
+        event.setBizTransactionId("Biz123");
+        String vehicleId = "Vehicle12345";
+        event.setEventData(speed);
+        event.setVehicleId(vehicleId);
+        event.setSourceDeviceId(deviceId);
+        String targetDeviceId = "Device67890";
+        event.setTargetDeviceId(targetDeviceId);
+        String subService = "ecall/test_service/ubi";
+        event.setDevMsgTopicSuffix(subService);
+
+        deviceConnectionStatusHandler.setSubServicesList(
+                Arrays.asList("ecall/test_service/ubi", "ecall/test_service/ftd"));
+        deviceConnectionStatusHandler.setProcessPerSubService(true);
+        
+        // First cache call returns deviceIdsInCache without targetDeviceId
+        Mockito.when(deviceService.get(vehicleId, Optional.of(subService))).thenReturn(deviceIdsInCache);
+        
+        // Redis call also returns deviceIdsInCache without targetDeviceId
+        Mockito.when(deviceService.forceGet(vehicleId, Optional.of(subService))).thenReturn(deviceIdsInCache);
+
+        String payload = "payload";
+        DeviceMessage msg = new DeviceMessage(payload.getBytes(), Version.V1_0,
+                event, "topic", Constants.THREAD_SLEEP_TIME_60000);
+        
+        deviceConnectionStatusHandler.handle(testKey, msg);
+        
+        Mockito.verify(deviceService, Mockito.times(1)).get(vehicleId, Optional.of(subService));
+        Mockito.verify(deviceService, Mockito.times(1)).forceGet(vehicleId, Optional.of(subService));
+        Mockito.verify(nextHandler, Mockito.times(0)).handle(testKey, msg);
+        Mockito.verify(offlineBufferDAO, Mockito.times(1))
+                .addOfflineBufferEntry(vehicleId, testKey, msg, subService);
+    }
+
+    /**
+     * Test get target device id from redis when redis returns empty cache.
+     */
+    @Test
+    public void testGetTargetDeviceIdFromRedisWhenRedisReturnsEmptyCache() {
+        String deviceId = "Device12345";
+        ConcurrentHashSet<String> deviceIdsInCache = new ConcurrentHashSet<>();
+        deviceIdsInCache.add(deviceId);
+        
+        IgniteEventImpl event = new IgniteEventImpl();
+        SpeedV1_0 speed = new SpeedV1_0();
+        speed.setValue(Constants.THREAD_SLEEP_TIME_100);
+        event.setMessageId("Msg123");
+        event.setBizTransactionId("Biz123");
+        String vehicleId = "Vehicle12345";
+        event.setEventData(speed);
+        event.setVehicleId(vehicleId);
+        event.setSourceDeviceId(deviceId);
+        String targetDeviceId = "Device67890";
+        event.setTargetDeviceId(targetDeviceId);
+
+        String payload = "payload";
+        DeviceMessage msg = new DeviceMessage(payload.getBytes(), Version.V1_0,
+                event, "topic", Constants.THREAD_SLEEP_TIME_60000);
+        
+        // First cache call returns deviceIdsInCache without targetDeviceId
+        Mockito.when(deviceService.get(vehicleId, Optional.empty())).thenReturn(deviceIdsInCache);
+        
+        // Redis call returns empty set
+        Mockito.when(deviceService.forceGet(vehicleId, Optional.empty())).thenReturn(new ConcurrentHashSet<>());
+        
+        deviceConnectionStatusHandler.handle(testKey, msg);
+        
+        Mockito.verify(deviceService, Mockito.times(1)).get(vehicleId, Optional.empty());
+        Mockito.verify(deviceService, Mockito.times(1)).forceGet(vehicleId, Optional.empty());
+        Mockito.verify(nextHandler, Mockito.times(0)).handle(testKey, msg);
+        Mockito.verify(offlineBufferDAO, Mockito.times(1))
+                .addOfflineBufferEntry(vehicleId, testKey, msg, null);
+    }
+
+    /**
+     * Test get target device id from redis when redis returns null.
+     */
+    @Test
+    public void testGetTargetDeviceIdFromRedisWhenRedisReturnsNull() {
+        String deviceId = "Device12345";
+        ConcurrentHashSet<String> deviceIdsInCache = new ConcurrentHashSet<>();
+        deviceIdsInCache.add(deviceId);
+        
+        IgniteEventImpl event = new IgniteEventImpl();
+        SpeedV1_0 speed = new SpeedV1_0();
+        speed.setValue(Constants.THREAD_SLEEP_TIME_100);
+        event.setMessageId("Msg123");
+        event.setBizTransactionId("Biz123");
+        String vehicleId = "Vehicle12345";
+        event.setEventData(speed);
+        event.setVehicleId(vehicleId);
+        event.setSourceDeviceId(deviceId);
+        String targetDeviceId = "Device67890";
+        event.setTargetDeviceId(targetDeviceId);
+
+        String payload = "payload";
+        DeviceMessage msg = new DeviceMessage(payload.getBytes(), Version.V1_0,
+                event, "topic", Constants.THREAD_SLEEP_TIME_60000);
+        
+        // First cache call returns deviceIdsInCache without targetDeviceId
+        Mockito.when(deviceService.get(vehicleId, Optional.empty())).thenReturn(deviceIdsInCache);
+        
+        // Redis call returns null
+        Mockito.when(deviceService.forceGet(vehicleId, Optional.empty())).thenReturn(null);
+        
+        deviceConnectionStatusHandler.handle(testKey, msg);
+        
+        Mockito.verify(deviceService, Mockito.times(1)).get(vehicleId, Optional.empty());
+        Mockito.verify(deviceService, Mockito.times(1)).forceGet(vehicleId, Optional.empty());
+        Mockito.verify(nextHandler, Mockito.times(0)).handle(testKey, msg);
+        Mockito.verify(offlineBufferDAO, Mockito.times(1))
+                .addOfflineBufferEntry(vehicleId, testKey, msg, null);
+    }
+
+    /**
+     * Test get device id if active when target device id found in local cache directly.
+     */
+    @Test
+    public void testGetDeviceIdIfActiveWhenTargetDeviceIdFoundInLocalCache() {
+        String deviceId = "Device12345";
+        ConcurrentHashSet<String> deviceIdsInCache = new ConcurrentHashSet<>();
+        deviceIdsInCache.add(deviceId);
+        String targetDeviceId = "Device67890";
+        deviceIdsInCache.add(targetDeviceId);
+        
+        IgniteEventImpl event = new IgniteEventImpl();
+        SpeedV1_0 speed = new SpeedV1_0();
+        speed.setValue(Constants.THREAD_SLEEP_TIME_100);
+        event.setMessageId("Msg123");
+        event.setBizTransactionId("Biz123");
+        String vehicleId = "Vehicle12345";
+        event.setEventData(speed);
+        event.setVehicleId(vehicleId);
+        event.setSourceDeviceId(deviceId);
+        event.setTargetDeviceId(targetDeviceId);
+
+        String payload = "payload";
+        DeviceMessage msg = new DeviceMessage(payload.getBytes(), Version.V1_0,
+                event, "topic", Constants.THREAD_SLEEP_TIME_60000);
+        
+        // Cache already contains targetDeviceId
+        Mockito.when(deviceService.get(vehicleId, Optional.empty())).thenReturn(deviceIdsInCache);
+        
+        deviceConnectionStatusHandler.handle(testKey, msg);
+        
+        Mockito.verify(deviceService, Mockito.times(1)).get(vehicleId, Optional.empty());
+        // forceGet should NOT be called since targetDeviceId is found in local cache
+        Mockito.verify(deviceService, Mockito.times(0)).forceGet(Mockito.anyString(), Mockito.any());
+        Mockito.verify(nextHandler, Mockito.times(1)).handle(testKey, msg);
+    }
 }

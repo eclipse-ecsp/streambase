@@ -112,7 +112,7 @@ public class DeviceMessagingEventSchedulerTest {
     @Before
     public void setUp() throws Exception {
 
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         List<String> sourceTopics = Arrays.asList("topic1", "topic2");
         ReflectionTestUtils.setField(deviceMessagingEventScheduler, "schedulerAgentTopic", "scheduler");

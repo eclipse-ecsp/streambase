@@ -510,6 +510,9 @@ public class PropertyNames {
     
     /** The Constant MQTT_TIMEOUT_IN_MILLIS. */
     public static final String MQTT_TIMEOUT_IN_MILLIS = "mqtt.timeout.in.millis";
+
+    /** The Constant MQTT_QOS_TIMEOUT_IN_MILLIS. */
+    public static final String MQTT_QOS_TIMEOUT_IN_MILLIS = "mqtt.qos.timeout.in.millis";
     
     /** The Constant MQTT_KEEP_ALIVE_INTERVAL. */
     public static final String MQTT_KEEP_ALIVE_INTERVAL = "mqtt.keep.alive.in.seconds";

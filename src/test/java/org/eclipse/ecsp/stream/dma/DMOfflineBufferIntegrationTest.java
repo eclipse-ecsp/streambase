@@ -205,7 +205,45 @@ public class DMOfflineBufferIntegrationTest extends KafkaStreamsApplicationTestB
     }
 
     /**
-     * Cleans up the test environment.
+     * Test event timestamp saved in correct format.
+     *
+     * @throws ExecutionException the execution exception
+     * @throws InterruptedException the interrupted exception
+     * @throws TimeoutException the timeout exception
+     */
+    @Test
+    public void testEventTimestampSavedInCorrectFormat() 
+           throws ExecutionException, InterruptedException, TimeoutException {
+        Properties producerProps = new Properties();
+        producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
+        producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
+        producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_CLUSTER.bootstrapServers());
+        String deviceInactive = "{\"EventID\": \"DeviceConnStatus\",\"Version\": \"1.0\",\"Data\": "
+                + "{\"connStatus\":\"INACTIVE\",\"serviceName\":\"eCall\"},\"MessageId\": \"1234\",\"VehicleId\": "
+                + "\"Vehicle12345\",\"SourceDeviceId\": \"12345\"}";
+        sendMessages(deviceStatusTopicName, producerProps,
+                Arrays.asList(vehicleId.getBytes(), deviceInactive.getBytes()));
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_5000);
+        assertNull(deviceService.get(vehicleId, Optional.empty()));
+        long currentTimeMillis = System.currentTimeMillis();
+        String speedEvent = "{\"EventID\": \"Speed\",\"Version\": \"1.0\",\"Data\": {\"value\":20.0},"
+                + "\"MessageId\": \"1234\",\"CorrelationId\": \"1234\",\"BizTransactionId\": \"Biz1234\","
+                + "\"VehicleId\": \"Vehicle12345\",\"SourceDeviceId\": \"12345\",\"Timestamp\": " 
+                + currentTimeMillis + "}";
+        sendMessages(sourceTopic, producerProps,
+                Arrays.asList(vehicleId.getBytes(), speedEvent.getBytes()));
+        Thread.sleep(TestConstants.THREAD_SLEEP_TIME_10000);
+        List<DMOfflineBufferEntry> bufferEntries = offlineBufferDAO.getOfflineBufferEntriesSortedByPriority(vehicleId, 
+                false, Optional.empty(), Optional.empty());
+        assertEquals("Expected one entry", 1, bufferEntries.size());
+        DMOfflineBufferEntry savedEntry = bufferEntries.get(0);
+        int currentYear = java.time.Year.now().getValue();
+        assertEquals("Event timestamp year should be current year", 
+                currentYear, savedEntry.getEventTs().getYear());
+    }
+    
+    /**
+     * Tear down.
      */
     @After
     public void tearDown() {

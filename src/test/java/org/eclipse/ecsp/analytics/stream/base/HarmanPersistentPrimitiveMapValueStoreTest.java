@@ -89,7 +89,7 @@ public class HarmanPersistentPrimitiveMapValueStoreTest {
      */
     @Before
     public void setup() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         harmanPersistentPrimitiveMapValueStore = Mockito.spy(new HarmanPersistentPrimitiveMapValueStore("test", true));
     }
 

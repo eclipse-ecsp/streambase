@@ -105,7 +105,7 @@ public class CacheMapStateStoreTest {
      */
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         igniteEvent = new IgniteEventImpl();
         igniteEvent.setEventId("test");
         stringKey = new StringKey(key);

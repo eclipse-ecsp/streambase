@@ -152,7 +152,7 @@ public class DeviceShoulderTapRetryHandlerTest {
     public void setUp() {
         shoulderTapRetryHandler.setServiceName("service");
         retryTestKey.setKey(vehicleId);
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         event = new RetryTestEvent();
         event.setVehicleId(vehicleId);
         event.setRequestId("Req123");

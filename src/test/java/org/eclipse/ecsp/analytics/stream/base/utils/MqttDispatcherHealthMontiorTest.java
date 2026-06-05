@@ -117,7 +117,7 @@ public class MqttDispatcherHealthMontiorTest {
     @Before
     public void setUp() throws MqttException {
 
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         
         
         

@@ -148,7 +148,7 @@ public class CacheBypassTest {
      */
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         collection = dmCacheEntityDao.getOverridingCollectionName();
 
         igniteEvent = new IgniteEventImpl();

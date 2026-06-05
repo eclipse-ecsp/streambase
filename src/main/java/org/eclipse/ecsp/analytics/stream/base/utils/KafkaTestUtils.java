@@ -200,7 +200,14 @@ public class KafkaTestUtils {
             // prevent accidentally
             // deleting important local directory trees.
             if (node.getAbsolutePath().startsWith("/tmp")) {
-                Utils.delete(new File(node.getAbsolutePath()));
+                try {
+                    Utils.delete(new File(node.getAbsolutePath()));
+                } catch (IOException e) {
+                    // Sometimes state directories are locked by other processes or
+                    // permissions prevent deletion; log and move on so tests can run.
+                    System.err.println("Unable to purge local streams state at "
+                            + node.getAbsolutePath() + ": " + e.getMessage());
+                }
             }
         }
     }

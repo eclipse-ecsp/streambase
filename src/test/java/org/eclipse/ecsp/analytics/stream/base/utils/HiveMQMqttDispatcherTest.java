@@ -51,6 +51,7 @@ import org.eclipse.ecsp.domain.Version;
 import org.eclipse.ecsp.entities.IgniteBlobEvent;
 import org.eclipse.ecsp.entities.IgniteEventImpl;
 import org.eclipse.ecsp.entities.dma.DeviceMessage;
+import org.eclipse.ecsp.enums.QosLevel;
 import org.eclipse.ecsp.key.IgniteKey;
 import org.eclipse.ecsp.serializer.IngestionSerializer;
 import org.eclipse.ecsp.stream.dma.handler.DeviceMessageUtils;
@@ -74,8 +75,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeoutException;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -127,6 +131,9 @@ public class HiveMQMqttDispatcherTest {
     @Mock
     Mqtt3PublishBuilder.Send<CompletableFuture<Mqtt3Publish>> mqtt3Publish;
 
+    @Mock
+    Mqtt3PublishBuilder.Send.Complete builder;
+
     /** The mqtt client map. */
     Map<String, Mqtt3AsyncClient> mqttClientMap;
 
@@ -142,7 +149,7 @@ public class HiveMQMqttDispatcherTest {
      */
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         mqttClientMap = new HashMap<>();
         mqttClientMap.put("default", client);
         ReflectionTestUtils.setField(mqttDispatcher, "mqttClientMap", mqttClientMap);
@@ -154,6 +161,10 @@ public class HiveMQMqttDispatcherTest {
         ReflectionTestUtils.setField(mqttDispatcher, "mqttPlatformConfigMap", mqttPlatformConfigMap);
         ReflectionTestUtils.setField(mqttDispatcher, "mqttTopicNameGenerator", mqttTopicNameGenerator);
         when(mqttTopicNameGenerator.getMqttTopicName(any(), any(), any())).thenReturn(Optional.of("topic"));
+        when(builder.topic(anyString())).thenReturn(builder);
+        when(builder.payload(any(byte[].class))).thenReturn(builder);
+        when(builder.qos(any())).thenReturn(builder);
+        when(builder.retain(anyBoolean())).thenReturn(builder);
     }
 
     /**
@@ -187,6 +198,8 @@ public class HiveMQMqttDispatcherTest {
         hiveMqMqttDispatcher.setMqttClientMap(mqttClientMap);
         when(client.getState()).thenReturn(MqttClientState.valueOf("CONNECTED"));
         when(client.getConfig()).thenReturn(mqtt3ClientConfig);
+        when(builder.send()).thenReturn(CompletableFuture.completedFuture(null));
+        when(client.publishWith()).thenReturn(builder);
         mqttDispatcher.setEventWrapFrequency(1);
         mqttDispatcher.setWrapDispatchEvent(true);
         mqttDispatcher.setTransformer(transformer);
@@ -221,6 +234,8 @@ public class HiveMQMqttDispatcherTest {
         entity.getDeviceMessageHeader().withRequestId("rd");
         when(client.getState()).thenReturn(MqttClientState.valueOf("CONNECTED"));
         when(client.getConfig()).thenReturn(mqtt3ClientConfig);
+        when(builder.send()).thenReturn(CompletableFuture.completedFuture(null));
+        when(client.publishWith()).thenReturn(builder);
         when(transformer.serialize(any())).thenReturn(transformed.getBytes());
         mqttClientMap.put(PropertyNames.DEFAULT_PLATFORMID, client);
         hiveMqMqttDispatcher.setMqttClientMap(mqttClientMap);
@@ -252,6 +267,8 @@ public class HiveMQMqttDispatcherTest {
         entity.getDeviceMessageHeader().withRequestId("rd");
         when(client.getState()).thenReturn(MqttClientState.valueOf("CONNECTED"));
         when(client.getConfig()).thenReturn(mqtt3ClientConfig);
+        when(builder.send()).thenReturn(CompletableFuture.completedFuture(null));
+        when(client.publishWith()).thenReturn(builder);
         when(transformer.serialize(any())).thenReturn(transformed.getBytes());
         mqttClientMap.put(PropertyNames.DEFAULT_PLATFORMID, client);
         hiveMqMqttDispatcher.setMqttClientMap(mqttClientMap);
@@ -276,12 +293,15 @@ public class HiveMQMqttDispatcherTest {
         entity.getDeviceMessageHeader().withTargetDeviceId("td");
         entity.getDeviceMessageHeader().withVehicleId("vd");
         entity.getDeviceMessageHeader().withRequestId("rd");
+        entity.getDeviceMessageHeader().withQosLevel(QosLevel.AT_LEAST_ONCE);
         when(client.getState()).thenReturn(MqttClientState.valueOf("CONNECTED"));
         when(transformer.serialize(any())).thenReturn("transformed".getBytes());
         when(client.getConfig()).thenReturn(mqtt3ClientConfig);
         mqttClientMap.put(PropertyNames.DEFAULT_PLATFORMID, client);
         hiveMqMqttDispatcher.setMqttClientMap(mqttClientMap);
-        when(client.publish(any())).thenThrow(RuntimeException.class);
+        when(builder.send()).thenReturn(CompletableFuture.failedFuture(
+            new TimeoutException("Timeout while waiting for PUBACK")));
+        when(client.publishWith()).thenReturn(builder);
         mqttDispatcher.dispatch(new TestKey(), entity);
 
         Assert.assertFalse(mqttDispatcher.healthy);
@@ -309,6 +329,8 @@ public class HiveMQMqttDispatcherTest {
         mqttDispatcher.setGlobalBroadcastRetentionTopicList(topicList);
         when(client.getState()).thenReturn(MqttClientState.valueOf("CONNECTED"));
         when(client.getConfig()).thenReturn(mqtt3ClientConfig);
+        when(builder.send()).thenReturn(CompletableFuture.completedFuture(null));
+        when(client.publishWith()).thenReturn(builder);
         mqttClientMap.put(PropertyNames.DEFAULT_PLATFORMID, client);
         hiveMqMqttDispatcher.setMqttClientMap(mqttClientMap);
         mqttDispatcher.setEventWrapFrequency(1);
@@ -349,6 +371,8 @@ public class HiveMQMqttDispatcherTest {
         hiveMqMqttDispatcher.setMqttClientMap(mqttClientMap);
         when(client.getState()).thenReturn(MqttClientState.valueOf("CONNECTED"));
         when(client.getConfig()).thenReturn(mqtt3ClientConfig);
+        when(builder.send()).thenReturn(CompletableFuture.completedFuture(null));
+        when(client.publishWith()).thenReturn(builder);
         mqttDispatcher.setEventWrapFrequency(1);
         mqttDispatcher.setWrapDispatchEvent(true);
         mqttDispatcher.setTransformer(transformer);

@@ -174,6 +174,9 @@ public class Constants {
     
     /** The Constant THREAD_SLEEP_TIME_1000. */
     public static final int THREAD_SLEEP_TIME_1000 = 1000;
+
+    /** The Constant INT_1000. */
+    public static final int INT_1000 = 1000;
     
     /** The Constant INT_1883. */
     public static final int INT_1883 = 1883;
